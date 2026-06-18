@@ -1,12 +1,16 @@
 // src/GameCanvas.tsx
 import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
+import { renderEffect } from "./canvas/rendererEffects";
 import "./GameCanvas.css";
 export default function GameCanvas() {
   const frameRef = useRef<HTMLCanvasElement>(null);
   const uiRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<HTMLCanvasElement>(null);
   const effectRef = useRef<HTMLCanvasElement>(null);
+  const [screen, setScreen] = useState<
+    "title" | "menu" | "game" | "make" | "result"
+  >("title");
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
 
@@ -18,15 +22,34 @@ export default function GameCanvas() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // ① frame：screen が変わったときだけ描く
   useEffect(() => {
     const canvas = frameRef.current;
     if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    renderFrame(ctx, screen);
+  }, [screen]);
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  // ② effect：毎フレーム描く（アニメーション）
+  useEffect(() => {
+    const canvas = effectRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
 
-    renderFrame(ctx);
-  }, []);
+    let running = true;
+
+    function loop() {
+      if (!running) return;
+      renderEffect(ctx, ratio, screen);
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+    return () => {
+      running = false;
+    };
+  }, [ratio, screen]);
 
   return (
     <div className="canvas-container">

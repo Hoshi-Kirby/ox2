@@ -1,13 +1,15 @@
 // src/canvas/rendererFrame.ts
 import { assets } from "./assets";
 
-export async function renderFrame(ctx: CanvasRenderingContext2D) {
+export function renderFrame(
+  ctx: CanvasRenderingContext2D,
+  screen: "title" | "menu" | "game" | "make" | "result",
+) {
   const canvas = ctx.canvas;
   const W = canvas.width;
   const H = canvas.height;
 
-  const img = await assets.titleBg;
-
-  ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(img, 0, 0, W, H);
+  if (screen === "title") {
+    ctx.drawImage(assets.titleBg, 0, 0, W, H);
+  }
 }
