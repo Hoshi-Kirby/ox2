@@ -3,8 +3,13 @@
 export const assets = {
   titleBg: new Image(),
   title: new Image(),
+  btnStart: new Image(),
+  btnStartHover: new Image(),
+  menuBg: new Image(),
 };
 
-// 画像パスを設定
-assets.titleBg.src = "/assets/city_scene.png";
-assets.title.src = "/assets/title.png";
+assets.titleBg.src = "/assets/backgrounds/city_scene.png";
+assets.title.src = "/assets/ui/title.png";
+assets.btnStart.src = "/assets/button/start.png";
+assets.btnStartHover.src = "/assets/button/start_hover.png";
+assets.menuBg.src = "/assets/backgrounds/neon_city1.png";
