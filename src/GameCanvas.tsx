@@ -3,12 +3,14 @@ import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderUI } from "./canvas/rendererUI";
+import { EffectManager } from "./effectManager";
 import "./GameCanvas.css";
 export default function GameCanvas() {
   const frameRef = useRef<HTMLCanvasElement>(null);
   const uiRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<HTMLCanvasElement>(null);
   const effectRef = useRef<HTMLCanvasElement>(null);
+  const effectManager = useRef(new EffectManager());
 
   const [screen, setScreen] = useState<
     "title" | "menu" | "game" | "make" | "result"
@@ -49,10 +51,16 @@ export default function GameCanvas() {
     const ctx = canvas.getContext("2d")!;
 
     let running = true;
+    let lastTime = performance.now();
 
-    function loop() {
+    function loop(now: number) {
       if (!running) return;
-      renderEffect(ctx, ratio, screen);
+
+      const dt = now - lastTime;
+      lastTime = now;
+
+      renderEffect(ctx, ratio, screen, effectManager.current, dt);
+
       requestAnimationFrame(loop);
     }
 
@@ -76,7 +84,12 @@ export default function GameCanvas() {
       const y = (e.clientY - rect.top) * scaleY;
 
       if (isInsideStartButton(x, y, ratio)) {
-        setScreen("menu");
+        effectManager.current.startFadeOut();
+
+        setTimeout(() => {
+          setScreen("menu");
+          effectManager.current.startFadeIn();
+        }, 300);
       }
     };
 

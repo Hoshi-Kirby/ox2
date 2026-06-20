@@ -2,11 +2,15 @@
 import { assets } from "./assets"; // title.png を読み込む場所に合わせてね
 
 let t = 0;
+// src/canvas/rendererEffect.ts
+import { EffectManager } from "../effectManager";
 
 export function renderEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: "title" | "menu" | "game" | "make" | "result",
+  effectManager: EffectManager,
+  dt: number,
 ) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, 1280, 720);
@@ -47,4 +51,6 @@ export function renderEffect(
 
     ctx.drawImage(img, x, y, drawW, drawH);
   }
+  effectManager.update(dt);
+  effectManager.draw(ctx);
 }
