@@ -3,21 +3,32 @@ import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderUI } from "./canvas/rendererUI";
-import { EffectManager } from "./effectManager";
 import "./GameCanvas.css";
 export default function GameCanvas() {
   const frameRef = useRef<HTMLCanvasElement>(null);
   const uiRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<HTMLCanvasElement>(null);
   const effectRef = useRef<HTMLCanvasElement>(null);
-  const effectManager = useRef(new EffectManager());
+  const effectTimers = useRef<Record<string, number>>({
+    fadeOut: 0,
+    fadeIn: 0,
+    leftWhiteSlide: 0,
+  });
+  const hoverStates = useRef<Record<string, boolean>>({
+    startButton: false,
+  });
+
+  const pressTimers = useRef<Record<string, number>>({
+    startButton: 0,
+  });
 
   const [screen, setScreen] = useState<
-    "title" | "menu" | "game" | "make" | "result"
+    "title" | "menu" | "menu2" | "help" | "game" | "make" | "result"
   >("title");
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("touch");
 
   useEffect(() => {
     const onResize = () => {
@@ -25,6 +36,20 @@ export default function GameCanvas() {
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, []);
+  useEffect(() => {
+    const canvas = effectRef.current;
+    if (!canvas) return;
+
+    const block = (e: Event) => e.preventDefault();
+
+    canvas.addEventListener("contextmenu", block);
+    canvas.addEventListener("selectstart", block); // テキスト選択開始も潰す
+
+    return () => {
+      canvas.removeEventListener("contextmenu", block);
+      canvas.removeEventListener("selectstart", block);
+    };
   }, []);
 
   // frame：screen が変わったときだけ描く
@@ -41,7 +66,7 @@ export default function GameCanvas() {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d")!;
-    renderUI(ctx, ratio, screen, mouse);
+    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates.current);
   }, [ratio, screen, mouse]);
 
   // effect：毎フレーム描く（アニメーション）
@@ -58,8 +83,17 @@ export default function GameCanvas() {
 
       const dt = now - lastTime;
       lastTime = now;
+      updateEffectsTimer(dt, effectTimers.current);
+      detectHover(
+        dt,
+        mouse,
+        ratio,
+        deviceMode,
+        pressTimers.current,
+        hoverStates.current,
+      );
 
-      renderEffect(ctx, ratio, screen, effectManager.current, dt);
+      renderEffect(ctx, ratio, screen, effectTimers.current, dt);
 
       requestAnimationFrame(loop);
     }
@@ -69,7 +103,7 @@ export default function GameCanvas() {
     return () => {
       running = false;
     };
-  }, [ratio, screen]);
+  }, [ratio, screen, mouse]);
 
   // クリック判定
   useEffect(() => {
@@ -84,11 +118,12 @@ export default function GameCanvas() {
       const y = (e.clientY - rect.top) * scaleY;
 
       if (isInsideStartButton(x, y, ratio)) {
-        effectManager.current.startFadeOut();
+        effectTimers.current.fadeIn = 300;
+        effectTimers.current.fadeOut = 600;
 
         setTimeout(() => {
           setScreen("menu");
-          effectManager.current.startFadeIn();
+          effectTimers.current.fadeOut = 300;
         }, 300);
       }
     };
@@ -96,6 +131,35 @@ export default function GameCanvas() {
     canvas.addEventListener("click", onClick);
     return () => canvas.removeEventListener("click", onClick);
   }, [ratio]);
+
+  // ホバー判定
+  function detectHover(
+    dt: number,
+    mouse: { x: number; y: number },
+    ratio: number,
+    deviceMode: "mouse" | "touch",
+    pressTimers: Record<string, number>,
+    hoverStates: Record<string, boolean>,
+  ) {
+    const x = mouse.x;
+    const y = mouse.y;
+    // PC（マウス）
+    if (deviceMode === "mouse") {
+      hoverStates.startButton = isInsideStartButton(x, y, ratio);
+    }
+    // スマホ（タッチ）
+    if (deviceMode === "touch") {
+      if (isInsideStartButton(x, y, ratio)) {
+        pressTimers.startButton += dt;
+        if (pressTimers.startButton > 300) {
+          hoverStates.startButton = true;
+        }
+      } else {
+        pressTimers.startButton = 0;
+        hoverStates.startButton = false;
+      }
+    }
+  }
 
   // マウス座標
   useEffect(() => {
@@ -162,7 +226,14 @@ export default function GameCanvas() {
     </div>
   );
 }
-
+function updateEffectsTimer(dt: number, timers: Record<string, number>) {
+  for (const key in timers) {
+    if (timers[key] > 0) {
+      timers[key] -= dt;
+      if (timers[key] < 0) timers[key] = 0;
+    }
+  }
+}
 function isInsideStartButton(x: number, y: number, ratio: number): boolean {
   const canvasW = 1280;
   const canvasH = 720;

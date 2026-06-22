@@ -4,8 +4,9 @@ import { assets } from "./assets";
 export function renderUI(
   ctx: CanvasRenderingContext2D,
   ratio: number,
-  screen: "title" | "menu" | "game" | "make" | "result",
-  mouse: { x: number; y: number },
+  screen: "title" | "menu" | "menu2" | "help" | "game" | "make" | "result",
+  effectTimers: Record<string, number>,
+  hoverStates: Record<string, boolean>,
 ) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, 1280, 720);
@@ -25,9 +26,9 @@ export function renderUI(
     dx = (1280 - W) / 2;
     dy = 0;
   }
+  const layoutIsWide = ratio > 1.2;
   if (screen === "title") {
     let img = assets.btnStart;
-    const layoutIsWide = ratio > 1.2;
     let btnW, btnH;
 
     if (layoutIsWide) {
@@ -40,16 +41,17 @@ export function renderUI(
     const x = dx + W * 0.5 - btnW / 2;
     const y = dy + H * 0.65;
 
-    const isHover =
-      mouse.x >= x &&
-      mouse.x <= x + btnW &&
-      mouse.y >= y &&
-      mouse.y <= y + btnH;
-
-    if (isHover) {
+    if (hoverStates.startButton) {
       img = assets.btnStartHover;
     }
 
     ctx.drawImage(img, x, y, btnW, btnH);
+  }
+  if (screen === "menu" || screen === "menu2") {
+    if (layoutIsWide) {
+      ctx.drawImage(assets.leftWhite, -400, 0, 1280 + 400, 720);
+    } else {
+      ctx.drawImage(assets.leftWhite, 0, 0, 1280 + 400, 720);
+    }
   }
 }

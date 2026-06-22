@@ -3,7 +3,7 @@ import { assets } from "./assets";
 
 export function renderFrame(
   ctx: CanvasRenderingContext2D,
-  screen: "title" | "menu" | "game" | "make" | "result",
+  screen: "title" | "menu" | "menu2" | "help" | "game" | "make" | "result",
 ) {
   const canvas = ctx.canvas;
   const W = canvas.width;

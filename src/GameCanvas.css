@@ -12,6 +12,10 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  -webkit-touch-callout: none; /* 長押しメニュー無効（iOS） */
+  -webkit-user-select: none; /* テキスト選択無効（iOS） */
+  user-select: none; /* テキスト選択無効（全般） */
+  -webkit-user-drag: none; /* 画像のドラッグ無効 */
 }
 
 .layer {
