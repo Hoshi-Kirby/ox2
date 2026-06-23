@@ -14,7 +14,7 @@ export default function GameCanvas() {
     fadeIn: 0,
     leftWhiteSlide: 0,
   });
-  const hoverStates = useRef<Record<string, boolean>>({
+  const [hoverStates, setHoverStates] = useState<Record<string, boolean>>({
     startButton: false,
   });
 
@@ -27,7 +27,7 @@ export default function GameCanvas() {
   >("title");
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const mouseRef = useRef({ x: 0, y: 0 });
   const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("touch");
 
   useEffect(() => {
@@ -66,8 +66,8 @@ export default function GameCanvas() {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d")!;
-    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates.current);
-  }, [ratio, screen, mouse]);
+    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
+  }, [ratio, screen, hoverStates]);
 
   // effect：毎フレーム描く（アニメーション）
   useEffect(() => {
@@ -84,14 +84,6 @@ export default function GameCanvas() {
       const dt = now - lastTime;
       lastTime = now;
       updateEffectsTimer(dt, effectTimers.current);
-      detectHover(
-        dt,
-        mouse,
-        ratio,
-        deviceMode,
-        pressTimers.current,
-        hoverStates.current,
-      );
 
       renderEffect(ctx, ratio, screen, effectTimers.current, dt);
 
@@ -103,7 +95,7 @@ export default function GameCanvas() {
     return () => {
       running = false;
     };
-  }, [ratio, screen, mouse]);
+  }, [ratio, screen]);
 
   // クリック判定
   useEffect(() => {
@@ -118,13 +110,15 @@ export default function GameCanvas() {
       const y = (e.clientY - rect.top) * scaleY;
 
       if (isInsideStartButton(x, y, ratio)) {
-        effectTimers.current.fadeIn = 300;
-        effectTimers.current.fadeOut = 600;
+        if (screen === "title") {
+          effectTimers.current.fadeIn = 300;
+          effectTimers.current.fadeOut = 600;
 
-        setTimeout(() => {
-          setScreen("menu");
-          effectTimers.current.fadeOut = 300;
-        }, 300);
+          setTimeout(() => {
+            setScreen("menu");
+            effectTimers.current.fadeOut = 300;
+          }, 300);
+        }
       }
     };
 
@@ -133,51 +127,70 @@ export default function GameCanvas() {
   }, [ratio]);
 
   // ホバー判定
-  function detectHover(
-    dt: number,
-    mouse: { x: number; y: number },
-    ratio: number,
-    deviceMode: "mouse" | "touch",
-    pressTimers: Record<string, number>,
-    hoverStates: Record<string, boolean>,
-  ) {
-    const x = mouse.x;
-    const y = mouse.y;
-    // PC（マウス）
-    if (deviceMode === "mouse") {
-      hoverStates.startButton = isInsideStartButton(x, y, ratio);
-    }
-    // スマホ（タッチ）
-    if (deviceMode === "touch") {
-      if (isInsideStartButton(x, y, ratio)) {
-        pressTimers.startButton += dt;
-        if (pressTimers.startButton > 300) {
-          hoverStates.startButton = true;
+  useEffect(() => {
+    let running = true;
+    let lastTime = performance.now();
+    let dt = 0;
+    function hoverLoop(now: number) {
+      if (!running) return;
+      dt = now - lastTime;
+      lastTime = now;
+      const { x, y } = mouseRef.current;
+      const inside = isInsideStartButton(x, y, ratio);
+
+      if (deviceMode === "mouse") {
+        if (hoverStates.startButton !== inside) {
+          setHoverStates((prev) => ({ ...prev, startButton: inside }));
         }
       } else {
-        pressTimers.startButton = 0;
-        hoverStates.startButton = false;
+        if (inside) {
+          pressTimers.current.startButton += dt;
+          if (
+            pressTimers.current.startButton > 300 &&
+            !hoverStates.startButton
+          ) {
+            setHoverStates((prev) => ({ ...prev, startButton: true }));
+          }
+        } else {
+          pressTimers.current.startButton = 0;
+          if (hoverStates.startButton) {
+            setHoverStates((prev) => ({ ...prev, startButton: false }));
+          }
+        }
       }
+
+      requestAnimationFrame(hoverLoop);
     }
-  }
+
+    requestAnimationFrame(hoverLoop);
+
+    return () => {
+      running = false;
+    };
+  }, [ratio, deviceMode]); // ← hoverStates を絶対に入れない
 
   // マウス座標
   useEffect(() => {
     const canvas = effectRef.current;
     if (!canvas) return;
 
-    const onMove = (e: PointerEvent) => {
+    const updatePos = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      setMouse({
+      mouseRef.current = {
         x: (e.clientX - rect.left) * scaleX,
         y: (e.clientY - rect.top) * scaleY,
-      });
+      };
     };
 
-    canvas.addEventListener("pointermove", onMove);
-    return () => canvas.removeEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerdown", updatePos);
+    canvas.addEventListener("pointermove", updatePos);
+
+    return () => {
+      canvas.removeEventListener("pointerdown", updatePos);
+      canvas.removeEventListener("pointermove", updatePos);
+    };
   }, []);
 
   return (

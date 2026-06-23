@@ -25,11 +25,12 @@ export function renderEffect(
     dx = (1280 - W) / 2;
     dy = 0;
   }
+
+  const layoutIsWide = ratio > 1.2;
   if (screen === "title") {
     const img = assets.title;
 
     const imgRatio = img.width / img.height;
-    const layoutIsWide = ratio > 1.2;
 
     let drawW, drawH;
 
@@ -48,6 +49,33 @@ export function renderEffect(
     const y = dy + H * 0.26 - drawH / 2 + offset;
 
     ctx.drawImage(img, x, y, drawW, drawH);
+  } else if (screen === "menu") {
+    let baseX = dx + W * 0.01;
+    const baseY = dy + H * 0.1;
+
+    let btnW = H * 0.45;
+    const btnH =
+      btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+    let offsetX = H * 0.053;
+    if (!layoutIsWide) {
+      btnW = H * 0.4;
+      baseX = dx + W * 0.5 - btnW / 2;
+      offsetX = 0;
+    }
+    const offsetY = H * 0.15; // 縦の間隔
+
+    for (let i = 0; i < 5; i++) {
+      const x = baseX + offsetX * i;
+      const y = baseY + offsetY * i;
+
+      ctx.drawImage(assets.buttonFrame1, x, y, btnW, btnH);
+    }
+
+    const backX = baseX - H * 0.15; // 左に寄せる
+    const backY = baseY + offsetY * 5 + H * 0.03;
+
+    ctx.drawImage(assets.buttonFrame1, backX, backY, btnW, btnH);
   }
   if (effectTimers.fadeIn > 0) {
     ctx.fillStyle = `rgba(0,0,0,${(300 - effectTimers.fadeIn) / 300})`;
