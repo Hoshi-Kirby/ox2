@@ -6,7 +6,7 @@ export function renderUI(
   ratio: number,
   screen: "title" | "menu" | "menu2" | "help" | "game" | "make" | "result",
   effectTimers: Record<string, number>,
-  hoverStates: Record<string, boolean>,
+  hoverStates: Record<string, boolean | boolean[]>,
 ) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, 1280, 720);

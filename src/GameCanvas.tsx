@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderUI } from "./canvas/rendererUI";
+import { assets } from "./canvas/assets";
 import "./GameCanvas.css";
 export default function GameCanvas() {
   const frameRef = useRef<HTMLCanvasElement>(null);
@@ -14,13 +15,28 @@ export default function GameCanvas() {
     fadeIn: 0,
     leftWhiteSlide: 0,
   });
-  const [hoverStates, setHoverStates] = useState<Record<string, boolean>>({
+
+  type HoverUI = {
+    startButton: boolean;
+    back: boolean;
+    menu: boolean[];
+  };
+
+  const [hoverStates, setHoverStates] = useState<HoverUI>({
     startButton: false,
+    back: false,
+    menu: Array(5).fill(false),
   });
 
-  const pressTimers = useRef<Record<string, number>>({
+  type PressTimers = {
+    startButton: number;
+  };
+
+  const pressTimers = useRef<PressTimers>({
     startButton: 0,
   });
+
+  const hoverStatesRef = useRef(hoverStates);
 
   const [screen, setScreen] = useState<
     "title" | "menu" | "menu2" | "help" | "game" | "make" | "result"
@@ -28,7 +44,7 @@ export default function GameCanvas() {
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("touch");
+  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("mouse");
 
   useEffect(() => {
     const onResize = () => {
@@ -51,6 +67,9 @@ export default function GameCanvas() {
       canvas.removeEventListener("selectstart", block);
     };
   }, []);
+  useEffect(() => {
+    hoverStatesRef.current = hoverStates;
+  }, [hoverStates]);
 
   // frame：screen が変わったときだけ描く
   useEffect(() => {
@@ -85,7 +104,14 @@ export default function GameCanvas() {
       lastTime = now;
       updateEffectsTimer(dt, effectTimers.current);
 
-      renderEffect(ctx, ratio, screen, effectTimers.current, dt);
+      renderEffect(
+        ctx,
+        ratio,
+        screen,
+        effectTimers.current,
+        dt,
+        hoverStatesRef.current,
+      );
 
       requestAnimationFrame(loop);
     }
@@ -124,7 +150,7 @@ export default function GameCanvas() {
 
     canvas.addEventListener("click", onClick);
     return () => canvas.removeEventListener("click", onClick);
-  }, [ratio]);
+  }, [ratio, screen]);
 
   // ホバー判定
   useEffect(() => {
@@ -136,26 +162,49 @@ export default function GameCanvas() {
       dt = now - lastTime;
       lastTime = now;
       const { x, y } = mouseRef.current;
-      const inside = isInsideStartButton(x, y, ratio);
 
+      // start
+      const insideStart = isInsideStartButton(x, y, ratio);
       if (deviceMode === "mouse") {
-        if (hoverStates.startButton !== inside) {
-          setHoverStates((prev) => ({ ...prev, startButton: inside }));
+        if (hoverStatesRef.current.startButton !== insideStart) {
+          setHoverStates((prev) => ({ ...prev, startButton: insideStart }));
         }
       } else {
-        if (inside) {
-          pressTimers.current.startButton += dt;
-          if (
-            pressTimers.current.startButton > 300 &&
-            !hoverStates.startButton
-          ) {
-            setHoverStates((prev) => ({ ...prev, startButton: true }));
+        if (insideStart) {
+          if (typeof pressTimers.current.startButton === "number") {
+            pressTimers.current.startButton += dt;
+            if (
+              pressTimers.current.startButton > 300 &&
+              !hoverStatesRef.current.startButton
+            ) {
+              setHoverStates((prev) => ({ ...prev, startButton: true }));
+            }
           }
         } else {
           pressTimers.current.startButton = 0;
-          if (hoverStates.startButton) {
+          if (hoverStatesRef.current.startButton) {
             setHoverStates((prev) => ({ ...prev, startButton: false }));
           }
+        }
+      }
+      // menu
+      for (let i = 0; i < hoverStates.menu.length; i++) {
+        const insideMenu = isInsideMenuButton(i, x, y, ratio);
+
+        if (deviceMode === "mouse") {
+          if (hoverStatesRef.current.menu[i] !== insideMenu) {
+            setHoverStates((prev) => ({
+              ...prev,
+              menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
+            }));
+          }
+        }
+      }
+      // back
+      const insideBack = isInsideBackButton(x, y, ratio);
+      if (deviceMode === "mouse") {
+        if (hoverStatesRef.current.back !== insideBack) {
+          setHoverStates((prev) => ({ ...prev, back: insideBack }));
         }
       }
 
@@ -167,7 +216,7 @@ export default function GameCanvas() {
     return () => {
       running = false;
     };
-  }, [ratio, deviceMode]); // ← hoverStates を絶対に入れない
+  }, [ratio, deviceMode]);
 
   // マウス座標
   useEffect(() => {
@@ -251,7 +300,6 @@ function isInsideStartButton(x: number, y: number, ratio: number): boolean {
   const canvasW = 1280;
   const canvasH = 720;
   const canvasRatio = canvasW / canvasH;
-
   let W, H, dx, dy;
   if (ratio > canvasRatio) {
     W = 1280;
@@ -264,7 +312,6 @@ function isInsideStartButton(x: number, y: number, ratio: number): boolean {
     dx = (1280 - W) / 2;
     dy = 0;
   }
-
   const layoutIsWide = ratio > 1.2;
   let btnW, btnH;
   if (layoutIsWide) {
@@ -274,9 +321,69 @@ function isInsideStartButton(x: number, y: number, ratio: number): boolean {
     btnW = W * 0.4;
     btnH = btnW * 0.23;
   }
-
   const btnX = dx + W * 0.5 - btnW / 2;
   const btnY = dy + H * 0.65;
-
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+function isInsideMenuButton(
+  index: number,
+  x: number,
+  y: number,
+  ratio: number,
+): boolean {
+  const canvasW = 1280;
+  const canvasH = 720;
+  const canvasRatio = canvasW / canvasH;
+  let W, H, dx, dy;
+  if (ratio > canvasRatio) {
+    W = 1280;
+    H = W / ratio;
+    dy = (720 - H) / 2;
+    dx = 0;
+  } else {
+    H = 720;
+    W = H * ratio;
+    dx = (1280 - W) / 2;
+    dy = 0;
+  }
+  const layoutIsWide = ratio > 1.2;
+  let baseX = dx + W * 0.01;
+  const baseY = dy + H * 0.1;
+  let btnW = H * 0.45;
+  const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+  let offsetX = H * 0.053;
+  if (!layoutIsWide) {
+    btnW = H * 0.4;
+    baseX = dx + W * 0.5 - btnW / 2;
+    offsetX = 0;
+  }
+  const offsetY = H * 0.15;
+  const btnX = baseX + offsetX * index;
+  const btnY = baseY + offsetY * index;
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+function isInsideBackButton(x: number, y: number, ratio: number): boolean {
+  const canvasW = 1280;
+  const canvasH = 720;
+  const canvasRatio = canvasW / canvasH;
+  let W, H, dx, dy;
+  if (ratio > canvasRatio) {
+    W = 1280;
+    H = W / ratio;
+    dy = (720 - H) / 2;
+    dx = 0;
+  } else {
+    H = 720;
+    W = H * ratio;
+    dx = (1280 - W) / 2;
+    dy = 0;
+  }
+  let baseX = dx + W * 0.01;
+  const baseY = dy + H * 0.1;
+  let btnW = H * 0.45;
+  const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+  const offsetY = H * 0.15;
+  const backX = baseX - H * 0.15;
+  const backY = baseY + offsetY * 5 - H * 0.03;
+  return x >= backX && x <= backX + btnW && y >= backY && y <= backY + btnH;
 }
