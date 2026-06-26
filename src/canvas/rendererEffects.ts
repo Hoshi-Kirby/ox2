@@ -12,7 +12,17 @@ let backOffset = 0;
 export function renderEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
-  screen: "title" | "menu" | "menu2" | "help" | "game" | "make" | "result",
+  screen:
+    | "title"
+    | "menu"
+    | "menuOffline"
+    | "menuHelp"
+    | "menuDeck"
+    | "menuSetting"
+    | "help"
+    | "game"
+    | "make"
+    | "result",
   effectTimers: Record<string, number>,
   dt: number,
   hoverStates: HoverUI,
@@ -56,7 +66,55 @@ export function renderEffect(
     const y = dy + H * 0.26 - drawH / 2 + offset;
 
     ctx.drawImage(img, x, y, drawW, drawH);
-  } else if (screen === "menu") {
+  } else if (
+    screen === "menu" ||
+    screen === "menuOffline" ||
+    screen === "menuHelp" ||
+    screen === "menuDeck" ||
+    screen === "menuSetting"
+  ) {
+    let menu2animdx = 0;
+
+    if (screen === "menu") {
+      if (layoutIsWide) {
+        menu2animdx = effectTimers.screenTransition;
+      } else {
+        menu2animdx = effectTimers.screenTransition * 2;
+      }
+      if (effectTimers.screenTransition > 0) {
+        if (layoutIsWide) {
+          ctx.drawImage(
+            assets.leftWhite,
+            -400 - menu2animdx,
+            0,
+            1280 + 400,
+            720,
+          );
+        } else {
+          ctx.drawImage(assets.leftWhite, 0 - menu2animdx, 0, 1280 + 400, 720);
+        }
+      }
+    } else {
+      if (layoutIsWide) {
+        menu2animdx = 200 - effectTimers.screenTransition;
+      } else {
+        menu2animdx = 400 - effectTimers.screenTransition * 2;
+      }
+      if (effectTimers.screenTransition > 0) {
+        if (layoutIsWide) {
+          ctx.drawImage(
+            assets.leftWhite,
+            -400 - menu2animdx,
+            0,
+            1280 + 400,
+            720,
+          );
+        } else {
+          ctx.drawImage(assets.leftWhite, 0 - menu2animdx, 0, 1280 + 400, 720);
+        }
+      }
+    }
+
     let baseX = dx + W * 0.01;
     const baseY = dy + H * 0.1;
 
@@ -71,9 +129,17 @@ export function renderEffect(
       offsetX = 0;
     }
     const offsetY = H * 0.15; // 縦の間隔
+    const menu2IndexMap: Record<string, number> = {
+      menuOffline: 0,
+      menuSetting: 2,
+      menuHelp: 3,
+      menuDeck: 4,
+    };
+
+    const selectedIndex = menu2IndexMap[screen] ?? null;
 
     for (let i = 0; i < 5; i++) {
-      if (hoverStates.menu[i]) {
+      if (hoverStates.menu[i] || i == selectedIndex) {
         menuOffsets[i] = Math.min(btnW * 0.1, menuOffsets[i] + dt * 0.4);
       } else {
         menuOffsets[i] = Math.max(0, menuOffsets[i] - dt * 0.6);
@@ -81,7 +147,7 @@ export function renderEffect(
       const x = baseX + offsetX * i + menuOffsets[i];
       const y = baseY + offsetY * i;
 
-      ctx.drawImage(assets.buttonFrame1, x, y, btnW, btnH);
+      ctx.drawImage(assets.buttonFrame1, x - menu2animdx, y, btnW, btnH);
       const textImg = assets.menuText[i];
       if (textImg) {
         const textH = btnH * 0.8;
@@ -89,7 +155,7 @@ export function renderEffect(
         const textX = x + btnW * 0.5 - textW * 0.5;
         const textY = y + btnH * 0.1;
 
-        ctx.drawImage(textImg, textX, textY, textW, textH);
+        ctx.drawImage(textImg, textX - menu2animdx, textY, textW, textH);
       }
     }
 

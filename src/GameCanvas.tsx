@@ -14,6 +14,7 @@ export default function GameCanvas() {
     fadeOut: 0,
     fadeIn: 0,
     leftWhiteSlide: 0,
+    screenTransition: 0,
   });
 
   type HoverUI = {
@@ -39,7 +40,16 @@ export default function GameCanvas() {
   const hoverStatesRef = useRef(hoverStates);
 
   const [screen, setScreen] = useState<
-    "title" | "menu" | "menu2" | "help" | "game" | "make" | "result"
+    | "title"
+    | "menu"
+    | "menuOffline"
+    | "menuHelp"
+    | "menuDeck"
+    | "menuSetting"
+    | "help"
+    | "game"
+    | "make"
+    | "result"
   >("title");
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
@@ -83,10 +93,22 @@ export default function GameCanvas() {
   useEffect(() => {
     const canvas = uiRef.current;
     if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
+    setTimeout(() => {
+      const canvas2 = uiRef.current;
+      if (!canvas2) return;
+      const ctx2 = canvas2.getContext("2d")!;
+      renderUI(ctx2, ratio, screen, effectTimers.current, hoverStates);
+    }, 200);
+  }, [screen]);
+  useEffect(() => {
+    const canvas = uiRef.current;
+    if (!canvas) return;
 
     const ctx = canvas.getContext("2d")!;
     renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
-  }, [ratio, screen, hoverStates]);
+  }, [ratio, hoverStates]);
 
   // effect：毎フレーム描く（アニメーション）
   useEffect(() => {
@@ -135,8 +157,8 @@ export default function GameCanvas() {
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
 
-      if (isInsideStartButton(x, y, ratio)) {
-        if (screen === "title") {
+      if (screen === "title") {
+        if (isInsideStartButton(x, y, ratio)) {
           effectTimers.current.fadeIn = 300;
           effectTimers.current.fadeOut = 600;
 
@@ -144,6 +166,52 @@ export default function GameCanvas() {
             setScreen("menu");
             effectTimers.current.fadeOut = 300;
           }, 300);
+        }
+      }
+      if (screen === "menu") {
+        for (let i = 0; i < 5; i++) {
+          if (isInsideMenuButton(i, x, y, ratio)) {
+            if (i === 1) {
+            } else {
+              switch (i) {
+                case 0:
+                  setScreen("menuOffline");
+                  break;
+                case 1:
+                  break;
+                case 2:
+                  setScreen("menuSetting");
+                  break;
+                case 3:
+                  setScreen("menuHelp");
+                  break;
+                case 4:
+                  setScreen("menuDeck");
+                  break;
+              }
+              effectTimers.current.screenTransition = 200;
+            }
+          }
+        }
+        if (isInsideBackButton(x, y, ratio)) {
+          effectTimers.current.fadeIn = 300;
+          effectTimers.current.fadeOut = 600;
+
+          setTimeout(() => {
+            setScreen("title");
+            effectTimers.current.fadeOut = 300;
+          }, 300);
+        }
+      }
+      if (
+        screen === "menuOffline" ||
+        screen === "menuHelp" ||
+        screen === "menuDeck" ||
+        screen === "menuSetting"
+      ) {
+        if (isInsideBackButton(x, y, ratio)) {
+          effectTimers.current.screenTransition = 200;
+          setScreen("menu");
         }
       }
     };
@@ -191,21 +259,17 @@ export default function GameCanvas() {
       for (let i = 0; i < hoverStates.menu.length; i++) {
         const insideMenu = isInsideMenuButton(i, x, y, ratio);
 
-        if (deviceMode === "mouse") {
-          if (hoverStatesRef.current.menu[i] !== insideMenu) {
-            setHoverStates((prev) => ({
-              ...prev,
-              menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
-            }));
-          }
+        if (hoverStatesRef.current.menu[i] !== insideMenu) {
+          setHoverStates((prev) => ({
+            ...prev,
+            menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
+          }));
         }
       }
       // back
       const insideBack = isInsideBackButton(x, y, ratio);
-      if (deviceMode === "mouse") {
-        if (hoverStatesRef.current.back !== insideBack) {
-          setHoverStates((prev) => ({ ...prev, back: insideBack }));
-        }
+      if (hoverStatesRef.current.back !== insideBack) {
+        setHoverStates((prev) => ({ ...prev, back: insideBack }));
       }
 
       requestAnimationFrame(hoverLoop);
