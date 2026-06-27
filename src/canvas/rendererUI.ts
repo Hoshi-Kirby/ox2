@@ -58,26 +58,10 @@ export function renderUI(
     ctx.drawImage(img, x, y, btnW, btnH);
   }
   if (screen === "menu") {
-    if (effectTimers.screenTransition < 100) {
-      if (layoutIsWide) {
-        ctx.drawImage(assets.leftWhite, -400, 0, 1280 + 400, 720);
-      } else {
-        ctx.drawImage(assets.leftWhite, 0, 0, 1280 + 400, 720);
-      }
-    }
-  }
-  if (
-    screen === "menuOffline" ||
-    screen === "menuHelp" ||
-    screen === "menuDeck" ||
-    screen === "menuSetting"
-  ) {
-    if (effectTimers.screenTransition < 100) {
-      if (layoutIsWide) {
-        ctx.drawImage(assets.leftWhite, -600, 0, 1280 + 400, 720);
-      } else {
-        ctx.drawImage(assets.leftWhite, -400, 0, 1280 + 400, 720);
-      }
+    if (layoutIsWide) {
+      ctx.drawImage(assets.leftWhite, -400, 0, 1280 + 400, 720);
+    } else {
+      ctx.drawImage(assets.leftWhite, 0, 0, 1280 + 400, 720);
     }
   }
 }

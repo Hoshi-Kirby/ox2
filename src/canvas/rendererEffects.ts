@@ -74,49 +74,73 @@ export function renderEffect(
     screen === "menuSetting"
   ) {
     let menu2animdx = 0;
+    let menu2animdy = 0;
+    let menu2animdxMax = 0;
 
-    if (screen === "menu") {
-      if (layoutIsWide) {
-        menu2animdx = effectTimers.screenTransition;
-      } else {
-        menu2animdx = effectTimers.screenTransition * 2;
-      }
-      if (effectTimers.screenTransition > 0) {
-        if (layoutIsWide) {
-          ctx.drawImage(
-            assets.leftWhite,
-            -400 - menu2animdx,
-            0,
-            1280 + 400,
-            720,
-          );
-        } else {
-          ctx.drawImage(assets.leftWhite, 0 - menu2animdx, 0, 1280 + 400, 720);
-        }
-      }
-    } else {
+    if (screen !== "menu") {
       if (layoutIsWide) {
         menu2animdx = 200 - effectTimers.screenTransition;
-      } else {
-        menu2animdx = 400 - effectTimers.screenTransition * 2;
-      }
-      if (effectTimers.screenTransition > 0) {
-        if (layoutIsWide) {
-          ctx.drawImage(
-            assets.leftWhite,
-            -400 - menu2animdx,
-            0,
-            1280 + 400,
-            720,
-          );
-        } else {
-          ctx.drawImage(assets.leftWhite, 0 - menu2animdx, 0, 1280 + 400, 720);
+        menu2animdy =
+          dx + W - 300 - (effectTimers.screenTransition * (dx + W - 300)) / 200;
+        if (
+          effectTimers.screenTransition == 0 &&
+          effectTimers.menu2Transition > 0
+        ) {
+          menu2animdx -= 200 - effectTimers.menu2Transition + 100;
+          menu2animdy -=
+            dx +
+            W -
+            300 -
+            ((effectTimers.menu2Transition - 100) * (dx + W - 300)) / 200;
         }
+
+        ctx.drawImage(assets.leftWhite, -400 - menu2animdx, 0, 1280 + 400, 720);
+        ctx.drawImage(
+          assets.rightBlack,
+          dx + W - 300 - menu2animdy,
+          0,
+          1280,
+          720,
+        );
+      } else {
+        menu2animdx =
+          (200 - effectTimers.screenTransition) * 3 * (ratio / 1.2) ** 0.4;
+        menu2animdy =
+          (dx +
+            W -
+            200 -
+            (effectTimers.screenTransition * (dx + W - 200)) / 200) *
+          (ratio / 1.2) ** 0.4;
+        menu2animdxMax = 200 * 3 * (ratio / 1.2) ** 0.4;
+        if (
+          effectTimers.screenTransition == 0 &&
+          effectTimers.menu2Transition > 0
+        ) {
+          menu2animdx -=
+            (200 - effectTimers.menu2Transition + 100) *
+            3 *
+            (ratio / 1.2) ** 0.4;
+          menu2animdy -=
+            (dx +
+              W -
+              200 -
+              ((effectTimers.menu2Transition - 100) * (dx + W - 200)) / 200) *
+            (ratio / 1.2) ** 0.4;
+        }
+
+        ctx.drawImage(assets.leftWhite, 0 - menu2animdx, 0, 1280 + 400, 720);
+        ctx.drawImage(
+          assets.rightBlack,
+          dx + W - 300 - menu2animdy,
+          0,
+          1280,
+          720,
+        );
       }
     }
 
     let baseX = dx + W * 0.01;
-    const baseY = dy + H * 0.1;
+    let baseY = dy + H * 0.1;
 
     let btnW = H * 0.45;
     const btnH =
@@ -126,6 +150,7 @@ export function renderEffect(
     if (!layoutIsWide) {
       btnW = H * 0.4;
       baseX = dx + W * 0.5 - btnW / 2;
+      baseY = dy + H * 0.2;
       offsetX = 0;
     }
     const offsetY = H * 0.15; // 縦の間隔
@@ -158,15 +183,41 @@ export function renderEffect(
         ctx.drawImage(textImg, textX - menu2animdx, textY, textW, textH);
       }
     }
+    if (!layoutIsWide && screen !== "menu") {
+      const qBtnW = W * 0.16;
+      const qBtnH =
+        qBtnW * (assets.quickMenu[0].height / assets.quickMenu[0].width);
+      const margin = W * 0.02;
+
+      const totalWidth = qBtnW * 5 + margin * 4;
+      const qBaseX = dx + (W - totalWidth) / 2;
+      const qBaseY = dy + H * 0.9 - qBtnH;
+
+      for (let i = 0; i < 5; i++) {
+        const img = assets.quickMenu[i];
+        if (!img) continue;
+        let y = qBaseY;
+        if (i == selectedIndex) {
+          y = qBaseY - 0.01 * H;
+        }
+
+        const x = qBaseX + i * (qBtnW + margin);
+
+        ctx.drawImage(img, x, y + menu2animdxMax - menu2animdx, qBtnW, qBtnH);
+      }
+    }
 
     if (hoverStates.back) {
       backOffset = Math.min(btnW * 0.1, backOffset + dt * 0.4);
     } else {
       backOffset = Math.max(0, backOffset - dt * 0.6);
     }
-    const backX = baseX - H * 0.2;
-    const backY = baseY + offsetY * 5 - H * 0.03;
-
+    let backX = baseX - H * 0.2;
+    let backY = baseY + offsetY * 5 - H * 0.03;
+    if (!layoutIsWide) {
+      backX = dx - btnW / 2;
+      backY = baseY = dy + H * 0.05;
+    }
     ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
     const backImg = assets.backText;
     if (backImg) {

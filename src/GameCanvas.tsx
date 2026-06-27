@@ -15,6 +15,7 @@ export default function GameCanvas() {
     fadeIn: 0,
     leftWhiteSlide: 0,
     screenTransition: 0,
+    menu2Transition: 0,
   });
 
   type HoverUI = {
@@ -54,7 +55,7 @@ export default function GameCanvas() {
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("mouse");
+  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("touch");
 
   useEffect(() => {
     const onResize = () => {
@@ -209,9 +210,41 @@ export default function GameCanvas() {
         screen === "menuDeck" ||
         screen === "menuSetting"
       ) {
+        for (let i = 0; i < 5; i++) {
+          if (
+            (ratio > 1.2 && isInsideMenuButton(i, x + 200, y, ratio)) ||
+            (ratio <= 1.2 && isInsideQuickMenuButton(i, x, y, ratio))
+          ) {
+            effectTimers.current.menu2Transition = 300;
+            setTimeout(() => {
+              if (i === 1) {
+              } else {
+                switch (i) {
+                  case 0:
+                    setScreen("menuOffline");
+                    break;
+                  case 1:
+                    break;
+                  case 2:
+                    setScreen("menuSetting");
+                    break;
+                  case 3:
+                    setScreen("menuHelp");
+                    break;
+                  case 4:
+                    setScreen("menuDeck");
+                    break;
+                }
+                effectTimers.current.screenTransition = 200;
+              }
+            }, 200);
+          }
+        }
         if (isInsideBackButton(x, y, ratio)) {
-          effectTimers.current.screenTransition = 200;
-          setScreen("menu");
+          effectTimers.current.menu2Transition = 300;
+          setTimeout(() => {
+            setScreen("menu");
+          }, 180);
         }
       }
     };
@@ -257,7 +290,10 @@ export default function GameCanvas() {
       }
       // menu
       for (let i = 0; i < hoverStates.menu.length; i++) {
-        const insideMenu = isInsideMenuButton(i, x, y, ratio);
+        let insideMenu = isInsideMenuButton(i, x + 200, y, ratio);
+        if (screen === "menu") {
+          insideMenu = isInsideMenuButton(i, x, y, ratio);
+        }
 
         if (hoverStatesRef.current.menu[i] !== insideMenu) {
           setHoverStates((prev) => ({
@@ -280,7 +316,7 @@ export default function GameCanvas() {
     return () => {
       running = false;
     };
-  }, [ratio, deviceMode]);
+  }, [ratio, screen, deviceMode]);
 
   // マウス座標
   useEffect(() => {
@@ -412,13 +448,14 @@ function isInsideMenuButton(
   }
   const layoutIsWide = ratio > 1.2;
   let baseX = dx + W * 0.01;
-  const baseY = dy + H * 0.1;
+  let baseY = dy + H * 0.1;
   let btnW = H * 0.45;
   const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
   let offsetX = H * 0.053;
   if (!layoutIsWide) {
     btnW = H * 0.4;
     baseX = dx + W * 0.5 - btnW / 2;
+    baseY = dy + H * 0.2; // ← rendererUI と同じ
     offsetX = 0;
   }
   const offsetY = H * 0.15;
@@ -426,7 +463,12 @@ function isInsideMenuButton(
   const btnY = baseY + offsetY * index;
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
 }
-function isInsideBackButton(x: number, y: number, ratio: number): boolean {
+function isInsideQuickMenuButton(
+  index: number,
+  x: number,
+  y: number,
+  ratio: number,
+): boolean {
   const canvasW = 1280;
   const canvasH = 720;
   const canvasRatio = canvasW / canvasH;
@@ -442,12 +484,48 @@ function isInsideBackButton(x: number, y: number, ratio: number): boolean {
     dx = (1280 - W) / 2;
     dy = 0;
   }
+  const layoutIsWide = ratio > 1.2;
+  if (layoutIsWide) return false;
+  const qBtnW = W * 0.16;
+  const qBtnH =
+    qBtnW * (assets.quickMenu[0].height / assets.quickMenu[0].width);
+  const margin = W * 0.02;
+  const totalWidth = qBtnW * 5 + margin * 4;
+  const qBaseX = dx + (W - totalWidth) / 2;
+  const qBaseY = dy + H * 0.9 - qBtnH;
+  const btnX = qBaseX + index * (qBtnW + margin);
+  let btnY = qBaseY;
+  return x >= btnX && x <= btnX + qBtnW && y >= btnY && y <= btnY + qBtnH;
+}
+
+function isInsideBackButton(x: number, y: number, ratio: number): boolean {
+  const canvasW = 1280;
+  const canvasH = 720;
+  const canvasRatio = canvasW / canvasH;
+
+  let W, H, dx, dy;
+  if (ratio > canvasRatio) {
+    W = 1280;
+    H = W / ratio;
+    dy = (720 - H) / 2;
+    dx = 0;
+  } else {
+    H = 720;
+    W = H * ratio;
+    dx = (1280 - W) / 2;
+    dy = 0;
+  }
+  const layoutIsWide = ratio > 1.2;
   let baseX = dx + W * 0.01;
-  const baseY = dy + H * 0.1;
+  let baseY = dy + H * 0.1;
   let btnW = H * 0.45;
   const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
   const offsetY = H * 0.15;
-  const backX = baseX - H * 0.15;
-  const backY = baseY + offsetY * 5 - H * 0.03;
+  let backX = baseX - H * 0.15;
+  let backY = baseY + offsetY * 5 - H * 0.03;
+  if (!layoutIsWide) {
+    backX = dx - btnW / 2;
+    backY = dy + H * 0.05;
+  }
   return x >= backX && x <= backX + btnW && y >= backY && y <= backY + btnH;
 }
