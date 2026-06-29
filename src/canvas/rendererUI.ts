@@ -18,7 +18,7 @@ export function renderUI(
   effectTimers: Record<string, number>,
   hoverStates: Record<string, boolean | boolean[]>,
 ) {
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
 
   const canvasW = 1280;
@@ -38,6 +38,7 @@ export function renderUI(
   }
   const layoutIsWide = ratio > 1.2;
   if (screen === "title") {
+    ctx.imageSmoothingEnabled = false;
     let img = assets.btnStart;
     let btnW, btnH;
 

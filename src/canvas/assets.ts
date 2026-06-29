@@ -12,6 +12,8 @@ export const assets = {
   menuText: [] as HTMLImageElement[],
   backText: new Image(),
   quickMenu: [] as HTMLImageElement[],
+  gameSettingUI: new Image(),
+  settingText: new Image(),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -43,3 +45,5 @@ assets.quickMenu[3] = new Image();
 assets.quickMenu[3].src = "/assets/button/makedeck_button.png";
 assets.quickMenu[4] = new Image();
 assets.quickMenu[4].src = "/assets/button/setting_button.png";
+assets.gameSettingUI.src = "/assets/ui/gamesetting.png";
+assets.settingText.src = "/assets/ui/setting_text.png";

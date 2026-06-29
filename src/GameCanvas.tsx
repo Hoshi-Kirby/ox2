@@ -55,12 +55,56 @@ export default function GameCanvas() {
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const [deviceMode, setDeviceMode] = useState<"mouse" | "touch">("touch");
+  type Settings = {
+    ui: {
+      bgmEnabled: boolean;
+      seEnabled: boolean;
+      deviceMode: "mouse" | "touch";
+    };
+
+    game: {
+      gameMode: "pvc" | "pvp" | "online";
+      initialHand: number;
+      firstPlayer: number;
+      eventEnabled: boolean;
+      shiftCardEnabled: boolean;
+      deck1: number[];
+      deck2: number[];
+      deck3: number[];
+      selectedDeckP1: number;
+      selectedDeckP2: number;
+    };
+  };
+  const settingsRef = useRef<Settings>({
+    ui: {
+      bgmEnabled: true,
+      seEnabled: true,
+      deviceMode: "mouse",
+    },
+
+    game: {
+      gameMode: "pvc",
+      initialHand: 5,
+      firstPlayer: 1,
+      eventEnabled: true,
+      shiftCardEnabled: false,
+      deck1: [],
+      deck2: [],
+      deck3: [],
+      selectedDeckP1: 0,
+      selectedDeckP2: 0,
+    },
+  });
 
   useEffect(() => {
     const onResize = () => {
       setRatio(window.innerWidth / window.innerHeight);
     };
+    if (window.innerWidth / window.innerHeight > 1.2) {
+      settingsRef.current.ui.deviceMode = "mouse";
+    } else {
+      settingsRef.current.ui.deviceMode = "touch";
+    }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -71,7 +115,7 @@ export default function GameCanvas() {
     const block = (e: Event) => e.preventDefault();
 
     canvas.addEventListener("contextmenu", block);
-    canvas.addEventListener("selectstart", block); // テキスト選択開始も潰す
+    canvas.addEventListener("selectstart", block);
 
     return () => {
       canvas.removeEventListener("contextmenu", block);
@@ -134,6 +178,7 @@ export default function GameCanvas() {
         effectTimers.current,
         dt,
         hoverStatesRef.current,
+        settingsRef.current,
       );
 
       requestAnimationFrame(loop);
@@ -181,13 +226,13 @@ export default function GameCanvas() {
                 case 1:
                   break;
                 case 2:
-                  setScreen("menuSetting");
-                  break;
-                case 3:
                   setScreen("menuHelp");
                   break;
-                case 4:
+                case 3:
                   setScreen("menuDeck");
+                  break;
+                case 4:
+                  setScreen("menuSetting");
                   break;
               }
               effectTimers.current.screenTransition = 200;
@@ -226,13 +271,13 @@ export default function GameCanvas() {
                   case 1:
                     break;
                   case 2:
-                    setScreen("menuSetting");
-                    break;
-                  case 3:
                     setScreen("menuHelp");
                     break;
-                  case 4:
+                  case 3:
                     setScreen("menuDeck");
+                    break;
+                  case 4:
+                    setScreen("menuSetting");
                     break;
                 }
                 effectTimers.current.screenTransition = 200;
@@ -266,7 +311,7 @@ export default function GameCanvas() {
 
       // start
       const insideStart = isInsideStartButton(x, y, ratio);
-      if (deviceMode === "mouse") {
+      if (settingsRef.current.ui.deviceMode === "mouse") {
         if (hoverStatesRef.current.startButton !== insideStart) {
           setHoverStates((prev) => ({ ...prev, startButton: insideStart }));
         }
@@ -316,7 +361,7 @@ export default function GameCanvas() {
     return () => {
       running = false;
     };
-  }, [ratio, screen, deviceMode]);
+  }, [ratio, screen, settingsRef.current.ui.deviceMode]);
 
   // マウス座標
   useEffect(() => {
