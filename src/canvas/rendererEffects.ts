@@ -168,7 +168,7 @@ export function renderEffect(
       let menu2W = 0,
         menu2H = 0,
         menu2Y = 0;
-      if (ratio > 1.2) {
+      if (layoutIsWide) {
         menu2W = dx + W - menu2X - 100;
         menu2H = Math.min(
           H * 0.9,
@@ -198,10 +198,116 @@ export function renderEffect(
           menu2W / 2 -
           (1 - menu2animdx / menu2animdxMax) * H;
       }
+      // menu2表示
       if (screen === "menuOffline") {
         ctx.drawImage(assets.gameSettingUI, menu2X, menu2Y, menu2W, menu2H);
       } else if (screen === "menuSetting") {
         ctx.drawImage(assets.settingText, menu2X, menu2Y, menu2W, menu2H);
+        if (settingsRef.ui.bgmEnabled) {
+          ctx.drawImage(
+            assets.trueActive,
+            menu2X + menu2W * 0.5,
+            menu2Y + menu2H * 0.12,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falsePassive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.12,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        } else {
+          ctx.drawImage(
+            assets.truePassive,
+            menu2X + menu2W * 0.5,
+            menu2Y + menu2H * 0.12,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falseActive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.12,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        }
+        if (settingsRef.ui.seEnabled) {
+          ctx.drawImage(
+            assets.trueActive,
+            menu2X + menu2W * 0.5,
+            menu2Y + menu2H * 0.29,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falsePassive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.29,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        } else {
+          ctx.drawImage(
+            assets.truePassive,
+            menu2X + menu2W * 0.5,
+            menu2Y + menu2H * 0.29,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falseActive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.29,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        }
+        if (settingsRef.ui.deviceMode === "mouse") {
+          ctx.drawImage(
+            assets.clickActive,
+            menu2X + menu2W * 0.4,
+            menu2Y + menu2H * 0.47,
+            (menu2H * 0.13) /
+              (assets.clickPassive.height / assets.clickPassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.tapPassive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.47,
+            (menu2H * 0.13) /
+              (assets.clickPassive.height / assets.clickPassive.width),
+            menu2H * 0.13,
+          );
+        } else {
+          ctx.drawImage(
+            assets.clickPassive,
+            menu2X + menu2W * 0.4,
+            menu2Y + menu2H * 0.47,
+            (menu2H * 0.13) /
+              (assets.clickPassive.height / assets.clickPassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.tapActive,
+            menu2X + menu2W * 0.7,
+            menu2Y + menu2H * 0.47,
+            (menu2H * 0.13) /
+              (assets.clickPassive.height / assets.clickPassive.width),
+            menu2H * 0.13,
+          );
+        }
       }
     }
 

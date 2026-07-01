@@ -14,6 +14,14 @@ export const assets = {
   quickMenu: [] as HTMLImageElement[],
   gameSettingUI: new Image(),
   settingText: new Image(),
+  truePassive: new Image(),
+  trueActive: new Image(),
+  falsePassive: new Image(),
+  falseActive: new Image(),
+  clickPassive: new Image(),
+  clickActive: new Image(),
+  tapPassive: new Image(),
+  tapActive: new Image(),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -47,3 +55,11 @@ assets.quickMenu[4] = new Image();
 assets.quickMenu[4].src = "/assets/button/setting_button.png";
 assets.gameSettingUI.src = "/assets/ui/gamesetting.png";
 assets.settingText.src = "/assets/ui/setting_text.png";
+assets.truePassive.src = "/assets/button/true_passive.png";
+assets.trueActive.src = "/assets/button/true_active.png";
+assets.falsePassive.src = "/assets/button/false_passive.png";
+assets.falseActive.src = "/assets/button/false_active.png";
+assets.clickPassive.src = "/assets/button/click_passive.png";
+assets.clickActive.src = "/assets/button/click_active.png";
+assets.tapPassive.src = "/assets/button/tap_passive.png";
+assets.tapActive.src = "/assets/button/tap_active.png";
