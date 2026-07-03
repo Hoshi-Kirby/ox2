@@ -22,6 +22,9 @@ export const assets = {
   clickActive: new Image(),
   tapPassive: new Image(),
   tapActive: new Image(),
+
+  bgmTitle: new Audio("/assets/bgm/title.mp3"),
+  bgmMenu: new Audio("/assets/bgm/main_menu.mp3"),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -63,3 +66,27 @@ assets.clickPassive.src = "/assets/button/click_passive.png";
 assets.clickActive.src = "/assets/button/click_active.png";
 assets.tapPassive.src = "/assets/button/tap_passive.png";
 assets.tapActive.src = "/assets/button/tap_active.png";
+
+assets.bgmTitle.loop = true;
+assets.bgmMenu.loop = true;
+assets.bgmTitle.volume = 0.05;
+assets.bgmMenu.volume = 0.03;
+
+// const cache: Record<string, HTMLImageElement> = {};
+
+// export function loadImage(path: string): Promise<HTMLImageElement> {
+//   return new Promise((resolve) => {
+//     if (cache[path]) {
+//       resolve(cache[path]);
+//       return;
+//     }
+
+//     const img = new Image();
+//     img.src = path;
+
+//     img.onload = () => {
+//       cache[path] = img;
+//       resolve(img);
+//     };
+//   });
+// }

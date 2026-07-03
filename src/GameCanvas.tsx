@@ -4,6 +4,7 @@ import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderUI } from "./canvas/rendererUI";
 import { assets } from "./canvas/assets";
+import { playBgm, startBgm, stopBgm } from "./audioManager";
 import "./GameCanvas.css";
 export default function GameCanvas() {
   const frameRef = useRef<HTMLCanvasElement>(null);
@@ -95,6 +96,9 @@ export default function GameCanvas() {
       selectedDeckP2: 0,
     },
   });
+  const [bgmEnabled, setBgmEnabled] = useState(
+    settingsRef.current.ui.bgmEnabled,
+  );
 
   useEffect(() => {
     const onResize = () => {
@@ -295,9 +299,11 @@ export default function GameCanvas() {
       if (screen === "menuSetting") {
         if (isInsideBgmTrue(x, y, ratio)) {
           settingsRef.current.ui.bgmEnabled = true;
+          setBgmEnabled(true);
         }
         if (isInsideBgmFalse(x, y, ratio)) {
           settingsRef.current.ui.bgmEnabled = false;
+          setBgmEnabled(false);
         }
         if (isInsideSeTrue(x, y, ratio)) {
           settingsRef.current.ui.seEnabled = true;
@@ -407,6 +413,33 @@ export default function GameCanvas() {
     };
   }, []);
 
+  // BGM
+  useEffect(() => {
+    let bgm = assets.bgmMenu;
+    switch (screen) {
+      case "title":
+        bgm = assets.bgmTitle;
+        break;
+      case "menu":
+        bgm = assets.bgmMenu;
+        break;
+
+      case "game":
+        break;
+    }
+
+    playBgm(bgm);
+
+    if (settingsRef.current.ui.bgmEnabled) {
+      startBgm();
+    } else {
+      stopBgm();
+    }
+    console.log("screen:", screen);
+    console.log("bgmEnabled:", settingsRef.current.ui.bgmEnabled);
+    console.log("bgm:", bgm.src);
+  }, [screen, bgmEnabled]);
+
   return (
     <div className="canvas-container">
       <canvas
@@ -461,6 +494,7 @@ function updateEffectsTimer(dt: number, timers: Record<string, number>) {
     }
   }
 }
+
 function isInsideStartButton(x: number, y: number, ratio: number): boolean {
   const canvasW = 1280;
   const canvasH = 720;
