@@ -9,6 +9,7 @@ import {
   isInsideSeFalse,
   isInsideDeviceMouse,
   isInsideDeviceTouch,
+  isInsideMenu2DeckButton,
 } from "./hitTest";
 import type { Screen } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -158,6 +159,17 @@ export function createClickHandler({
       }
       if (isInsideDeviceTouch(x, y, ratio)) {
         settingsRef.current.ui.deviceMode = "touch";
+      }
+    }
+
+    // ------------------------------
+    // MENU DECK
+    // ------------------------------
+    if (screen === "menuDeck") {
+      for (let i = 0; i < 3; i++) {
+        if (isInsideMenu2DeckButton(i, x, y, ratio)) {
+          settingsRef.current.ui.deckSelected = i;
+        }
       }
     }
   };

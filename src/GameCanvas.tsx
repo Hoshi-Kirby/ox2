@@ -32,6 +32,7 @@ export type Settings = {
     bgmEnabled: boolean;
     seEnabled: boolean;
     deviceMode: "mouse" | "touch";
+    deckSelected: number;
   };
 
   game: {
@@ -103,6 +104,7 @@ export default function GameCanvas() {
       bgmEnabled: true,
       seEnabled: true,
       deviceMode: "mouse",
+      deckSelected: 0,
     },
 
     game: {

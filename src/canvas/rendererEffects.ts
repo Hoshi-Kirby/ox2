@@ -209,11 +209,12 @@ export function renderEffect(
           }
 
           const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
+          const lift = settingsRef.ui.deckSelected === i ? -menu2H * 0.02 : 0;
 
           ctx.drawImage(
             img,
             menu2X + menu2W * (0.2 + i * 0.25) + shake,
-            menu2Y + menu2H * 0.4,
+            menu2Y + menu2H * 0.4 + lift,
             (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width),
             menu2H * 0.1,
           );
