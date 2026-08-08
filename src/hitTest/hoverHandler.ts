@@ -81,18 +81,16 @@ export function createHoverHandler({
     // ------------------------------
     // MENU BUTTONS
     // ------------------------------
-    for (let i = 0; i < hoverStatesRef.current.menu.length; i++) {
-      let insideMenu = isInsideMenuButton(i, x + 200, y, ratio);
+    if (screen === "menu") {
+      for (let i = 0; i < hoverStatesRef.current.menu.length; i++) {
+        const insideMenu = isInsideMenuButton(i, x, y, ratio);
 
-      if (screen === "menu") {
-        insideMenu = isInsideMenuButton(i, x, y, ratio);
-      }
-
-      if (hoverStatesRef.current.menu[i] !== insideMenu) {
-        setHoverStates((prev) => ({
-          ...prev,
-          menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
-        }));
+        if (hoverStatesRef.current.menu[i] !== insideMenu) {
+          setHoverStates((prev) => ({
+            ...prev,
+            menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
+          }));
+        }
       }
     }
 
@@ -109,18 +107,18 @@ export function createHoverHandler({
     // DECK BUTTON
     // ------------------------------
     if (screen === "menuDeck") {
-      setHoverStates((prev) => {
-        const newStates = [...prev.menuDeck];
+      for (let i = 0; i < hoverStatesRef.current.menuDeck.length; i++) {
+        const insideDeck = isInsideMenu2DeckButton(i, x, y, ratio);
 
-        for (let i = 0; i < 3; i++) {
-          newStates[i] = isInsideMenu2DeckButton(i, x, y, ratio);
+        if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {
+          setHoverStates((prev) => ({
+            ...prev,
+            menuDeck: prev.menuDeck.map((v, idx) =>
+              idx === i ? insideDeck : v,
+            ),
+          }));
         }
-
-        return {
-          ...prev,
-          menuDeck: newStates,
-        };
-      });
+      }
     }
 
     requestAnimationFrame(loop);

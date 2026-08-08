@@ -202,11 +202,17 @@ export function renderEffect(
           const color = colors[i];
           const img = deckImageMap[color];
 
+          if (hoverStates.menuDeck[i]) {
+            deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
+          } else {
+            deckOffset[i] = 0;
+          }
+
+          const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
+
           ctx.drawImage(
             img,
-            menu2X +
-              menu2W * (0.2 + i * 0.25) +
-              Math.sin(deckOffset[i] * 0.4) * (menu2W * 0.01),
+            menu2X + menu2W * (0.2 + i * 0.25) + shake,
             menu2Y + menu2H * 0.4,
             (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width),
             menu2H * 0.1,

@@ -224,11 +224,13 @@ export function isInsideMenu2DeckButton(
   y: number,
   ratio: number,
 ) {
-  const { W, H, dx, dy } = computeLayout(ratio);
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
 
-  const btnX = dx + W * (0.2 + index * 0.25);
-  const btnY = dy + H * 0.4;
-  const btnW = (H * 0.1) / (assets.deckw.height / assets.deckw.width);
-  const btnH = H * 0.1;
+  const btnX = menu2X + menu2W * (0.2 + index * 0.25);
+  const btnY = menu2Y + menu2H * 0.4;
+
+  const btnW = (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width);
+  const btnH = menu2H * 0.1;
+
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
 }
