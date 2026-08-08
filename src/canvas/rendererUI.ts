@@ -1,20 +1,11 @@
 // rendererUI.ts
 import { assets } from "./assets";
+import type { Screen } from "../GameCanvas";
 
 export function renderUI(
   ctx: CanvasRenderingContext2D,
   ratio: number,
-  screen:
-    | "title"
-    | "menu"
-    | "menuOffline"
-    | "menuHelp"
-    | "menuDeck"
-    | "menuSetting"
-    | "help"
-    | "game"
-    | "make"
-    | "result",
+  screen: Screen,
   effectTimers: Record<string, number>,
   hoverStates: Record<string, boolean | boolean[]>,
 ) {

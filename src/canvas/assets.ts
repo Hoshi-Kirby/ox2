@@ -22,9 +22,13 @@ export const assets = {
   clickActive: new Image(),
   tapPassive: new Image(),
   tapActive: new Image(),
-
-  bgmTitle: new Audio("/assets/bgm/title.mp3"),
-  bgmMenu: new Audio("/assets/bgm/main_menu.mp3"),
+  editText: new Image(),
+  deckr: new Image(),
+  deckg: new Image(),
+  deckb: new Image(),
+  decky: new Image(),
+  deckw: new Image(),
+  deckn: new Image(),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -66,27 +70,10 @@ assets.clickPassive.src = "/assets/button/click_passive.png";
 assets.clickActive.src = "/assets/button/click_active.png";
 assets.tapPassive.src = "/assets/button/tap_passive.png";
 assets.tapActive.src = "/assets/button/tap_active.png";
-
-assets.bgmTitle.loop = true;
-assets.bgmMenu.loop = true;
-assets.bgmTitle.volume = 0.05;
-assets.bgmMenu.volume = 0.03;
-
-// const cache: Record<string, HTMLImageElement> = {};
-
-// export function loadImage(path: string): Promise<HTMLImageElement> {
-//   return new Promise((resolve) => {
-//     if (cache[path]) {
-//       resolve(cache[path]);
-//       return;
-//     }
-
-//     const img = new Image();
-//     img.src = path;
-
-//     img.onload = () => {
-//       cache[path] = img;
-//       resolve(img);
-//     };
-//   });
-// }
+assets.editText.src = "/assets/ui/edit_text.png";
+assets.deckr.src = "/assets/cards_token/deckr.png";
+assets.deckg.src = "/assets/cards_token/deckg.png";
+assets.decky.src = "/assets/cards_token/decky.png";
+assets.deckb.src = "/assets/cards_token/deckb.png";
+assets.deckw.src = "/assets/cards_token/deckw.png";
+assets.deckn.src = "/assets/cards_token/deckn.png";

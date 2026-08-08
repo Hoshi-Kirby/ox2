@@ -1,20 +1,8 @@
 // src/canvas/rendererFrame.ts
 import { assets } from "./assets";
+import type { Screen } from "../GameCanvas";
 
-export function renderFrame(
-  ctx: CanvasRenderingContext2D,
-  screen:
-    | "title"
-    | "menu"
-    | "menuOffline"
-    | "menuHelp"
-    | "menuDeck"
-    | "menuSetting"
-    | "help"
-    | "game"
-    | "make"
-    | "result",
-) {
+export function renderFrame(ctx: CanvasRenderingContext2D, screen: Screen) {
   const canvas = ctx.canvas;
   const W = canvas.width;
   const H = canvas.height;

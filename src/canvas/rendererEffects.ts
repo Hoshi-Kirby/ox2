@@ -1,48 +1,22 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
+import type { Screen, Settings } from "../GameCanvas";
+
 type HoverUI = {
   startButton: boolean;
   back: boolean;
   menu: boolean[];
-};
-type Settings = {
-  ui: {
-    bgmEnabled: boolean;
-    seEnabled: boolean;
-    deviceMode: "mouse" | "touch";
-  };
-
-  game: {
-    gameMode: "pvc" | "pvp" | "online";
-    initialHand: number;
-    firstPlayer: number;
-    eventEnabled: boolean;
-    shiftCardEnabled: boolean;
-    deck1: number[];
-    deck2: number[];
-    deck3: number[];
-    selectedDeckP1: number;
-    selectedDeckP2: number;
-  };
+  menuDeck: boolean[];
 };
 let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
 let backOffset = 0;
+let deckOffset = [0, 0, 0];
 
 export function renderEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
-  screen:
-    | "title"
-    | "menu"
-    | "menuOffline"
-    | "menuHelp"
-    | "menuDeck"
-    | "menuSetting"
-    | "help"
-    | "game"
-    | "make"
-    | "result",
+  screen: Screen,
   effectTimers: Record<string, number>,
   dt: number,
   hoverStates: HoverUI,
@@ -201,6 +175,51 @@ export function renderEffect(
       // menu2表示
       if (screen === "menuOffline") {
         ctx.drawImage(assets.gameSettingUI, menu2X, menu2Y, menu2W, menu2H);
+      } else if (screen === "menuDeck") {
+        ctx.drawImage(assets.editText, menu2X, menu2Y, menu2W, menu2H);
+
+        const deckImageMap = {
+          blue: assets.deckb,
+          red: assets.deckr,
+          yellow: assets.decky,
+          green: assets.deckg,
+          rainbow: assets.deckn,
+          white: assets.deckw,
+        };
+
+        const colors = [
+          settingsRef.game.deckColor1,
+          settingsRef.game.deckColor2,
+          settingsRef.game.deckColor3,
+        ];
+        const names = [
+          settingsRef.game.deckName1,
+          settingsRef.game.deckName2,
+          settingsRef.game.deckName3,
+        ];
+
+        for (let i = 0; i < 3; i++) {
+          const color = colors[i];
+          const img = deckImageMap[color];
+
+          ctx.drawImage(
+            img,
+            menu2X +
+              menu2W * (0.2 + i * 0.25) +
+              Math.sin(deckOffset[i] * 0.4) * (menu2W * 0.01),
+            menu2Y + menu2H * 0.4,
+            (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width),
+            menu2H * 0.1,
+          );
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.font = `${menu2H * 0.05}px Komorebi`;
+          ctx.fillText(
+            names[i],
+            menu2X + menu2W * (0.2 + 0.06 + i * 0.25),
+            menu2Y + menu2H * 0.55,
+          );
+        }
       } else if (screen === "menuSetting") {
         ctx.drawImage(assets.settingText, menu2X, menu2Y, menu2W, menu2H);
         if (settingsRef.ui.bgmEnabled) {
