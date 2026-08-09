@@ -33,6 +33,8 @@ export type Settings = {
     seEnabled: boolean;
     deviceMode: "mouse" | "touch";
     deckSelected: number;
+    inputLocked: boolean;
+    inputLockedSub: boolean;
   };
 
   game: {
@@ -107,6 +109,8 @@ export default function GameCanvas() {
       seEnabled: true,
       deviceMode: "mouse",
       deckSelected: 0,
+      inputLocked: false,
+      inputLockedSub: false,
     },
 
     game: {
@@ -182,12 +186,6 @@ export default function GameCanvas() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
-    setTimeout(() => {
-      const canvas2 = uiRef.current;
-      if (!canvas2) return;
-      const ctx2 = canvas2.getContext("2d")!;
-      renderUI(ctx2, ratio, screen, effectTimers.current, hoverStates);
-    }, 200);
   }, [screen]);
   useEffect(() => {
     const canvas = uiRef.current;
@@ -308,6 +306,9 @@ export default function GameCanvas() {
         break;
       case "menu":
         bgm = audioAssets.bgmMenu;
+        break;
+      case "make":
+        bgm = audioAssets.bgmMake;
         break;
 
       case "game":

@@ -33,25 +33,51 @@ export function createClickHandler({
   setBgmEnabled,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
+    if (settingsRef.current.ui.inputLocked) {
+      return;
+    }
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
+    if (settingsRef.current.ui.inputLockedSub) {
+      if (
+        (screen === "menuOffline" ||
+          screen === "menuHelp" ||
+          screen === "menuDeck" ||
+          screen === "menuSetting") &&
+        isInsideBackButton(x, y, ratio)
+      ) {
+        effectTimers.fadeIn = 300;
+        effectTimers.fadeOut = 600;
+        settingsRef.current.ui.inputLocked = true;
+        setTimeout(() => {
+          setScreen("title");
+          effectTimers.fadeOut = 300;
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 300);
+        }, 300);
+      }
+      return;
+    }
 
     // ------------------------------
     // TITLE
     // ------------------------------
     if (screen === "title") {
       if (isInsideStartButton(x, y, ratio)) {
+        settingsRef.current.ui.inputLocked = true;
         if (settingsRef.current.ui.seEnabled) {
-          playSe("seStart");
+          playSe("seStart"); //se
         }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
 
         setTimeout(() => {
           setScreen("menu");
+          settingsRef.current.ui.inputLocked = false;
           effectTimers.fadeOut = 300;
         }, 300);
       }
@@ -63,6 +89,8 @@ export function createClickHandler({
     if (screen === "menu") {
       for (let i = 0; i < 5; i++) {
         if (isInsideMenuButton(i, x, y, ratio)) {
+          settingsRef.current.ui.inputLocked = true;
+
           switch (i) {
             case 0:
               setScreen("menuOffline");
@@ -78,6 +106,10 @@ export function createClickHandler({
               break;
           }
           effectTimers.screenTransition = 200;
+
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 200);
         }
       }
 
@@ -85,9 +117,14 @@ export function createClickHandler({
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
 
+        settingsRef.current.ui.inputLocked = true;
         setTimeout(() => {
           setScreen("title");
           effectTimers.fadeOut = 300;
+
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 300);
         }, 300);
       }
     }
@@ -109,6 +146,7 @@ export function createClickHandler({
         if (inside) {
           effectTimers.menu2Transition = 300;
 
+          settingsRef.current.ui.inputLocked = true;
           setTimeout(() => {
             switch (i) {
               case 0:
@@ -125,14 +163,20 @@ export function createClickHandler({
                 break;
             }
             effectTimers.screenTransition = 200;
+
+            setTimeout(() => {
+              settingsRef.current.ui.inputLocked = false;
+            }, 200);
           }, 200);
         }
       }
 
       if (isInsideBackButton(x, y, ratio)) {
         effectTimers.menu2Transition = 300;
+        settingsRef.current.ui.inputLockedSub = true;
         setTimeout(() => {
           setScreen("menu");
+          settingsRef.current.ui.inputLockedSub = false;
         }, 180);
       }
     }
@@ -179,10 +223,32 @@ export function createClickHandler({
         }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
+        settingsRef.current.ui.inputLocked = true;
 
         setTimeout(() => {
           setScreen("make");
           effectTimers.fadeOut = 300;
+          effectTimers.screenTransition = 200;
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 300);
+        }, 300);
+      }
+    }
+
+    // MAKE
+    if (screen === "make") {
+      if (isInsideBackButton(x, y, ratio)) {
+        effectTimers.fadeIn = 300;
+        effectTimers.fadeOut = 600;
+        settingsRef.current.ui.inputLocked = true;
+
+        setTimeout(() => {
+          setScreen("menuDeck");
+          effectTimers.fadeOut = 300;
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 300);
         }, 300);
       }
     }

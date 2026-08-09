@@ -32,6 +32,8 @@ export const assets = {
   btnOrg: new Image(),
   btnOrgHover: new Image(),
   makeBg: new Image(),
+  deckList: new Image(),
+  deckListBar: new Image(),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -83,3 +85,5 @@ assets.deckn.src = "/assets/cards_token/deckn.png";
 assets.btnOrg.src = "/assets/button/organize.png";
 assets.btnOrgHover.src = "/assets/button/organize_hover.png";
 assets.makeBg.src = "/assets/backgrounds/restaurant.png";
+assets.deckList.src = "/assets/ui/deck_list.png";
+assets.deckListBar.src = "/assets/ui/deck_list_bar.png";

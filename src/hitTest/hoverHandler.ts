@@ -120,10 +120,19 @@ export function createHoverHandler({
     // ------------------------------
     // BACK BUTTON
     // ------------------------------
-    const insideBack = isInsideBackButton(x, y, ratio);
+    if (
+      screen === "menu" ||
+      screen === "menuOffline" ||
+      screen === "menuHelp" ||
+      screen === "menuDeck" ||
+      screen === "menuSetting" ||
+      screen === "make"
+    ) {
+      const insideBack = isInsideBackButton(x, y, ratio);
 
-    if (hoverStatesRef.current.back !== insideBack) {
-      setHoverStates((prev) => ({ ...prev, back: insideBack }));
+      if (hoverStatesRef.current.back !== insideBack) {
+        setHoverStates((prev) => ({ ...prev, back: insideBack }));
+      }
     }
 
     // ------------------------------

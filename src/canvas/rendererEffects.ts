@@ -444,7 +444,69 @@ export function renderEffect(
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
     }
+  } else if (screen === "make") {
+    let leftWhiteX;
+
+    if (layoutIsWide) {
+      leftWhiteX = effectTimers.screenTransition - 200;
+      ctx.drawImage(assets.leftWhite, -400 - leftWhiteX, 0, 1280 + 400, 720);
+    } else {
+      leftWhiteX =
+        (100 + effectTimers.screenTransition) * 3 * (ratio / 1.2) ** 0.4;
+      ctx.drawImage(assets.leftWhite, 0 - leftWhiteX, 0, 1280 + 400, 720);
+    }
+
+    if (layoutIsWide) {
+      const deckListH = H * 0.95;
+      const deckListW =
+        deckListH * (assets.deckList.width / assets.deckList.height);
+      ctx.drawImage(
+        assets.deckList,
+        dx + W - deckListW,
+        dy,
+        deckListW,
+        deckListH,
+      );
+
+      ctx.drawImage(
+        assets.deckListBar,
+        dx + W - deckListW,
+        dy,
+        deckListW,
+        deckListH,
+      );
+    }
+
+    let baseX = dx + W * 0.01;
+    let baseY = dy + H * 0.1;
+    let btnW = H * 0.45;
+    const btnH =
+      btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+    const offsetY = H * 0.15;
+
+    if (hoverStates.back) {
+      backOffset = Math.min(btnW * 0.1, backOffset + dt * 0.4);
+    } else {
+      backOffset = Math.max(0, backOffset - dt * 0.6);
+    }
+    let backX = baseX - H * 0.2;
+    let backY = baseY + offsetY * 5 - H * 0.03;
+    if (!layoutIsWide) {
+      backX = dx - btnW / 2;
+      backY = baseY = dy + H * 0.05;
+    }
+    ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
+    const backImg = assets.backText;
+    if (backImg) {
+      const textH = btnH * 0.8;
+      const textW = textH / (backImg.height / backImg.width);
+      const textX = backX + btnW * 0.5;
+      const textY = backY + btnH * 0.1;
+
+      ctx.drawImage(backImg, textX, textY, textW, textH);
+    }
   }
+
   if (effectTimers.fadeIn > 0) {
     ctx.fillStyle = `rgba(0,0,0,${(300 - effectTimers.fadeIn) / 300})`;
     ctx.fillRect(0, 0, 1280, 720);
