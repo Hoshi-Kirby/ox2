@@ -29,6 +29,9 @@ export const assets = {
   decky: new Image(),
   deckw: new Image(),
   deckn: new Image(),
+  btnOrg: new Image(),
+  btnOrgHover: new Image(),
+  makeBg: new Image(),
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -77,3 +80,6 @@ assets.decky.src = "/assets/cards_token/decky.png";
 assets.deckb.src = "/assets/cards_token/deckb.png";
 assets.deckw.src = "/assets/cards_token/deckw.png";
 assets.deckn.src = "/assets/cards_token/deckn.png";
+assets.btnOrg.src = "/assets/button/organize.png";
+assets.btnOrgHover.src = "/assets/button/organize_hover.png";
+assets.makeBg.src = "/assets/backgrounds/restaurant.png";

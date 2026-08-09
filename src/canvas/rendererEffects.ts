@@ -7,6 +7,7 @@ type HoverUI = {
   back: boolean;
   menu: boolean[];
   menuDeck: boolean[];
+  org: boolean;
 };
 let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
@@ -225,6 +226,23 @@ export function renderEffect(
             names[i],
             menu2X + menu2W * (0.2 + 0.06 + i * 0.25),
             menu2Y + menu2H * 0.55,
+          );
+        }
+        if (hoverStates.org) {
+          ctx.drawImage(
+            assets.btnOrgHover,
+            menu2X + menu2W * 0.35,
+            menu2Y + menu2H * 0.8,
+            menu2W * 0.3,
+            menu2W * 0.3 * (assets.btnOrg.height / assets.btnOrg.width),
+          );
+        } else {
+          ctx.drawImage(
+            assets.btnOrg,
+            menu2X + menu2W * 0.35,
+            menu2Y + menu2H * 0.8,
+            menu2W * 0.3,
+            menu2W * 0.3 * (assets.btnOrg.height / assets.btnOrg.width),
           );
         }
       } else if (screen === "menuSetting") {

@@ -234,3 +234,16 @@ export function isInsideMenu2DeckButton(
 
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
 }
+
+// menu2 Deck 編成する Button
+export function isInsideOrgButton(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+
+  const btnX = menu2X + menu2W * 0.35;
+  const btnY = menu2Y + menu2H * 0.8;
+
+  const btnW = menu2W * 0.25;
+  const btnH = menu2W * 0.2 * (assets.btnOrg.height / assets.btnOrg.width);
+
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}

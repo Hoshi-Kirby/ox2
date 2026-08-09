@@ -76,6 +76,7 @@ export default function GameCanvas() {
     back: boolean;
     menu: boolean[];
     menuDeck: boolean[];
+    org: boolean;
   };
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -83,6 +84,7 @@ export default function GameCanvas() {
     back: false,
     menu: Array(5).fill(false),
     menuDeck: Array(3).fill(false),
+    org: false,
   });
 
   type PressTimers = {

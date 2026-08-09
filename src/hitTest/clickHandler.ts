@@ -10,6 +10,7 @@ import {
   isInsideDeviceMouse,
   isInsideDeviceTouch,
   isInsideMenu2DeckButton,
+  isInsideOrgButton,
 } from "./hitTest";
 import type { Screen } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -170,6 +171,19 @@ export function createClickHandler({
         if (isInsideMenu2DeckButton(i, x, y, ratio)) {
           settingsRef.current.ui.deckSelected = i;
         }
+      }
+
+      if (isInsideOrgButton(x, y, ratio)) {
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seStart");
+        }
+        effectTimers.fadeIn = 300;
+        effectTimers.fadeOut = 600;
+
+        setTimeout(() => {
+          setScreen("make");
+          effectTimers.fadeOut = 300;
+        }, 300);
       }
     }
   };

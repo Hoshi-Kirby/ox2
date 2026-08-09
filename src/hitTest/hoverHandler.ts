@@ -3,6 +3,7 @@ import {
   isInsideMenuButton,
   isInsideBackButton,
   isInsideMenu2DeckButton,
+  isInsideOrgButton,
 } from "./hitTest";
 import type { Screen } from "../GameCanvas";
 
@@ -15,6 +16,7 @@ type HoverParams = {
     back: boolean;
     menu: boolean[];
     menuDeck: boolean[];
+    org: boolean;
   }>;
   setHoverStates: React.Dispatch<
     React.SetStateAction<{
@@ -22,6 +24,7 @@ type HoverParams = {
       back: boolean;
       menu: boolean[];
       menuDeck: boolean[];
+      org: boolean;
     }>
   >;
   settingsRef: any;
@@ -82,15 +85,35 @@ export function createHoverHandler({
     // MENU BUTTONS
     // ------------------------------
     if (screen === "menu") {
-      for (let i = 0; i < hoverStatesRef.current.menu.length; i++) {
-        const insideMenu = isInsideMenuButton(i, x, y, ratio);
-
-        if (hoverStatesRef.current.menu[i] !== insideMenu) {
-          setHoverStates((prev) => ({
-            ...prev,
-            menu: prev.menu.map((v, idx) => (idx === i ? insideMenu : v)),
-          }));
-        }
+      const currentMenu = hoverStatesRef.current.menu;
+      const nextMenu = currentMenu.map((_, i) =>
+        isInsideMenuButton(i, x, y, ratio),
+      );
+      const changed = nextMenu.some((value, i) => value !== currentMenu[i]);
+      if (changed) {
+        setHoverStates((prev) => ({
+          ...prev,
+          menu: nextMenu,
+        }));
+      }
+    }
+    if (
+      ratio > 1.2 &&
+      (screen === "menuOffline" ||
+        screen === "menuHelp" ||
+        screen === "menuDeck" ||
+        screen === "menuSetting")
+    ) {
+      const currentMenu = hoverStatesRef.current.menu;
+      const nextMenu = currentMenu.map((_, i) =>
+        isInsideMenuButton(i, x + 200, y, ratio),
+      );
+      const changed = nextMenu.some((value, i) => value !== currentMenu[i]);
+      if (changed) {
+        setHoverStates((prev) => ({
+          ...prev,
+          menu: nextMenu,
+        }));
       }
     }
 
@@ -119,6 +142,14 @@ export function createHoverHandler({
           }));
         }
       }
+    }
+    // ------------------------------
+    // ORG BUTTON
+    // ------------------------------
+    const insideOrg = isInsideOrgButton(x, y, ratio);
+
+    if (hoverStatesRef.current.org !== insideOrg) {
+      setHoverStates((prev) => ({ ...prev, org: insideOrg }));
     }
 
     requestAnimationFrame(loop);
