@@ -1,14 +1,7 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
-import type { Screen, Settings } from "../GameCanvas";
+import type { Screen, Settings, HoverUI } from "../GameCanvas";
 
-type HoverUI = {
-  startButton: boolean;
-  back: boolean;
-  menu: boolean[];
-  menuDeck: boolean[];
-  org: boolean;
-};
 let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
 let backOffset = 0;
@@ -445,17 +438,6 @@ export function renderEffect(
       ctx.drawImage(backImg, textX, textY, textW, textH);
     }
   } else if (screen === "make") {
-    let leftWhiteX;
-
-    if (layoutIsWide) {
-      leftWhiteX = effectTimers.screenTransition - 200;
-      ctx.drawImage(assets.leftWhite, -400 - leftWhiteX, 0, 1280 + 400, 720);
-    } else {
-      leftWhiteX =
-        (100 + effectTimers.screenTransition) * 3 * (ratio / 1.2) ** 0.4;
-      ctx.drawImage(assets.leftWhite, 0 - leftWhiteX, 0, 1280 + 400, 720);
-    }
-
     if (layoutIsWide) {
       const deckListH = H * 0.95;
       const deckListW =
@@ -463,7 +445,7 @@ export function renderEffect(
       ctx.drawImage(
         assets.deckList,
         dx + W - deckListW,
-        dy,
+        dy - (effectTimers.screenTransition * H) / 200,
         deckListW,
         deckListH,
       );
@@ -471,7 +453,7 @@ export function renderEffect(
       ctx.drawImage(
         assets.deckListBar,
         dx + W - deckListW,
-        dy,
+        dy - (effectTimers.screenTransition * H) / 200,
         deckListW,
         deckListH,
       );
@@ -504,6 +486,61 @@ export function renderEffect(
       const textY = backY + btnH * 0.1;
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
+    }
+
+    // カードホバー-------------
+
+    const attrs = [
+      "des",
+      "gen",
+      "dis",
+      "sup",
+    ] as (keyof typeof assets.cardAssets)[];
+    let isPoolWide = true;
+
+    baseX = dx + W * 0.02;
+    baseY = dy + H * 0.02;
+
+    const deckListW =
+      H * 0.95 * (assets.deckList.width / assets.deckList.height);
+    const cardPoolW = W - deckListW - W * 0.05;
+    const cardPoolH = H - H * 0.2;
+    const cardAspectRatio =
+      assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+    if (layoutIsWide) {
+      if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+        isPoolWide = false;
+      }
+    } else {
+    }
+
+    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+    let cardW = cardH / cardAspectRatio;
+    let carddx = cardPoolW / 5;
+    let carddy = cardPoolH / 4;
+    if (isPoolWide) {
+      cardW = cardPoolW / 5 - cardPoolW * 0.01;
+      cardH = cardW * cardAspectRatio;
+    }
+    if (!layoutIsWide) {
+    }
+
+    for (let a = 0; a < attrs.length; a++) {
+      for (let i = 1; i <= 5; i++) {
+        if (hoverStates.hoverCards[attrs[a]][i - 1]) {
+          const img = assets.cardAssets[attrs[a]][i];
+          if (!img || !img.complete) continue;
+          const x = baseX + (i - 1) * carddx;
+          const y = baseY + a * carddy;
+          ctx.drawImage(
+            img,
+            x - cardPoolW * 0.005,
+            y - cardPoolH * 0.005,
+            cardW + cardPoolW * 0.01,
+            cardH + cardPoolH * 0.01,
+          );
+        }
+      }
     }
   }
 

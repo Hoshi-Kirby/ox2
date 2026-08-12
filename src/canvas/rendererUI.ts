@@ -1,13 +1,13 @@
 // rendererUI.ts
 import { assets } from "./assets";
-import type { Screen } from "../GameCanvas";
+import type { Screen, HoverUI } from "../GameCanvas";
 
 export function renderUI(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: Screen,
   effectTimers: Record<string, number>,
-  hoverStates: Record<string, boolean | boolean[]>,
+  hoverStates: HoverUI,
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
@@ -54,6 +54,54 @@ export function renderUI(
       ctx.drawImage(assets.leftWhite, -400, 0, 1280 + 400, 720);
     } else {
       ctx.drawImage(assets.leftWhite, 0, 0, 1280 + 400, 720);
+    }
+  }
+  if (screen === "make") {
+    const attrs = [
+      "des",
+      "gen",
+      "dis",
+      "sup",
+    ] as (keyof typeof assets.cardAssets)[];
+    let isPoolWide = true;
+
+    const baseX = dx + W * 0.02;
+    const baseY = dy + H * 0.02;
+
+    const deckListW =
+      H * 0.95 * (assets.deckList.width / assets.deckList.height);
+    const cardPoolW = W - deckListW - W * 0.05;
+    const cardPoolH = H - H * 0.2;
+    const cardAspectRatio =
+      assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+    if (layoutIsWide) {
+      if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+        isPoolWide = false;
+      }
+    } else {
+    }
+
+    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+    let cardW = cardH / cardAspectRatio;
+    let carddx = cardPoolW / 5;
+    let carddy = cardPoolH / 4;
+    if (isPoolWide) {
+      cardW = cardPoolW / 5 - cardPoolW * 0.01;
+      cardH = cardW * cardAspectRatio;
+    }
+    if (!layoutIsWide) {
+    }
+
+    for (let a = 0; a < attrs.length; a++) {
+      for (let i = 1; i <= 5; i++) {
+        const img = assets.cardAssets[attrs[a]][i];
+        if (!img || !img.complete) continue;
+
+        const x = baseX + (i - 1) * carddx;
+        const y = baseY + a * carddy;
+
+        ctx.drawImage(img, x, y, cardW, cardH);
+      }
     }
   }
 }

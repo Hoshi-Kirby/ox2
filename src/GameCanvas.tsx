@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
+import { renderEmpha } from "./canvas/rendererEmpha";
 import { renderUI } from "./canvas/rendererUI";
 import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
@@ -58,10 +59,24 @@ export type Settings = {
     selectedDeckP2: number;
   };
 };
+export type HoverUI = {
+  startButton: boolean;
+  back: boolean;
+  menu: boolean[];
+  menuDeck: boolean[];
+  org: boolean;
+  hoverCards: {
+    des: boolean[];
+    gen: boolean[];
+    dis: boolean[];
+    sup: boolean[];
+  };
+};
 
 export default function GameCanvas() {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLCanvasElement>(null);
+  const emphaRef = useRef<HTMLCanvasElement>(null);
   const uiRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<HTMLCanvasElement>(null);
   const effectRef = useRef<HTMLCanvasElement>(null);
@@ -73,20 +88,18 @@ export default function GameCanvas() {
     menu2Transition: 0,
   });
 
-  type HoverUI = {
-    startButton: boolean;
-    back: boolean;
-    menu: boolean[];
-    menuDeck: boolean[];
-    org: boolean;
-  };
-
   const [hoverStates, setHoverStates] = useState<HoverUI>({
     startButton: false,
     back: false,
     menu: Array(5).fill(false),
     menuDeck: Array(3).fill(false),
     org: false,
+    hoverCards: {
+      des: Array(5).fill(false),
+      gen: Array(5).fill(false),
+      dis: Array(5).fill(false),
+      sup: Array(5).fill(false),
+    },
   });
 
   type PressTimers = {
@@ -186,20 +199,15 @@ export default function GameCanvas() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
-  }, [screen]);
+  }, [screen, ratio, hoverStates]);
+  // effect,empha：毎フレーム描く（アニメーション）
   useEffect(() => {
-    const canvas = uiRef.current;
-    if (!canvas) return;
+    const effectCanvas = effectRef.current;
+    const emphaCanvas = emphaRef.current;
+    if (!effectCanvas || !emphaCanvas) return;
 
-    const ctx = canvas.getContext("2d")!;
-    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
-  }, [ratio, hoverStates]);
-
-  // effect：毎フレーム描く（アニメーション）
-  useEffect(() => {
-    const canvas = effectRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
+    const effectCtx = effectCanvas.getContext("2d")!;
+    const emphaCtx = emphaCanvas.getContext("2d")!;
 
     let running = true;
     let lastTime = performance.now();
@@ -209,10 +217,23 @@ export default function GameCanvas() {
 
       const dt = now - lastTime;
       lastTime = now;
+
       updateEffectsTimer(dt, effectTimers.current);
 
+      // empha レイヤーの描画
+      renderEmpha(
+        emphaCtx,
+        ratio,
+        screen,
+        effectTimers.current,
+        dt,
+        hoverStatesRef.current,
+        settingsRef.current,
+      );
+
+      // effect レイヤーの描画
       renderEffect(
-        ctx,
+        effectCtx,
         ratio,
         screen,
         effectTimers.current,
@@ -339,7 +360,16 @@ export default function GameCanvas() {
           height: ratio < 1280 / 720 ? "100vh" : "auto",
         }}
       />
-
+      <canvas
+        ref={emphaRef}
+        width={1280}
+        height={720}
+        className="layer"
+        style={{
+          width: ratio < 1280 / 720 ? "auto" : "100vw",
+          height: ratio < 1280 / 720 ? "100vh" : "auto",
+        }}
+      />
       <canvas
         ref={worldRef}
         width={1280}

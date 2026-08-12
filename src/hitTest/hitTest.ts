@@ -247,3 +247,48 @@ export function isInsideOrgButton(x: number, y: number, ratio: number) {
 
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
 }
+
+// make カード
+export function detectCardHoverSingle(
+  mouseX: number,
+  mouseY: number,
+  ratio: number,
+  attr: keyof typeof assets.cardAssets,
+  index: number, // 1〜5
+): boolean {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+  let isPoolWide = true;
+  const baseX = dx + W * 0.02;
+  const baseY = dy + H * 0.02;
+  const deckListW = H * 0.95 * (assets.deckList.width / assets.deckList.height);
+  const cardPoolW = W - deckListW - W * 0.05;
+  const cardPoolH = H - H * 0.2;
+  const cardAspectRatio =
+    assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+  if (layoutIsWide) {
+    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+      isPoolWide = false;
+    }
+  }
+  let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+  let cardW = cardH / cardAspectRatio;
+  let carddx = cardPoolW / 5;
+  let carddy = cardPoolH / 4;
+  if (isPoolWide) {
+    cardW = cardPoolW / 5 - cardPoolW * 0.01;
+    cardH = cardW * cardAspectRatio;
+  }
+  const attrs = [
+    "des",
+    "gen",
+    "dis",
+    "sup",
+  ] as (keyof typeof assets.cardAssets)[];
+  const a = attrs.indexOf(attr);
+  if (a === -1) return false;
+  const x = baseX + (index - 1) * carddx;
+  const y = baseY + a * carddy;
+  return (
+    mouseX >= x && mouseX <= x + cardW && mouseY >= y && mouseY <= y + cardH
+  );
+}

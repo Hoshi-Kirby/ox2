@@ -4,29 +4,17 @@ import {
   isInsideBackButton,
   isInsideMenu2DeckButton,
   isInsideOrgButton,
+  detectCardHoverSingle,
 } from "./hitTest";
-import type { Screen } from "../GameCanvas";
+import type { Screen, HoverUI } from "../GameCanvas";
+import { assets } from "../canvas/assets";
 
 type HoverParams = {
   ratio: number;
   screen: Screen;
   mouseRef: React.MutableRefObject<{ x: number; y: number }>;
-  hoverStatesRef: React.MutableRefObject<{
-    startButton: boolean;
-    back: boolean;
-    menu: boolean[];
-    menuDeck: boolean[];
-    org: boolean;
-  }>;
-  setHoverStates: React.Dispatch<
-    React.SetStateAction<{
-      startButton: boolean;
-      back: boolean;
-      menu: boolean[];
-      menuDeck: boolean[];
-      org: boolean;
-    }>
-  >;
+  hoverStatesRef: React.MutableRefObject<HoverUI>;
+  setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
   settingsRef: any;
   pressTimers: React.MutableRefObject<{ startButton: number }>;
 };
@@ -159,6 +147,42 @@ export function createHoverHandler({
 
     if (hoverStatesRef.current.org !== insideOrg) {
       setHoverStates((prev) => ({ ...prev, org: insideOrg }));
+    }
+
+    // ------------------------------
+    // MAKE CARD
+    // ------------------------------
+    const attrs = [
+      "des",
+      "gen",
+      "dis",
+      "sup",
+    ] as (keyof typeof assets.cardAssets)[];
+    const nextHoverCards = {
+      des: [...hoverStatesRef.current.hoverCards.des],
+      gen: [...hoverStatesRef.current.hoverCards.gen],
+      dis: [...hoverStatesRef.current.hoverCards.dis],
+      sup: [...hoverStatesRef.current.hoverCards.sup],
+    };
+
+    let changed = false;
+
+    for (const attr of attrs) {
+      for (let i = 0; i < 5; i++) {
+        const inside = detectCardHoverSingle(x, y, ratio, attr, i + 1);
+
+        if (nextHoverCards[attr][i] !== inside) {
+          nextHoverCards[attr][i] = inside;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      setHoverStates((prev) => ({
+        ...prev,
+        hoverCards: nextHoverCards,
+      }));
     }
 
     requestAnimationFrame(loop);

@@ -1,5 +1,4 @@
 // src/canvas/assets.ts
-
 export const assets = {
   titleBg: new Image(),
   title: new Image(),
@@ -34,6 +33,13 @@ export const assets = {
   makeBg: new Image(),
   deckList: new Image(),
   deckListBar: new Image(),
+
+  cardAssets: {
+    des: [] as HTMLImageElement[],
+    gen: [] as HTMLImageElement[],
+    dis: [] as HTMLImageElement[],
+    sup: [] as HTMLImageElement[],
+  },
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -87,3 +93,13 @@ assets.btnOrgHover.src = "/assets/button/organize_hover.png";
 assets.makeBg.src = "/assets/backgrounds/restaurant.png";
 assets.deckList.src = "/assets/ui/deck_list.png";
 assets.deckListBar.src = "/assets/ui/deck_list_bar.png";
+
+type Attr = keyof typeof assets.cardAssets;
+
+for (const attr of ["des", "gen", "dis", "sup"] as Attr[]) {
+  for (let i = 1; i <= 7; i++) {
+    const img = new Image();
+    img.src = `/assets/cards_token/${attr}/${i}.png`;
+    assets.cardAssets[attr][i] = img;
+  }
+}
