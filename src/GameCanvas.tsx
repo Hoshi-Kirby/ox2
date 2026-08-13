@@ -8,6 +8,7 @@ import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createClickHandler } from "./hitTest/clickHandler";
 import { createHoverHandler } from "./hitTest/hoverHandler";
+import { createScrollHandler } from "./hitTest/scrollHandler";
 import "./GameCanvas.css";
 export type Screen =
   | "title"
@@ -28,6 +29,11 @@ export type DeckColor =
   | "rainbow"
   | "white";
 
+export type CardID = {
+  attr: "des" | "gen" | "dis" | "sup";
+  index: number;
+};
+
 export type Settings = {
   ui: {
     bgmEnabled: boolean;
@@ -36,6 +42,7 @@ export type Settings = {
     deckSelected: number;
     inputLocked: boolean;
     inputLockedSub: boolean;
+    scrollY: number;
   };
 
   game: {
@@ -45,9 +52,9 @@ export type Settings = {
     eventEnabled: boolean;
     shiftCardEnabled: boolean;
 
-    deck1: number[];
-    deck2: number[];
-    deck3: number[];
+    deck1: CardID[];
+    deck2: CardID[];
+    deck3: CardID[];
     deckColor1: DeckColor;
     deckColor2: DeckColor;
     deckColor3: DeckColor;
@@ -124,6 +131,7 @@ export default function GameCanvas() {
       deckSelected: 0,
       inputLocked: false,
       inputLockedSub: false,
+      scrollY: 0,
     },
 
     game: {
@@ -293,6 +301,17 @@ export default function GameCanvas() {
 
     return stop;
   }, [ratio, screen, settingsRef.current.ui.deviceMode]);
+  // スクロール判定
+  useEffect(() => {
+    if (!effectRef.current) return;
+
+    const cleanup = createScrollHandler({
+      canvas: effectRef.current,
+      settingsRef: settingsRef.current,
+    });
+
+    return cleanup;
+  }, []);
 
   // マウス座標
   useEffect(() => {

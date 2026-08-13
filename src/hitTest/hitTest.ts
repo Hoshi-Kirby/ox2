@@ -133,6 +133,7 @@ function calcMenu2Layout(ratio: number) {
     menu2H = 0;
 
   if (layoutIsWide) {
+    menu2X = 500;
     menu2W = dx + W - menu2X - 100;
     menu2H = Math.min(
       H * 0.9,
@@ -140,7 +141,6 @@ function calcMenu2Layout(ratio: number) {
     );
     menu2W =
       menu2H / (assets.gameSettingUI.height / assets.gameSettingUI.width);
-    menu2X = 500;
     menu2Y = dy + H * 0.05 + H * 0.5 - menu2W / 2;
   } else {
     menu2W = W * 0.9;
@@ -255,40 +255,144 @@ export function detectCardHoverSingle(
   ratio: number,
   attr: keyof typeof assets.cardAssets,
   index: number, // 1〜5
+  scrollY: number,
+  isClick: boolean,
 ): boolean {
   const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
-  let isPoolWide = true;
-  const baseX = dx + W * 0.02;
-  const baseY = dy + H * 0.02;
-  const deckListW = H * 0.95 * (assets.deckList.width / assets.deckList.height);
-  const cardPoolW = W - deckListW - W * 0.05;
-  const cardPoolH = H - H * 0.2;
-  const cardAspectRatio =
-    assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
-  if (layoutIsWide) {
-    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
-      isPoolWide = false;
-    }
-  }
-  let cardH = cardPoolH / 4 - cardPoolH * 0.01;
-  let cardW = cardH / cardAspectRatio;
-  let carddx = cardPoolW / 5;
-  let carddy = cardPoolH / 4;
-  if (isPoolWide) {
-    cardW = cardPoolW / 5 - cardPoolW * 0.01;
-    cardH = cardW * cardAspectRatio;
-  }
+
   const attrs = [
     "des",
     "gen",
     "dis",
     "sup",
   ] as (keyof typeof assets.cardAssets)[];
+
   const a = attrs.indexOf(attr);
-  if (a === -1) return false;
-  const x = baseX + (index - 1) * carddx;
-  const y = baseY + a * carddy;
-  return (
-    mouseX >= x && mouseX <= x + cardW && mouseY >= y && mouseY <= y + cardH
-  );
+  if (a === -1 || index < 1 || index > 5) return false;
+
+  const cardAspectRatio =
+    assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+
+  // ============================================================
+  // パターン①
+  // layoutIsWide === true
+  // rendererUI と同じ 5列 × 4行
+  // ============================================================
+  if (layoutIsWide) {
+    const baseX = dx + W * 0.02;
+    const baseY = dy + H * 0.02;
+
+    const deckListW =
+      H * 0.95 * (assets.deckList.width / assets.deckList.height);
+
+    const cardPoolW = W - deckListW - W * 0.05;
+    const cardPoolH = H - H * 0.2;
+
+    let isPoolWide = true;
+
+    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+      isPoolWide = false;
+    }
+
+    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+    let cardW = cardH / cardAspectRatio;
+
+    const carddx = cardPoolW / 5;
+    const carddy = cardPoolH / 4;
+
+    if (isPoolWide) {
+      cardW = cardPoolW / 5 - cardPoolW * 0.01;
+      cardH = cardW * cardAspectRatio;
+    }
+
+    const x = baseX + (index - 1) * carddx;
+    const y = baseY + a * carddy;
+
+    return (
+      mouseX >= x && mouseX <= x + cardW && mouseY >= y && mouseY <= y + cardH
+    );
+  }
+
+  // ============================================================
+  // パターン②
+  // layoutIsWide === false && ratio >= 1
+  // rendererUI と同じ 5列 × 4行
+  // ただし baseY / cardPoolW が異なる
+  // ============================================================
+  if (ratio >= 1) {
+    const baseX = dx + W * 0.02;
+    const baseY = dy + H * 0.2;
+
+    const cardPoolW = W - W * 0.05;
+    const cardPoolH = H - H * 0.2;
+
+    let isPoolWide = true;
+
+    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+      isPoolWide = false;
+    }
+
+    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+    let cardW = cardH / cardAspectRatio;
+
+    const carddx = cardPoolW / 5;
+    const carddy = cardPoolH / 4;
+
+    if (isPoolWide) {
+      cardW = cardPoolW / 5 - cardPoolW * 0.01;
+      cardH = cardW * cardAspectRatio;
+    }
+
+    const x = baseX + (index - 1) * carddx;
+    const y = baseY + a * carddy;
+
+    return (
+      mouseX >= x && mouseX <= x + cardW && mouseY >= y && mouseY <= y + cardH
+    );
+  }
+
+  // ============================================================
+  // パターン③
+  // ratio < 1
+  // rendererEffect と同じ 3列 × 8段 + scrollY
+  // ============================================================
+  {
+    const baseX = dx + W * 0.02;
+    const baseY = dy + H * 0.2;
+
+    const cardPoolW = W - W * 0.05;
+    const cardPoolH = H - H * 0.2;
+
+    const cardW = cardPoolW / 3 - cardPoolH * 0.02;
+    const cardH = cardW * cardAspectRatio;
+
+    const carddx = cardPoolW / 3;
+    const carddy = cardH + carddx - cardW;
+
+    // rendererEffect と同じ
+    let n = 5;
+    if (!isClick) {
+      n = 1;
+    }
+
+    // rendererEffect と同じ scrollY の範囲制限
+    let actualScrollY = scrollY;
+
+    let x: number;
+    let y: number;
+
+    if (index <= 3) {
+      // 1〜3
+      x = baseX + (index - 1) * carddx;
+      y = baseY + a * 2 * carddy - actualScrollY / n;
+    } else {
+      // 4〜5
+      x = baseX + (index - 4) * carddx;
+      y = baseY + (a * 2 + 1) * carddy - actualScrollY / n;
+    }
+
+    return (
+      mouseX >= x && mouseX <= x + cardW && mouseY >= y && mouseY <= y + cardH
+    );
+  }
 }

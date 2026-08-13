@@ -169,7 +169,15 @@ export function createHoverHandler({
 
     for (const attr of attrs) {
       for (let i = 0; i < 5; i++) {
-        const inside = detectCardHoverSingle(x, y, ratio, attr, i + 1);
+        const inside = detectCardHoverSingle(
+          x,
+          y,
+          ratio,
+          attr,
+          i + 1,
+          settingsRef.current.ui.scrollY,
+          settingsRef.current.ui.deviceMode,
+        );
 
         if (nextHoverCards[attr][i] !== inside) {
           nextHoverCards[attr][i] = inside;

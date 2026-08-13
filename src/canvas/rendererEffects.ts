@@ -1,6 +1,6 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
-import type { Screen, Settings, HoverUI } from "../GameCanvas";
+import type { Screen, Settings, HoverUI, CardID } from "../GameCanvas";
 
 let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
@@ -458,9 +458,225 @@ export function renderEffect(
         deckListH,
       );
     }
+    // スマホ用
+    const attrs = [
+      "des",
+      "gen",
+      "dis",
+      "sup",
+    ] as (keyof typeof assets.cardAssets)[];
 
-    let baseX = dx + W * 0.01;
-    let baseY = dy + H * 0.1;
+    if (ratio < 1) {
+      const baseX = dx + W * 0.02;
+      let baseY = dy + H * 0.2;
+      let cardPoolW = W - W * 0.05;
+      let cardPoolH = H - H * 0.2;
+      const cardAspectRatio =
+        assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+      const cardW = cardPoolW / 3 - cardPoolH * 0.02;
+      const cardH = cardW * cardAspectRatio;
+      const carddx = cardPoolW / 3;
+      const carddy = cardH + carddx - cardW;
+
+      let n = 5;
+      if (settingsRef.ui.deviceMode === "touch") n = 1;
+      if (settingsRef.ui.scrollY < 0) settingsRef.ui.scrollY = 0;
+      if (
+        settingsRef.ui.scrollY >
+        ((cardW * cardAspectRatio * 35 - cardPoolH) * n) / 5
+      )
+        settingsRef.ui.scrollY =
+          ((cardW * cardAspectRatio * 35 - cardPoolH) * n) / 5;
+
+      for (let a = 0; a < attrs.length; a++) {
+        for (let i = 1; i <= 3; i++) {
+          const img = assets.cardAssets[attrs[a]][i];
+          if (!img || !img.complete) continue;
+
+          const x = baseX + (i - 1) * carddx;
+          const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
+
+          ctx.drawImage(img, x, y, cardW, cardH);
+        }
+        for (let i = 4; i <= 5; i++) {
+          const img = assets.cardAssets[attrs[a]][i];
+          if (!img || !img.complete) continue;
+
+          const x = baseX + (i - 4) * carddx;
+          const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
+
+          ctx.drawImage(img, x, y, cardW, cardH);
+        }
+      }
+    }
+    // カードホバー-------------
+
+    let isPoolWide = true;
+
+    let baseX = dx + W * 0.02;
+    let baseY = dy + H * 0.02;
+
+    const deckListW =
+      H * 0.95 * (assets.deckList.width / assets.deckList.height);
+    let cardPoolW = W - deckListW - W * 0.05;
+    let cardPoolH = H - H * 0.2;
+
+    if (!layoutIsWide) {
+      baseY = dy + H * 0.2;
+      cardPoolW = W - W * 0.05;
+    }
+    const cardAspectRatio =
+      assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
+    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+      isPoolWide = false;
+    }
+
+    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
+    let cardW = cardH / cardAspectRatio;
+    let carddx = cardPoolW / 5;
+    let carddy = cardPoolH / 4;
+    if (isPoolWide) {
+      cardW = cardPoolW / 5 - cardPoolW * 0.01;
+      cardH = cardW * cardAspectRatio;
+    }
+
+    if (ratio < 1) {
+      const cardW = cardPoolW / 3 - cardPoolH * 0.02;
+      const cardH = cardW * cardAspectRatio;
+      const carddx = cardPoolW / 3;
+      const carddy = cardH + carddx - cardW;
+
+      let n = 5;
+      if (settingsRef.ui.deviceMode === "touch") n = 1;
+      if (settingsRef.ui.scrollY < 0) settingsRef.ui.scrollY = 0;
+      if (
+        settingsRef.ui.scrollY >
+        ((cardW * cardAspectRatio * 35 - cardPoolH) * n) / 5
+      )
+        settingsRef.ui.scrollY =
+          ((cardW * cardAspectRatio * 35 - cardPoolH) * n) / 5;
+
+      for (let a = 0; a < attrs.length; a++) {
+        for (let i = 1; i <= 3; i++) {
+          const deckIndex = settingsRef.ui.deckSelected;
+          const deckKeys = ["deck1", "deck2", "deck3"] as const;
+
+          const deckKey = deckKeys[deckIndex];
+          const deck = settingsRef.game[deckKey];
+          const count = deck.filter(
+            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+          ).length;
+
+          const isFull = count >= 4;
+          if (isFull) {
+            ctx.filter = "grayscale(100%)";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 1) * carddx;
+            const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
+            ctx.drawImage(img, x, y, cardW, cardH);
+          } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
+            ctx.filter = "none";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 1) * carddx;
+            const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
+            ctx.drawImage(
+              img,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW + cardPoolW * 0.01,
+              cardH + cardPoolH * 0.01,
+            );
+          }
+          // const img = assets.cardAssets[attrs[a]][i];
+          // if (!img || !img.complete) continue;
+
+          // const x = baseX + (i - 1) * carddx;
+          // const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
+
+          // ctx.drawImage(img, x, y, cardW, cardH);
+        }
+        for (let i = 4; i <= 5; i++) {
+          const deckIndex = settingsRef.ui.deckSelected;
+          const deckKeys = ["deck1", "deck2", "deck3"] as const;
+
+          const deckKey = deckKeys[deckIndex];
+          const deck = settingsRef.game[deckKey];
+          const count = deck.filter(
+            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+          ).length;
+
+          const isFull = count >= 4;
+          if (isFull) {
+            ctx.filter = "grayscale(100%)";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 4) * carddx;
+            const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
+            ctx.drawImage(img, x, y, cardW, cardH);
+          } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
+            ctx.filter = "none";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 4) * carddx;
+            const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
+            ctx.drawImage(
+              img,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW + cardPoolW * 0.01,
+              cardH + cardPoolH * 0.01,
+            );
+          }
+          // const img = assets.cardAssets[attrs[a]][i];
+          // if (!img || !img.complete) continue;
+          // const x = baseX + (i - 4) * carddx;
+          // const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
+          // ctx.drawImage(img, x, y, cardW, cardH);
+        }
+      }
+    } else {
+      for (let a = 0; a < attrs.length; a++) {
+        for (let i = 1; i <= 5; i++) {
+          const deckIndex = settingsRef.ui.deckSelected;
+          const deckKeys = ["deck1", "deck2", "deck3"] as const;
+
+          const deckKey = deckKeys[deckIndex];
+          const deck = settingsRef.game[deckKey];
+          const count = deck.filter(
+            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+          ).length;
+
+          const isFull = count >= 4;
+          if (isFull) {
+            ctx.filter = "grayscale(100%)";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 1) * carddx;
+            const y = baseY + a * carddy;
+            ctx.drawImage(img, x, y, cardW, cardH);
+          } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
+            ctx.filter = "none";
+            const img = assets.cardAssets[attrs[a]][i];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 1) * carddx;
+            const y = baseY + a * carddy;
+            ctx.drawImage(
+              img,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW + cardPoolW * 0.01,
+              cardH + cardPoolH * 0.01,
+            );
+          }
+        }
+      }
+    }
+    ctx.filter = "none";
+    // 戻る
+    baseX = dx + W * 0.01;
+    baseY = dy + H * 0.1;
     let btnW = H * 0.45;
     const btnH =
       btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
@@ -486,61 +702,6 @@ export function renderEffect(
       const textY = backY + btnH * 0.1;
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
-    }
-
-    // カードホバー-------------
-
-    const attrs = [
-      "des",
-      "gen",
-      "dis",
-      "sup",
-    ] as (keyof typeof assets.cardAssets)[];
-    let isPoolWide = true;
-
-    baseX = dx + W * 0.02;
-    baseY = dy + H * 0.02;
-
-    const deckListW =
-      H * 0.95 * (assets.deckList.width / assets.deckList.height);
-    const cardPoolW = W - deckListW - W * 0.05;
-    const cardPoolH = H - H * 0.2;
-    const cardAspectRatio =
-      assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
-    if (layoutIsWide) {
-      if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
-        isPoolWide = false;
-      }
-    } else {
-    }
-
-    let cardH = cardPoolH / 4 - cardPoolH * 0.01;
-    let cardW = cardH / cardAspectRatio;
-    let carddx = cardPoolW / 5;
-    let carddy = cardPoolH / 4;
-    if (isPoolWide) {
-      cardW = cardPoolW / 5 - cardPoolW * 0.01;
-      cardH = cardW * cardAspectRatio;
-    }
-    if (!layoutIsWide) {
-    }
-
-    for (let a = 0; a < attrs.length; a++) {
-      for (let i = 1; i <= 5; i++) {
-        if (hoverStates.hoverCards[attrs[a]][i - 1]) {
-          const img = assets.cardAssets[attrs[a]][i];
-          if (!img || !img.complete) continue;
-          const x = baseX + (i - 1) * carddx;
-          const y = baseY + a * carddy;
-          ctx.drawImage(
-            img,
-            x - cardPoolW * 0.005,
-            y - cardPoolH * 0.005,
-            cardW + cardPoolW * 0.01,
-            cardH + cardPoolH * 0.01,
-          );
-        }
-      }
     }
   }
 

@@ -11,9 +11,11 @@ import {
   isInsideDeviceTouch,
   isInsideMenu2DeckButton,
   isInsideOrgButton,
+  detectCardHoverSingle,
 } from "./hitTest";
-import type { Screen } from "../GameCanvas";
+import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
+import { assets } from "../canvas/assets";
 
 type ClickHandlerParams = {
   ratio: number;
@@ -227,6 +229,7 @@ export function createClickHandler({
 
         setTimeout(() => {
           setScreen("make");
+          settingsRef.current.ui.scrollY = 0;
           effectTimers.fadeOut = 300;
           effectTimers.screenTransition = 200;
           setTimeout(() => {
@@ -236,7 +239,9 @@ export function createClickHandler({
       }
     }
 
-    // MAKE
+    // ------------------------------
+    // Make
+    // ------------------------------
     if (screen === "make") {
       if (isInsideBackButton(x, y, ratio)) {
         effectTimers.fadeIn = 300;
@@ -250,6 +255,49 @@ export function createClickHandler({
             settingsRef.current.ui.inputLocked = false;
           }, 300);
         }, 300);
+      }
+      const attrs = [
+        "des",
+        "gen",
+        "dis",
+        "sup",
+      ] as (keyof typeof assets.cardAssets)[];
+
+      for (const attr of attrs) {
+        for (let i = 0; i < 5; i++) {
+          if (
+            detectCardHoverSingle(
+              x,
+              y,
+              ratio,
+              attr,
+              i + 1,
+              settingsRef.current.ui.scrollY,
+              settingsRef.current.ui.deviceMode,
+            )
+          ) {
+            const deckIndex = settingsRef.current.ui.deckSelected; // 0,1,2
+            const deckKey = ["deck1", "deck2", "deck3"][deckIndex];
+            const deck = settingsRef.current.game[deckKey];
+
+            const count = deck.filter(
+              (c: CardID) => c.attr === attr && c.index === i,
+            ).length;
+
+            if (count < 4 && deck.length < 20) {
+              settingsRef.current.game[deckKey].push({ attr, index: i });
+
+              settingsRef.current.game[deckKey].sort((a: CardID, b: CardID) => {
+                const order = ["des", "gen", "dis", "sup"];
+                const ai = order.indexOf(a.attr);
+                const bi = order.indexOf(b.attr);
+
+                if (ai !== bi) return ai - bi;
+                return a.index - b.index;
+              });
+            }
+          }
+        }
       }
     }
   };

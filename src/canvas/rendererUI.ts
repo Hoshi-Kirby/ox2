@@ -66,19 +66,21 @@ export function renderUI(
     let isPoolWide = true;
 
     const baseX = dx + W * 0.02;
-    const baseY = dy + H * 0.02;
+    let baseY = dy + H * 0.02;
 
     const deckListW =
       H * 0.95 * (assets.deckList.width / assets.deckList.height);
-    const cardPoolW = W - deckListW - W * 0.05;
-    const cardPoolH = H - H * 0.2;
+    let cardPoolW = W - deckListW - W * 0.05;
+    let cardPoolH = H - H * 0.2;
+
+    if (!layoutIsWide) {
+      baseY = dy + H * 0.2;
+      cardPoolW = W - W * 0.05;
+    }
     const cardAspectRatio =
       assets.cardAssets.des[1].height / assets.cardAssets.des[1].width;
-    if (layoutIsWide) {
-      if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
-        isPoolWide = false;
-      }
-    } else {
+    if (cardPoolH / 4 / (cardPoolW / 5) < cardAspectRatio) {
+      isPoolWide = false;
     }
 
     let cardH = cardPoolH / 4 - cardPoolH * 0.01;
@@ -89,18 +91,18 @@ export function renderUI(
       cardW = cardPoolW / 5 - cardPoolW * 0.01;
       cardH = cardW * cardAspectRatio;
     }
-    if (!layoutIsWide) {
-    }
+    if (ratio < 1) {
+    } else {
+      for (let a = 0; a < attrs.length; a++) {
+        for (let i = 1; i <= 5; i++) {
+          const img = assets.cardAssets[attrs[a]][i];
+          if (!img || !img.complete) continue;
 
-    for (let a = 0; a < attrs.length; a++) {
-      for (let i = 1; i <= 5; i++) {
-        const img = assets.cardAssets[attrs[a]][i];
-        if (!img || !img.complete) continue;
+          const x = baseX + (i - 1) * carddx;
+          const y = baseY + a * carddy;
 
-        const x = baseX + (i - 1) * carddx;
-        const y = baseY + a * carddy;
-
-        ctx.drawImage(img, x, y, cardW, cardH);
+          ctx.drawImage(img, x, y, cardW, cardH);
+        }
       }
     }
   }
