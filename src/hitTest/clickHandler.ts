@@ -13,6 +13,7 @@ import {
   isInsideOrgButton,
   detectCardHoverSingle,
   isInsideDeckBar,
+  isInsideDeckButton,
 } from "./hitTest";
 import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -241,6 +242,7 @@ export function createClickHandler({
         setTimeout(() => {
           setScreen("make");
           settingsRef.current.ui.scrollY = 0;
+          settingsRef.current.ui.openDeckList = false;
           effectTimers.fadeOut = 300;
           effectTimers.screenTransition = 200;
           setTimeout(() => {
@@ -255,67 +257,99 @@ export function createClickHandler({
     // ------------------------------
     if (screen === "make") {
       if (isInsideBackButton(x, y, ratio)) {
-        effectTimers.fadeIn = 300;
-        effectTimers.fadeOut = 600;
-        settingsRef.current.ui.inputLocked = true;
-
-        setTimeout(() => {
-          setScreen("menuDeck");
-          effectTimers.fadeOut = 300;
+        if (settingsRef.current.ui.openDeckList && ratio < 1.2) {
+          effectTimers.deckListClose = 200;
+          settingsRef.current.ui.inputLocked = true;
           setTimeout(() => {
+            settingsRef.current.ui.openDeckList = false;
             settingsRef.current.ui.inputLocked = false;
+          }, 100);
+        } else {
+          effectTimers.fadeIn = 300;
+          effectTimers.fadeOut = 600;
+          settingsRef.current.ui.inputLocked = true;
+
+          setTimeout(() => {
+            setScreen("menuDeck");
+            effectTimers.fadeOut = 300;
+            setTimeout(() => {
+              settingsRef.current.ui.inputLocked = false;
+            }, 300);
           }, 300);
-        }, 300);
+        }
       }
       // 削除
-      const deck = settingsRef.current.game.editDeck;
+      if (settingsRef.current.ui.openDeckList || ratio > 1.2) {
+        if (!isInsideBackButton(x, y, ratio)) {
+          const deck = settingsRef.current.game.editDeck;
 
-      for (let i = deck.length - 1; i >= 0; i--) {
-        if (isInsideDeckBar(i, x, y, ratio)) {
-          deck.splice(i, 1);
+          for (let i = deck.length - 1; i >= 0; i--) {
+            if (isInsideDeckBar(i, x, y, ratio)) {
+              deck.splice(i, 1);
 
-          return;
+              return;
+            }
+          }
         }
       }
       // 追加
-      const attrs = [
-        "des",
-        "gen",
-        "dis",
-        "sup",
-      ] as (keyof typeof assets.cardAssets)[];
+      if (!settingsRef.current.ui.openDeckList || ratio > 1.2) {
+        if (!isInsideDeckButton(x, y, ratio)) {
+          const attrs = [
+            "des",
+            "gen",
+            "dis",
+            "sup",
+          ] as (keyof typeof assets.cardAssets)[];
 
-      for (const attr of attrs) {
-        for (let i = 1; i <= 5; i++) {
-          if (
-            detectCardHoverSingle(
-              x,
-              y,
-              ratio,
-              attr,
-              i,
-              settingsRef.current.ui.scrollY,
-              settingsRef.current.ui.deviceMode,
-            )
-          ) {
-            const deck = settingsRef.current.game.editDeck;
+          for (const attr of attrs) {
+            for (let i = 1; i <= 5; i++) {
+              if (
+                detectCardHoverSingle(
+                  x,
+                  y,
+                  ratio,
+                  attr,
+                  i,
+                  settingsRef.current.ui.scrollY,
+                  settingsRef.current.ui.deviceMode == "click",
+                )
+              ) {
+                const deck = settingsRef.current.game.editDeck;
 
-            const count = deck.filter(
-              (c: CardID) => c.attr === attr && c.index === i,
-            ).length;
+                const count = deck.filter(
+                  (c: CardID) => c.attr === attr && c.index === i,
+                ).length;
 
-            if (count < 4 && deck.length < 20) {
-              settingsRef.current.game.editDeck.push({ attr, index: i });
+                if (count < 4 && deck.length < 20) {
+                  settingsRef.current.game.editDeck.push({ attr, index: i });
 
-              settingsRef.current.game.editDeck.sort((a: CardID, b: CardID) => {
-                const order = ["des", "gen", "dis", "sup"];
-                const ai = order.indexOf(a.attr);
-                const bi = order.indexOf(b.attr);
+                  settingsRef.current.game.editDeck.sort(
+                    (a: CardID, b: CardID) => {
+                      const order = ["des", "gen", "dis", "sup"];
+                      const ai = order.indexOf(a.attr);
+                      const bi = order.indexOf(b.attr);
 
-                if (ai !== bi) return ai - bi;
-                return a.index - b.index;
-              });
+                      if (ai !== bi) return ai - bi;
+                      return a.index - b.index;
+                    },
+                  );
+                }
+              }
             }
+          }
+        }
+      }
+      // デッキボタン
+      if (!settingsRef.current.ui.openDeckList) {
+        if (ratio < 1.2) {
+          if (isInsideDeckButton(x, y, ratio)) {
+            effectTimers.deckListOpen = 100;
+            settingsRef.current.ui.openDeckList = true;
+            settingsRef.current.ui.inputLocked = true;
+            setTimeout(() => {
+              settingsRef.current.ui.inputLocked = false;
+            }, 100);
           }
         }
       }

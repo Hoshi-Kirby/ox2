@@ -424,7 +424,7 @@ export function renderEffect(
     let backX = baseX - H * 0.2;
     let backY = baseY + offsetY * 5 - H * 0.03;
     if (!layoutIsWide) {
-      backX = dx - btnW / 2;
+      backX = dx - btnW * 0.55;
       backY = baseY = dy + H * 0.05;
     }
     ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
@@ -432,61 +432,15 @@ export function renderEffect(
     if (backImg) {
       const textH = btnH * 0.8;
       const textW = textH / (backImg.height / backImg.width);
-      const textX = backX + btnW * 0.5;
+      let textX = backX + btnW * 0.5;
       const textY = backY + btnH * 0.1;
+      if (!layoutIsWide) {
+        textX = backX + btnW * 0.55;
+      }
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
     }
   } else if (screen === "make") {
-    if (layoutIsWide) {
-      // デッキリスト下
-      const deckListH = H * 0.95;
-      const deckListW =
-        deckListH * (assets.deckList.width / assets.deckList.height);
-      ctx.drawImage(
-        assets.deckList,
-        dx + W - deckListW,
-        dy - (effectTimers.screenTransition * H) / 200,
-        deckListW,
-        deckListH,
-      );
-
-      // カードバー^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v
-      const baseX = dx + W - deckListW + H * 0.041; //0.25 0.41
-      const baseY = dy;
-      const cardBarH = (H * 1.151) / 20;
-      const cardBarW =
-        (cardBarH * assets.cardBarAssets.des[1].width) /
-        assets.cardBarAssets.des[1].height;
-      const cardBardy = cardBarH * 0.8;
-      const deck = settingsRef.game.editDeck;
-
-      for (let i = 0; i < deck.length; i++) {
-        const card = deck[i];
-
-        const img = assets.cardBarAssets[card.attr][card.index];
-        if (!img || !img.complete) continue;
-
-        const x = baseX;
-        const y = baseY + i * cardBardy;
-        if (hoverStates.hoverDeckIndex == i) {
-          ctx.drawImage(img, x - H * 0.015, y, cardBarW, cardBarH);
-        } else {
-          ctx.drawImage(img, x, y, cardBarW, cardBarH);
-        }
-      }
-
-      // デッキリスト上
-
-      ctx.drawImage(
-        assets.deckListBar,
-        dx + W - deckListW,
-        dy - (effectTimers.screenTransition * H) / 200,
-        deckListW,
-        deckListH,
-      );
-    }
-
     // スマホ用　　　　PCやタブレットの画面表示はrendererUIで
     const attrs = [
       "des",
@@ -691,6 +645,7 @@ export function renderEffect(
       }
     }
     ctx.filter = "none";
+
     // 戻る
     baseX = dx + W * 0.01;
     baseY = dy + H * 0.1;
@@ -707,19 +662,170 @@ export function renderEffect(
     let backX = baseX - H * 0.2;
     let backY = baseY + offsetY * 5 - H * 0.03;
     if (!layoutIsWide) {
-      backX = dx - btnW / 2;
+      backX = dx - btnW * 0.6;
       backY = baseY = dy + H * 0.05;
     }
+
+    // デッキボタン(スマホ用)
+    if (!layoutIsWide) {
+      ctx.drawImage(
+        assets.buttonFrame1,
+        backX + W + H * 0.05,
+        backY,
+        btnW,
+        btnH,
+      );
+      const btnDeckImg = assets.btnDeck;
+      if (btnDeckImg) {
+        const textH = btnH * 0.8;
+        const textW = textH / (btnDeckImg.height / btnDeckImg.width);
+        let textX = backX + W + H * 0.05 + btnW * 0.07;
+        const textY = backY + btnH * 0.1;
+
+        ctx.drawImage(btnDeckImg, textX, textY, textW, textH);
+      }
+    }
+
+    if (layoutIsWide || settingsRef.ui.openDeckList) {
+      // デッキリスト下
+      let deckListH = H * 0.95;
+      let deckListW =
+        deckListH * (assets.deckList.width / assets.deckList.height);
+      if (deckListW > W) {
+        deckListW = W;
+        deckListH =
+          deckListW / (assets.deckList.width / assets.deckList.height);
+      }
+      if (effectTimers.deckListClose == 0) {
+        ctx.drawImage(
+          assets.deckList,
+          dx + W - deckListW,
+          dy -
+            (effectTimers.screenTransition * H) / 200 -
+            (effectTimers.deckListOpen * H) / 100,
+          deckListW,
+          deckListH,
+        );
+      } else {
+        ctx.drawImage(
+          assets.deckList,
+          dx + W - deckListW,
+          dy -
+            (effectTimers.screenTransition * H) / 200 -
+            ((200 - effectTimers.deckListClose) * H) / 100,
+          deckListW,
+          deckListH,
+        );
+      }
+
+      // カードバー^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v
+      const baseX = dx + W - deckListW + deckListH * (1 / 0.95) * 0.041; //0.25 0.41
+      const baseY = dy;
+      const cardBarH = (deckListH * (1 / 0.95) * 1.151) / 20;
+      const cardBarW =
+        (cardBarH * assets.cardBarAssets.des[1].width) /
+        assets.cardBarAssets.des[1].height;
+      const cardBardy = cardBarH * 0.8;
+      const deck = settingsRef.game.editDeck;
+
+      for (let i = 0; i < deck.length; i++) {
+        const card = deck[i];
+
+        const img = assets.cardBarAssets[card.attr][card.index];
+        if (!img || !img.complete) continue;
+
+        const x = baseX;
+        const y = baseY + i * cardBardy;
+
+        if (effectTimers.deckListClose == 0) {
+          if (hoverStates.hoverDeckIndex == i) {
+            ctx.drawImage(
+              img,
+              x - H * 0.015,
+              y - (effectTimers.deckListOpen * H) / 100,
+              cardBarW,
+              cardBarH,
+            );
+          } else {
+            ctx.drawImage(
+              img,
+              x,
+              y - (effectTimers.deckListOpen * H) / 100,
+              cardBarW,
+              cardBarH,
+            );
+          }
+        } else {
+          if (hoverStates.hoverDeckIndex == i) {
+            ctx.drawImage(
+              img,
+              x - H * 0.015,
+              y - ((200 - effectTimers.deckListClose) * H) / 100,
+              cardBarW,
+              cardBarH,
+            );
+          } else {
+            ctx.drawImage(
+              img,
+              x,
+              y - ((200 - effectTimers.deckListClose) * H) / 100,
+              cardBarW,
+              cardBarH,
+            );
+          }
+        }
+      }
+
+      // デッキリスト上
+
+      if (effectTimers.deckListClose == 0) {
+        ctx.drawImage(
+          assets.deckListBar,
+          dx + W - deckListW,
+          dy -
+            (effectTimers.screenTransition * H) / 200 -
+            (effectTimers.deckListOpen * H) / 100,
+          deckListW,
+          deckListH,
+        );
+      } else {
+        ctx.drawImage(
+          assets.deckListBar,
+          dx + W - deckListW,
+          dy -
+            (effectTimers.screenTransition * H) / 200 -
+            ((200 - effectTimers.deckListClose) * H) / 100,
+          deckListW,
+          deckListH,
+        );
+      }
+    }
+    // 戻る
     ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
     const backImg = assets.backText;
     if (backImg) {
       const textH = btnH * 0.8;
       const textW = textH / (backImg.height / backImg.width);
-      const textX = backX + btnW * 0.5;
+      let textX = backX + btnW * 0.5;
       const textY = backY + btnH * 0.1;
+      if (!layoutIsWide) {
+        textX = backX + btnW * 0.6;
+      }
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
     }
+    const rightX = dx + W - btnW * 0.6;
+    const rightY = H * 0.75;
+    // 裏カード
+    ctx.drawImage(assets.buttonFrame1, rightX, rightY, btnW, btnH);
+    // 保存
+    ctx.drawImage(
+      assets.buttonFrame1,
+      rightX,
+      rightY + btnH * 1.05,
+      btnW,
+      btnH,
+    );
   }
 
   if (effectTimers.fadeIn > 0) {

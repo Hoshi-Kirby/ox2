@@ -33,6 +33,7 @@ export const assets = {
   makeBg: new Image(),
   deckList: new Image(),
   deckListBar: new Image(),
+  btnDeck: new Image(),
 
   cardAssets: {
     des: [] as HTMLImageElement[],
@@ -99,6 +100,7 @@ assets.btnOrgHover.src = "/assets/button/organize_hover.png";
 assets.makeBg.src = "/assets/backgrounds/restaurant.png";
 assets.deckList.src = "/assets/ui/deck_list.png";
 assets.deckListBar.src = "/assets/ui/deck_list_bar.png";
+assets.btnDeck.src = "/assets/button/deck.png";
 
 type Attr = keyof typeof assets.cardAssets;
 

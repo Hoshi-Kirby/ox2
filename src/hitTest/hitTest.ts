@@ -115,7 +115,7 @@ export function isInsideBackButton(x: number, y: number, ratio: number) {
   let backY = baseY + offsetY * 5 - H * 0.03;
 
   if (!layoutIsWide) {
-    backX = dx - btnW / 2;
+    backX = dx - btnW * 0.7;
     backY = dy + H * 0.05;
   }
 
@@ -405,9 +405,12 @@ export function isInsideDeckBar(
   ratio: number,
 ) {
   const { W, H, dx, dy } = computeLayout(ratio);
-  const deckListH = H * 0.95;
-  const deckListW =
-    deckListH * (assets.deckList.width / assets.deckList.height);
+  let deckListH = H * 0.95;
+  let deckListW = deckListH * (assets.deckList.width / assets.deckList.height);
+  if (deckListW > W) {
+    deckListW = W;
+    deckListH = deckListW / (assets.deckList.width / assets.deckList.height);
+  }
   const baseX = dx + W - deckListW + H * 0.041;
   const baseY = dy;
   const cardBarH = (H * 1.151) / 20;
@@ -418,4 +421,17 @@ export function isInsideDeckBar(
   const barX = baseX;
   const barY = baseY + index * cardBardy;
   return x >= barX && x <= barX + cardBarW && y >= barY && y <= barY + cardBarH;
+}
+
+// deck button スマホ用
+export function isInsideDeckButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+
+  let btnW = H * 0.45;
+  const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+  const deckX = dx - btnW * 0.6 + W + H * 0.05;
+  const deckY = dy + H * 0.05;
+
+  return x >= deckX && x <= deckX + btnW && y >= deckY && y <= deckY + btnH;
 }

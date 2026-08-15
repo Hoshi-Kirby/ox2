@@ -43,6 +43,7 @@ export type Settings = {
     inputLocked: boolean;
     inputLockedSub: boolean;
     scrollY: number;
+    openDeckList: boolean;
   };
 
   game: {
@@ -105,6 +106,8 @@ export default function GameCanvas() {
     leftWhiteSlide: 0,
     screenTransition: 0,
     menu2Transition: 0,
+    deckListOpen: 0,
+    deckListClose: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -143,6 +146,7 @@ export default function GameCanvas() {
       inputLocked: false,
       inputLockedSub: false,
       scrollY: 0,
+      openDeckList: false,
     },
 
     game: {
