@@ -439,6 +439,7 @@ export function renderEffect(
     }
   } else if (screen === "make") {
     if (layoutIsWide) {
+      // デッキリスト下
       const deckListH = H * 0.95;
       const deckListW =
         deckListH * (assets.deckList.width / assets.deckList.height);
@@ -450,6 +451,33 @@ export function renderEffect(
         deckListH,
       );
 
+      // カードバー^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v
+      const baseX = dx + W - deckListW + H * 0.041; //0.25 0.41
+      const baseY = dy;
+      const cardBarH = (H * 1.151) / 20;
+      const cardBarW =
+        (cardBarH * assets.cardBarAssets.des[1].width) /
+        assets.cardBarAssets.des[1].height;
+      const cardBardy = cardBarH * 0.8;
+      const deck = settingsRef.game.editDeck;
+
+      for (let i = 0; i < deck.length; i++) {
+        const card = deck[i];
+
+        const img = assets.cardBarAssets[card.attr][card.index];
+        if (!img || !img.complete) continue;
+
+        const x = baseX;
+        const y = baseY + i * cardBardy;
+        if (hoverStates.hoverDeckIndex == i) {
+          ctx.drawImage(img, x - H * 0.015, y, cardBarW, cardBarH);
+        } else {
+          ctx.drawImage(img, x, y, cardBarW, cardBarH);
+        }
+      }
+
+      // デッキリスト上
+
       ctx.drawImage(
         assets.deckListBar,
         dx + W - deckListW,
@@ -458,7 +486,8 @@ export function renderEffect(
         deckListH,
       );
     }
-    // スマホ用
+
+    // スマホ用　　　　PCやタブレットの画面表示はrendererUIで
     const attrs = [
       "des",
       "gen",
@@ -509,7 +538,7 @@ export function renderEffect(
         }
       }
     }
-    // カードホバー-------------
+    // カードホバー-------------どの画面比でも
 
     let isPoolWide = true;
 
@@ -558,13 +587,9 @@ export function renderEffect(
 
       for (let a = 0; a < attrs.length; a++) {
         for (let i = 1; i <= 3; i++) {
-          const deckIndex = settingsRef.ui.deckSelected;
-          const deckKeys = ["deck1", "deck2", "deck3"] as const;
-
-          const deckKey = deckKeys[deckIndex];
-          const deck = settingsRef.game[deckKey];
+          const deck = settingsRef.game.editDeck;
           const count = deck.filter(
-            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+            (c: CardID) => c.attr === attrs[a] && c.index === i,
           ).length;
 
           const isFull = count >= 4;
@@ -598,13 +623,9 @@ export function renderEffect(
           // ctx.drawImage(img, x, y, cardW, cardH);
         }
         for (let i = 4; i <= 5; i++) {
-          const deckIndex = settingsRef.ui.deckSelected;
-          const deckKeys = ["deck1", "deck2", "deck3"] as const;
-
-          const deckKey = deckKeys[deckIndex];
-          const deck = settingsRef.game[deckKey];
+          const deck = settingsRef.game.editDeck;
           const count = deck.filter(
-            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+            (c: CardID) => c.attr === attrs[a] && c.index === i,
           ).length;
 
           const isFull = count >= 4;
@@ -639,13 +660,9 @@ export function renderEffect(
     } else {
       for (let a = 0; a < attrs.length; a++) {
         for (let i = 1; i <= 5; i++) {
-          const deckIndex = settingsRef.ui.deckSelected;
-          const deckKeys = ["deck1", "deck2", "deck3"] as const;
-
-          const deckKey = deckKeys[deckIndex];
-          const deck = settingsRef.game[deckKey];
+          const deck = settingsRef.game.editDeck;
           const count = deck.filter(
-            (c: CardID) => c.attr === attrs[a] && c.index === i - 1,
+            (c: CardID) => c.attr === attrs[a] && c.index === i,
           ).length;
 
           const isFull = count >= 4;

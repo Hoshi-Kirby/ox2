@@ -5,9 +5,12 @@ import {
   isInsideMenu2DeckButton,
   isInsideOrgButton,
   detectCardHoverSingle,
+  isInsideDeckBar,
 } from "./hitTest";
-import type { Screen, HoverUI } from "../GameCanvas";
+import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
 import { assets } from "../canvas/assets";
+let lastCardPoolTarget: string | null = null;
+let lastDeckBarTarget = -1;
 
 type HoverParams = {
   ratio: number;
@@ -16,7 +19,7 @@ type HoverParams = {
   hoverStatesRef: React.MutableRefObject<HoverUI>;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
   settingsRef: any;
-  pressTimers: React.MutableRefObject<{ startButton: number }>;
+  pressTimers: PressTimers;
 };
 
 export function createHoverHandler({
@@ -52,16 +55,16 @@ export function createHoverHandler({
     } else {
       // タッチ → 長押し判定
       if (insideStart) {
-        pressTimers.current.startButton += dt;
+        pressTimers.startButton += dt;
 
         if (
-          pressTimers.current.startButton > 300 &&
+          pressTimers.startButton > 300 &&
           !hoverStatesRef.current.startButton
         ) {
           setHoverStates((prev) => ({ ...prev, startButton: true }));
         }
       } else {
-        pressTimers.current.startButton = 0;
+        pressTimers.startButton = 0;
 
         if (hoverStatesRef.current.startButton) {
           setHoverStates((prev) => ({ ...prev, startButton: false }));
@@ -139,58 +142,159 @@ export function createHoverHandler({
           }));
         }
       }
-    }
-    // ------------------------------
-    // ORG BUTTON
-    // ------------------------------
-    const insideOrg = isInsideOrgButton(x, y, ratio);
 
-    if (hoverStatesRef.current.org !== insideOrg) {
-      setHoverStates((prev) => ({ ...prev, org: insideOrg }));
+      // ------------------------------
+      // ORG BUTTON
+      // ------------------------------
+      const insideOrg = isInsideOrgButton(x, y, ratio);
+
+      if (hoverStatesRef.current.org !== insideOrg) {
+        setHoverStates((prev) => ({ ...prev, org: insideOrg }));
+      }
     }
 
     // ------------------------------
     // MAKE CARD
     // ------------------------------
-    const attrs = [
-      "des",
-      "gen",
-      "dis",
-      "sup",
-    ] as (keyof typeof assets.cardAssets)[];
-    const nextHoverCards = {
-      des: [...hoverStatesRef.current.hoverCards.des],
-      gen: [...hoverStatesRef.current.hoverCards.gen],
-      dis: [...hoverStatesRef.current.hoverCards.dis],
-      sup: [...hoverStatesRef.current.hoverCards.sup],
-    };
+    if (screen === "make") {
+      const { deviceMode } = settingsRef.current.ui;
 
-    let changed = false;
-
-    for (const attr of attrs) {
-      for (let i = 0; i < 5; i++) {
-        const inside = detectCardHoverSingle(
-          x,
-          y,
-          ratio,
-          attr,
-          i + 1,
-          settingsRef.current.ui.scrollY,
-          settingsRef.current.ui.deviceMode,
-        );
-
-        if (nextHoverCards[attr][i] !== inside) {
-          nextHoverCards[attr][i] = inside;
-          changed = true;
+      // カードプール hover
+      const attrs = ["des", "gen", "dis", "sup"] as const;
+      const nextHoverCards = {
+        des: [...hoverStatesRef.current.hoverCards.des],
+        gen: [...hoverStatesRef.current.hoverCards.gen],
+        dis: [...hoverStatesRef.current.hoverCards.dis],
+        sup: [...hoverStatesRef.current.hoverCards.sup],
+      };
+      let changedPool = false;
+      let currentCardTarget: string | null = null;
+      for (const attr of attrs) {
+        for (let i = 0; i < 5; i++) {
+          const inside = detectCardHoverSingle(
+            x,
+            y,
+            ratio,
+            attr,
+            i + 1,
+            settingsRef.current.ui.scrollY,
+            deviceMode,
+          );
+          if (inside) {
+            currentCardTarget = `${attr}-${i}`;
+            break;
+          }
+        }
+        if (currentCardTarget !== null) {
+          break;
         }
       }
-    }
+      if (deviceMode === "mouse") {
+        // マウス → 即時 hover
+        for (const attr of attrs) {
+          for (let i = 0; i < 5; i++) {
+            const inside = detectCardHoverSingle(
+              x,
+              y,
+              ratio,
+              attr,
+              i + 1,
+              settingsRef.current.ui.scrollY,
+              deviceMode,
+            );
 
-    if (changed) {
-      setHoverStates((prev) => ({
-        ...prev,
-        hoverCards: nextHoverCards,
-      }));
+            if (nextHoverCards[attr][i] !== inside) {
+              nextHoverCards[attr][i] = inside;
+              changedPool = true;
+            }
+          }
+        }
+        pressTimers.cardPool = 0;
+        lastCardPoolTarget = null;
+      } else {
+        // タッチ → 長押し hover
+        if (currentCardTarget !== lastCardPoolTarget) {
+          pressTimers.cardPool = 0;
+          lastCardPoolTarget = currentCardTarget;
+        }
+        if (currentCardTarget !== null) {
+          pressTimers.cardPool += dt;
+          if (pressTimers.cardPool > 300) {
+            const [attr, indexString] = currentCardTarget.split("-");
+            const index = Number(indexString);
+            if (
+              attr === "des" ||
+              attr === "gen" ||
+              attr === "dis" ||
+              attr === "sup"
+            ) {
+              for (const a of attrs) {
+                for (let i = 0; i < 5; i++) {
+                  const shouldHover = a === attr && i === index;
+
+                  if (nextHoverCards[a][i] !== shouldHover) {
+                    nextHoverCards[a][i] = shouldHover;
+                    changedPool = true;
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          pressTimers.cardPool = 0;
+          for (const attr of attrs) {
+            for (let i = 0; i < 5; i++) {
+              if (nextHoverCards[attr][i]) {
+                nextHoverCards[attr][i] = false;
+                changedPool = true;
+              }
+            }
+          }
+        }
+      }
+      if (changedPool) {
+        setHoverStates((prev) => ({
+          ...prev,
+          hoverCards: nextHoverCards,
+        }));
+      }
+      // カードバー hover
+      const deck = settingsRef.current.game.editDeck;
+      let currentDeckTarget = -1;
+      for (let i = deck.length - 1; i >= 0; i--) {
+        if (isInsideDeckBar(i, x, y, ratio)) {
+          currentDeckTarget = i;
+          break;
+        }
+      }
+      let newHoverIndex = -1;
+      if (deviceMode === "mouse") {
+        // マウス → 即時 hover
+        newHoverIndex = currentDeckTarget;
+        pressTimers.deckBar = 0;
+        lastDeckBarTarget = -1;
+      } else {
+        // タッチ → 長押し hover
+        if (currentDeckTarget !== lastDeckBarTarget) {
+          pressTimers.deckBar = 0;
+          lastDeckBarTarget = currentDeckTarget;
+        }
+        if (currentDeckTarget !== -1) {
+          pressTimers.deckBar += dt;
+          if (pressTimers.deckBar > 300) {
+            newHoverIndex = currentDeckTarget;
+          }
+        } else {
+          pressTimers.deckBar = 0;
+          lastDeckBarTarget = -1;
+        }
+      }
+      if (hoverStatesRef.current.hoverDeckIndex !== newHoverIndex) {
+        setHoverStates((prev) => ({
+          ...prev,
+          hoverDeckIndex: newHoverIndex,
+        }));
+      }
     }
 
     requestAnimationFrame(loop);

@@ -52,15 +52,21 @@ export type Settings = {
     eventEnabled: boolean;
     shiftCardEnabled: boolean;
 
+    deck0: CardID[];
     deck1: CardID[];
     deck2: CardID[];
     deck3: CardID[];
+    editDeck: CardID[];
+    deckColor0: DeckColor;
     deckColor1: DeckColor;
     deckColor2: DeckColor;
     deckColor3: DeckColor;
+    editDeckColor: DeckColor;
+    deckName0: string;
     deckName1: string;
     deckName2: string;
     deckName3: string;
+    editDeckName: string;
 
     selectedDeckP1: number;
     selectedDeckP2: number;
@@ -78,6 +84,12 @@ export type HoverUI = {
     dis: boolean[];
     sup: boolean[];
   };
+  hoverDeckIndex: number;
+};
+export type PressTimers = {
+  startButton: number;
+  cardPool: number;
+  deckBar: number;
 };
 
 export default function GameCanvas() {
@@ -107,14 +119,13 @@ export default function GameCanvas() {
       dis: Array(5).fill(false),
       sup: Array(5).fill(false),
     },
+    hoverDeckIndex: -1,
   });
-
-  type PressTimers = {
-    startButton: number;
-  };
 
   const pressTimers = useRef<PressTimers>({
     startButton: 0,
+    cardPool: 0,
+    deckBar: 0,
   });
 
   const hoverStatesRef = useRef(hoverStates);
@@ -141,15 +152,21 @@ export default function GameCanvas() {
       eventEnabled: true,
       shiftCardEnabled: false,
 
+      deck0: [],
       deck1: [],
       deck2: [],
       deck3: [],
+      editDeck: [],
+      deckColor0: "rainbow",
       deckColor1: "white",
       deckColor2: "white",
       deckColor3: "white",
+      editDeckColor: "white",
+      deckName0: "デフォルト",
       deckName1: "デッキ1",
       deckName2: "デッキ2",
       deckName3: "デッキ3",
+      editDeckName: "",
 
       selectedDeckP1: 0,
       selectedDeckP2: 0,
@@ -296,7 +313,7 @@ export default function GameCanvas() {
       hoverStatesRef,
       setHoverStates,
       settingsRef,
-      pressTimers,
+      pressTimers: pressTimers.current,
     });
 
     return stop;

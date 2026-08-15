@@ -40,6 +40,12 @@ export const assets = {
     dis: [] as HTMLImageElement[],
     sup: [] as HTMLImageElement[],
   },
+  cardBarAssets: {
+    des: [] as HTMLImageElement[],
+    gen: [] as HTMLImageElement[],
+    dis: [] as HTMLImageElement[],
+    sup: [] as HTMLImageElement[],
+  },
 };
 
 assets.titleBg.src = "/assets/backgrounds/city_scene.png";
@@ -101,5 +107,14 @@ for (const attr of ["des", "gen", "dis", "sup"] as Attr[]) {
     const img = new Image();
     img.src = `/assets/cards_token/${attr}/${i}.png`;
     assets.cardAssets[attr][i] = img;
+  }
+}
+type AttrB = keyof typeof assets.cardBarAssets;
+
+for (const attr of ["des", "gen", "dis", "sup"] as AttrB[]) {
+  for (let i = 1; i <= 7; i++) {
+    const img = new Image();
+    img.src = `/assets/cards_token/${attr}/${i}b.png`;
+    assets.cardBarAssets[attr][i] = img;
   }
 }

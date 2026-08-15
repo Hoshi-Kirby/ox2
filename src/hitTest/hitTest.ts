@@ -396,3 +396,26 @@ export function detectCardHoverSingle(
     );
   }
 }
+
+// Card Bar
+export function isInsideDeckBar(
+  index: number,
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const deckListH = H * 0.95;
+  const deckListW =
+    deckListH * (assets.deckList.width / assets.deckList.height);
+  const baseX = dx + W - deckListW + H * 0.041;
+  const baseY = dy;
+  const cardBarH = (H * 1.151) / 20;
+  const cardBarW =
+    (cardBarH * assets.cardBarAssets.des[1].width) /
+    assets.cardBarAssets.des[1].height;
+  const cardBardy = cardBarH * 0.8;
+  const barX = baseX;
+  const barY = baseY + index * cardBardy;
+  return x >= barX && x <= barX + cardBarW && y >= barY && y <= barY + cardBarH;
+}

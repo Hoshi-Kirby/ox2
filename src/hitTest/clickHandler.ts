@@ -12,6 +12,7 @@ import {
   isInsideMenu2DeckButton,
   isInsideOrgButton,
   detectCardHoverSingle,
+  isInsideDeckBar,
 } from "./hitTest";
 import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -226,6 +227,16 @@ export function createClickHandler({
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
         settingsRef.current.ui.inputLocked = true;
+        const deckIndex = settingsRef.current.ui.deckSelected;
+        settingsRef.current.game.editDeck = [
+          ...settingsRef.current.game[`deck${deckIndex}`],
+        ];
+        settingsRef.current.game.editDeckColor = [
+          ...settingsRef.current.game[`deckColor${deckIndex}`],
+        ];
+        settingsRef.current.game.editDeckName = [
+          ...settingsRef.current.game[`deckName${deckIndex}`],
+        ];
 
         setTimeout(() => {
           setScreen("make");
@@ -256,6 +267,17 @@ export function createClickHandler({
           }, 300);
         }, 300);
       }
+      // 削除
+      const deck = settingsRef.current.game.editDeck;
+
+      for (let i = deck.length - 1; i >= 0; i--) {
+        if (isInsideDeckBar(i, x, y, ratio)) {
+          deck.splice(i, 1);
+
+          return;
+        }
+      }
+      // 追加
       const attrs = [
         "des",
         "gen",
@@ -264,30 +286,28 @@ export function createClickHandler({
       ] as (keyof typeof assets.cardAssets)[];
 
       for (const attr of attrs) {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 1; i <= 5; i++) {
           if (
             detectCardHoverSingle(
               x,
               y,
               ratio,
               attr,
-              i + 1,
+              i,
               settingsRef.current.ui.scrollY,
               settingsRef.current.ui.deviceMode,
             )
           ) {
-            const deckIndex = settingsRef.current.ui.deckSelected; // 0,1,2
-            const deckKey = ["deck1", "deck2", "deck3"][deckIndex];
-            const deck = settingsRef.current.game[deckKey];
+            const deck = settingsRef.current.game.editDeck;
 
             const count = deck.filter(
               (c: CardID) => c.attr === attr && c.index === i,
             ).length;
 
             if (count < 4 && deck.length < 20) {
-              settingsRef.current.game[deckKey].push({ attr, index: i });
+              settingsRef.current.game.editDeck.push({ attr, index: i });
 
-              settingsRef.current.game[deckKey].sort((a: CardID, b: CardID) => {
+              settingsRef.current.game.editDeck.sort((a: CardID, b: CardID) => {
                 const order = ["des", "gen", "dis", "sup"];
                 const ai = order.indexOf(a.attr);
                 const bi = order.indexOf(b.attr);
