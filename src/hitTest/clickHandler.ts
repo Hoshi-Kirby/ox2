@@ -230,16 +230,19 @@ export function createClickHandler({
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
         settingsRef.current.ui.inputLocked = true;
-        const deckIndex = settingsRef.current.ui.deckSelected;
+        const deckIndex = settingsRef.current.ui.deckSelected + 1;
         settingsRef.current.game.editDeck = [
           ...settingsRef.current.game[`deck${deckIndex}`],
         ];
         settingsRef.current.game.editDeckColor = [
-          ...settingsRef.current.game[`deckColor${deckIndex}`],
+          settingsRef.current.game[`deckColor${deckIndex}`],
         ];
         settingsRef.current.game.editDeckName = [
-          ...settingsRef.current.game[`deckName${deckIndex}`],
+          settingsRef.current.game[`deckName${deckIndex}`],
         ];
+        if (settingsRef.current.game.editDeckColor == "white") {
+          settingsRef.current.game.editDeckColor = "rainbow";
+        }
 
         setTimeout(() => {
           setScreen("make");
@@ -371,6 +374,44 @@ export function createClickHandler({
       // シフトボタン
       if (isInsideShiftButton(x, y, ratio)) {
         settingsRef.current.ui.isShift = !settingsRef.current.ui.isShift;
+      }
+      // ほぞん
+      if (isInsideSaveButton(x, y, ratio)) {
+        const deckIndex = settingsRef.current.ui.deckSelected + 1;
+        if (deckIndex === 0) return;
+
+        settingsRef.current.game[`deck${deckIndex}`] = [
+          ...settingsRef.current.game.editDeck,
+        ];
+        settingsRef.current.game[`deckName${deckIndex}`] =
+          settingsRef.current.game.editDeckName;
+
+        settingsRef.current.game[`deckColor${deckIndex}`] =
+          settingsRef.current.game.editDeckColor;
+
+        document.cookie = `deck${deckIndex}=${encodeURIComponent(
+          JSON.stringify(settingsRef.current.game[`deck${deckIndex}`]),
+        )}; path=/; max-age=31536000`;
+
+        document.cookie = `deckName${deckIndex}=${encodeURIComponent(
+          settingsRef.current.game[`deckName${deckIndex}`],
+        )}; path=/; max-age=31536000`;
+
+        document.cookie = `deckColor${deckIndex}=${encodeURIComponent(
+          settingsRef.current.game[`deckColor${deckIndex}`],
+        )}; path=/; max-age=31536000`;
+
+        effectTimers.fadeIn = 300;
+        effectTimers.fadeOut = 600;
+        settingsRef.current.ui.inputLocked = true;
+
+        setTimeout(() => {
+          setScreen("menuDeck");
+          effectTimers.fadeOut = 300;
+          setTimeout(() => {
+            settingsRef.current.ui.inputLocked = false;
+          }, 300);
+        }, 300);
       }
     }
   };

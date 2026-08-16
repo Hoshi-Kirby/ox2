@@ -193,7 +193,7 @@ export default function GameCanvas() {
     } else {
       settingsRef.current.ui.deviceMode = "touch";
     }
-
+    loadDecks(settingsRef);
     const onResize = () => {
       setRatio(window.innerWidth / window.innerHeight);
     };
@@ -455,5 +455,37 @@ function updateEffectsTimer(dt: number, timers: Record<string, number>) {
       timers[key] -= dt;
       if (timers[key] < 0) timers[key] = 0;
     }
+  }
+}
+function loadCookie(name: string) {
+  const match = document.cookie.match(new RegExp(`${name}=([^;]+)`));
+  return match ? match[1] : null;
+}
+
+type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
+type DeckNameKey = "deckName0" | "deckName1" | "deckName2" | "deckName3";
+type DeckColorKey = "deckColor0" | "deckColor1" | "deckColor2" | "deckColor3";
+
+function loadDecks(settingsRef: React.MutableRefObject<Settings>) {
+  for (let i = 1; i <= 3; i++) {
+    const deckKey: DeckKey = `deck${i}` as DeckKey;
+    const nameKey: DeckNameKey = `deckName${i}` as DeckNameKey;
+    const colorKey: DeckColorKey = `deckColor${i}` as DeckColorKey;
+
+    const deckStr = loadCookie(deckKey);
+    const nameStr = loadCookie(nameKey);
+    const colorStr = loadCookie(colorKey);
+
+    settingsRef.current.game[deckKey] = deckStr
+      ? JSON.parse(decodeURIComponent(deckStr))
+      : [];
+
+    settingsRef.current.game[nameKey] = nameStr
+      ? decodeURIComponent(nameStr)
+      : `デッキ${i}`;
+
+    settingsRef.current.game[colorKey] = (
+      colorStr ? decodeURIComponent(colorStr) : "white"
+    ) as DeckColor;
   }
 }
