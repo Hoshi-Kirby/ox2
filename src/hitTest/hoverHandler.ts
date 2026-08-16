@@ -6,6 +6,8 @@ import {
   isInsideOrgButton,
   detectCardHoverSingle,
   isInsideDeckBar,
+  isInsideShiftButton,
+  isInsideSaveButton,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
 import { assets } from "../canvas/assets";
@@ -298,6 +300,18 @@ export function createHoverHandler({
             hoverDeckIndex: newHoverIndex,
           }));
         }
+      }
+      // シフト
+      const insideShift = isInsideShiftButton(x, y, ratio);
+
+      if (hoverStatesRef.current.shift !== insideShift) {
+        setHoverStates((prev) => ({ ...prev, shift: insideShift }));
+      }
+      // 保存
+      const insideSave = isInsideSaveButton(x, y, ratio);
+
+      if (hoverStatesRef.current.save !== insideSave) {
+        setHoverStates((prev) => ({ ...prev, save: insideSave }));
       }
     }
 

@@ -256,7 +256,7 @@ export function detectCardHoverSingle(
   attr: keyof typeof assets.cardAssets,
   index: number, // 1〜5
   scrollY: number,
-  isClick: boolean,
+  devicemode: "click" | "touch",
 ): boolean {
   const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
 
@@ -371,7 +371,7 @@ export function detectCardHoverSingle(
 
     // rendererEffect と同じ
     let n = 5;
-    if (!isClick) {
+    if (devicemode == "touch") {
       n = 1;
     }
 
@@ -432,6 +432,31 @@ export function isInsideDeckButton(x: number, y: number, ratio: number) {
 
   const deckX = dx - btnW * 0.6 + W + H * 0.05;
   const deckY = dy + H * 0.05;
+
+  return x >= deckX && x <= deckX + btnW && y >= deckY && y <= deckY + btnH;
+}
+
+// 裏カード
+export function isInsideShiftButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+
+  let btnW = H * 0.45;
+  const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+  const deckX = dx + W - btnW * 0.6;
+  const deckY = dy + H * 0.75;
+
+  return x >= deckX && x <= deckX + btnW && y >= deckY && y <= deckY + btnH;
+}
+// 保存
+export function isInsideSaveButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+
+  let btnW = H * 0.45;
+  const btnH = btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+  const deckX = dx + W - btnW * 0.6;
+  const deckY = dy + H * 0.75 + btnH * 1.05;
 
   return x >= deckX && x <= deckX + btnW && y >= deckY && y <= deckY + btnH;
 }

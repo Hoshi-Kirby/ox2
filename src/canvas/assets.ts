@@ -34,6 +34,8 @@ export const assets = {
   deckList: new Image(),
   deckListBar: new Image(),
   btnDeck: new Image(),
+  btnShift: new Image(),
+  btnSave: new Image(),
 
   cardAssets: {
     des: [] as HTMLImageElement[],
@@ -101,6 +103,8 @@ assets.makeBg.src = "/assets/backgrounds/restaurant.png";
 assets.deckList.src = "/assets/ui/deck_list.png";
 assets.deckListBar.src = "/assets/ui/deck_list_bar.png";
 assets.btnDeck.src = "/assets/button/deck.png";
+assets.btnShift.src = "/assets/button/shift.png";
+assets.btnSave.src = "/assets/button/save.png";
 
 type Attr = keyof typeof assets.cardAssets;
 

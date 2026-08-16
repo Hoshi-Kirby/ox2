@@ -14,6 +14,8 @@ import {
   detectCardHoverSingle,
   isInsideDeckBar,
   isInsideDeckButton,
+  isInsideShiftButton,
+  isInsideSaveButton,
 } from "./hitTest";
 import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -243,6 +245,7 @@ export function createClickHandler({
           setScreen("make");
           settingsRef.current.ui.scrollY = 0;
           settingsRef.current.ui.openDeckList = false;
+          settingsRef.current.ui.isShift = false;
           effectTimers.fadeOut = 300;
           effectTimers.screenTransition = 200;
           setTimeout(() => {
@@ -312,17 +315,29 @@ export function createClickHandler({
                   attr,
                   i,
                   settingsRef.current.ui.scrollY,
-                  settingsRef.current.ui.deviceMode == "click",
+                  settingsRef.current.ui.deviceMode,
                 )
               ) {
+                let shiftCard = 0;
+                if (settingsRef.current.ui.isShift && i > 3) {
+                  shiftCard = 2;
+                }
                 const deck = settingsRef.current.game.editDeck;
 
-                const count = deck.filter(
+                let count = deck.filter(
                   (c: CardID) => c.attr === attr && c.index === i,
                 ).length;
+                if (i > 3) {
+                  count += deck.filter(
+                    (c: CardID) => c.attr === attr && c.index === i + 2,
+                  ).length;
+                }
 
                 if (count < 4 && deck.length < 20) {
-                  settingsRef.current.game.editDeck.push({ attr, index: i });
+                  settingsRef.current.game.editDeck.push({
+                    attr,
+                    index: i + shiftCard,
+                  });
 
                   settingsRef.current.game.editDeck.sort(
                     (a: CardID, b: CardID) => {
@@ -352,6 +367,10 @@ export function createClickHandler({
             }, 100);
           }
         }
+      }
+      // シフトボタン
+      if (isInsideShiftButton(x, y, ratio)) {
+        settingsRef.current.ui.isShift = !settingsRef.current.ui.isShift;
       }
     }
   };

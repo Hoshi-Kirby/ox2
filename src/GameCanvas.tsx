@@ -44,6 +44,7 @@ export type Settings = {
     inputLockedSub: boolean;
     scrollY: number;
     openDeckList: boolean;
+    isShift: boolean;
   };
 
   game: {
@@ -86,6 +87,8 @@ export type HoverUI = {
     sup: boolean[];
   };
   hoverDeckIndex: number;
+  shift: boolean;
+  save: boolean;
 };
 export type PressTimers = {
   startButton: number;
@@ -123,6 +126,8 @@ export default function GameCanvas() {
       sup: Array(5).fill(false),
     },
     hoverDeckIndex: -1,
+    shift: false,
+    save: false,
   });
 
   const pressTimers = useRef<PressTimers>({
@@ -147,6 +152,7 @@ export default function GameCanvas() {
       inputLockedSub: false,
       scrollY: 0,
       openDeckList: false,
+      isShift: false,
     },
 
     game: {

@@ -6,6 +6,8 @@ let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
 let backOffset = 0;
 let deckOffset = [0, 0, 0];
+let shiftOffset = 0;
+let saveOffset = 0;
 
 export function renderEffect(
   ctx: CanvasRenderingContext2D,
@@ -482,7 +484,11 @@ export function renderEffect(
           ctx.drawImage(img, x, y, cardW, cardH);
         }
         for (let i = 4; i <= 5; i++) {
-          const img = assets.cardAssets[attrs[a]][i];
+          let shiftCard = 0;
+          if (settingsRef.ui.isShift) {
+            shiftCard = 2;
+          }
+          const img = assets.cardAssets[attrs[a]][i + shiftCard];
           if (!img || !img.complete) continue;
 
           const x = baseX + (i - 4) * carddx;
@@ -577,31 +583,40 @@ export function renderEffect(
           // ctx.drawImage(img, x, y, cardW, cardH);
         }
         for (let i = 4; i <= 5; i++) {
+          let shiftCard = 0;
+          if (settingsRef.ui.isShift) {
+            shiftCard = 2;
+          }
           const deck = settingsRef.game.editDeck;
-          const count = deck.filter(
+          let count = deck.filter(
             (c: CardID) => c.attr === attrs[a] && c.index === i,
           ).length;
+          if (i > 3) {
+            count += deck.filter(
+              (c: CardID) => c.attr === attrs[a] && c.index === i + 2,
+            ).length;
+          }
 
           const isFull = count >= 4;
           if (isFull) {
             ctx.filter = "grayscale(100%)";
-            const img = assets.cardAssets[attrs[a]][i];
+            const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 4) * carddx;
             const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(img, x, y, cardW, cardH);
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
             ctx.filter = "none";
-            const img = assets.cardAssets[attrs[a]][i];
+            const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 4) * carddx;
             const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(
               img,
-              x - cardPoolW * 0.005,
-              y - cardPoolH * 0.005,
-              cardW + cardPoolW * 0.01,
-              cardH + cardPoolH * 0.01,
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              cardW + cardW * 0.04,
+              cardH + cardH * 0.04,
             );
           }
           // const img = assets.cardAssets[attrs[a]][i];
@@ -614,32 +629,48 @@ export function renderEffect(
     } else {
       for (let a = 0; a < attrs.length; a++) {
         for (let i = 1; i <= 5; i++) {
+          let shiftCard = 0;
+          if (settingsRef.ui.isShift && i > 3) {
+            shiftCard = 2;
+          }
           const deck = settingsRef.game.editDeck;
-          const count = deck.filter(
+          let count = deck.filter(
             (c: CardID) => c.attr === attrs[a] && c.index === i,
           ).length;
+          if (i > 3) {
+            count += deck.filter(
+              (c: CardID) => c.attr === attrs[a] && c.index === i + 2,
+            ).length;
+          }
 
           const isFull = count >= 4;
           if (isFull) {
             ctx.filter = "grayscale(100%)";
-            const img = assets.cardAssets[attrs[a]][i];
+            const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
             const y = baseY + a * carddy;
             ctx.drawImage(img, x, y, cardW, cardH);
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
             ctx.filter = "none";
-            const img = assets.cardAssets[attrs[a]][i];
+            const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
             const y = baseY + a * carddy;
             ctx.drawImage(
               img,
-              x - cardPoolW * 0.005,
-              y - cardPoolH * 0.005,
-              cardW + cardPoolW * 0.01,
-              cardH + cardPoolH * 0.01,
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              cardW + cardW * 0.04,
+              cardH + cardH * 0.04,
             );
+          } else if (shiftCard == 2) {
+            ctx.filter = "none";
+            const img = assets.cardAssets[attrs[a]][i + shiftCard];
+            if (!img || !img.complete) continue;
+            const x = baseX + (i - 1) * carddx;
+            const y = baseY + a * carddy;
+            ctx.drawImage(img, x, y, cardW, cardH);
           }
         }
       }
@@ -814,18 +845,50 @@ export function renderEffect(
 
       ctx.drawImage(backImg, textX, textY, textW, textH);
     }
-    const rightX = dx + W - btnW * 0.6;
-    const rightY = H * 0.75;
     // 裏カード
-    ctx.drawImage(assets.buttonFrame1, rightX, rightY, btnW, btnH);
-    // 保存
+    if (hoverStates.shift) {
+      shiftOffset = Math.min(btnW * 0.1, shiftOffset + dt * 0.4);
+    } else {
+      shiftOffset = Math.max(0, shiftOffset - dt * 0.6);
+    }
+    const rightX = dx + W - btnW * 0.6;
+    const rightY = dy + H * 0.75;
     ctx.drawImage(
       assets.buttonFrame1,
-      rightX,
+      rightX - shiftOffset,
+      rightY,
+      btnW,
+      btnH,
+    );
+    const btnShiftImg = assets.btnShift;
+    if (btnShiftImg) {
+      const textH = btnH * 0.8;
+      const textW = textH / (btnShiftImg.height / btnShiftImg.width);
+      let textX = rightX + btnW * 0.12;
+      const textY = rightY + btnH * 0.1;
+      ctx.drawImage(btnShiftImg, textX - shiftOffset, textY, textW, textH);
+    }
+    // 保存
+    if (hoverStates.save) {
+      saveOffset = Math.min(btnW * 0.1, saveOffset + dt * 0.4);
+    } else {
+      saveOffset = Math.max(0, saveOffset - dt * 0.6);
+    }
+    ctx.drawImage(
+      assets.buttonFrame1,
+      rightX - saveOffset,
       rightY + btnH * 1.05,
       btnW,
       btnH,
     );
+    const btnSaveImg = assets.btnSave;
+    if (btnSaveImg) {
+      const textH = btnH * 0.8;
+      const textW = textH / (btnSaveImg.height / btnSaveImg.width);
+      let textX = rightX + btnW * 0.14;
+      const textY = rightY + btnH * 1.05 + btnH * 0.1;
+      ctx.drawImage(btnSaveImg, textX - saveOffset, textY, textW, textH);
+    }
   }
 
   if (effectTimers.fadeIn > 0) {
