@@ -45,6 +45,8 @@ export type Settings = {
     scrollY: number;
     openDeckList: boolean;
     isShift: boolean;
+    initialHandId: number;
+    changingDeck: boolean[];
   };
 
   game: {
@@ -70,14 +72,16 @@ export type Settings = {
     deckName3: string;
     editDeckName: string;
 
-    selectedDeckP1: number;
-    selectedDeckP2: number;
+    selectedDeckP: number[];
   };
 };
 export type HoverUI = {
   startButton: boolean;
   back: boolean;
   menu: boolean[];
+  gameSettingArrow: boolean[][];
+  gameDeck: boolean[];
+  selectDeck: boolean[];
   menuDeck: boolean[];
   org: boolean;
   hoverCards: {
@@ -117,6 +121,9 @@ export default function GameCanvas() {
     startButton: false,
     back: false,
     menu: Array(5).fill(false),
+    gameSettingArrow: Array.from({ length: 2 }, () => Array(2).fill(false)),
+    gameDeck: Array(2).fill(false),
+    selectDeck: Array(4).fill(false),
     menuDeck: Array(3).fill(false),
     org: false,
     hoverCards: {
@@ -153,12 +160,14 @@ export default function GameCanvas() {
       scrollY: 0,
       openDeckList: false,
       isShift: false,
+      initialHandId: 2,
+      changingDeck: [false, false],
     },
 
     game: {
       gameMode: "pvc",
       initialHand: 5,
-      firstPlayer: 1,
+      firstPlayer: 2,
       eventEnabled: true,
       shiftCardEnabled: false,
 
@@ -178,8 +187,7 @@ export default function GameCanvas() {
       deckName3: "デッキ3",
       editDeckName: "",
 
-      selectedDeckP1: 0,
-      selectedDeckP2: 0,
+      selectedDeckP: [0, 0],
     },
   });
 

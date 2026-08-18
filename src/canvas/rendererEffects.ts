@@ -21,6 +21,8 @@ export function renderEffect(
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
   const canvasRatio = 1280 / 720;
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
   let W, H, dx, dy;
   if (ratio > canvasRatio) {
     W = 1280;
@@ -171,6 +173,162 @@ export function renderEffect(
       // menu2表示
       if (screen === "menuOffline") {
         ctx.drawImage(assets.gameSettingUI, menu2X, menu2Y, menu2W, menu2H);
+        let arrow = assets.arrow[0];
+        const arrowW = menu2W * 0.05;
+        const arrowH = arrowW * (arrow.height / arrow.width);
+        for (let i = 0; i < 2; i++) {
+          arrow = assets.arrow[0];
+          if (hoverStates.gameSettingArrow[i][1]) {
+            arrow = assets.arrow[1];
+          }
+          const y = menu2Y + menu2H * 0.21 + i * menu2H * 0.13;
+          ctx.save();
+          ctx.translate(menu2X + menu2W * 0.8 - arrowW * 0.5 + arrowW, y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(arrow, menu2W * 0.3, 0, arrowW, arrowH);
+          ctx.restore();
+
+          arrow = assets.arrow[0];
+          if (hoverStates.gameSettingArrow[i][0]) {
+            arrow = assets.arrow[1];
+          }
+
+          ctx.drawImage(arrow, menu2X + menu2W * 0.8, y, arrowW, arrowH);
+        }
+        // 手札、先攻
+
+        ctx.drawImage(
+          assets.initialHandSize[settingsRef.ui.initialHandId],
+          menu2X + menu2W * 0.6 - menu2W * 0.01,
+          menu2Y + menu2H * 0.21 - menu2H * 0.025,
+          (arrowH * 2) /
+            (assets.initialHandSize[0].height /
+              assets.initialHandSize[0].width),
+          arrowH * 2,
+        );
+        ctx.drawImage(
+          assets.firstPlayer[settingsRef.game.firstPlayer],
+          menu2X + menu2W * 0.6 - menu2W * 0.09,
+          menu2Y + menu2H * 0.21 - menu2H * 0.025 + menu2H * 0.13,
+          (arrowH * 2) /
+            (assets.firstPlayer[2].height / assets.firstPlayer[2].width),
+          arrowH * 2,
+        );
+
+        // デッキ選択
+        const deckImageMap = {
+          blue: assets.deckb,
+          red: assets.deckr,
+          yellow: assets.decky,
+          green: assets.deckg,
+          rainbow: assets.deckn,
+          white: assets.deckw,
+        };
+        const colors = [
+          settingsRef.game.deckColor0,
+          settingsRef.game.deckColor1,
+          settingsRef.game.deckColor2,
+          settingsRef.game.deckColor3,
+        ];
+        const decks = [
+          settingsRef.game.deck0,
+          settingsRef.game.deck1,
+          settingsRef.game.deck2,
+          settingsRef.game.deck3,
+        ];
+        const names = [
+          settingsRef.game.deckName0,
+          settingsRef.game.deckName1,
+          settingsRef.game.deckName2,
+          settingsRef.game.deckName3,
+        ];
+        for (let i = 0; i < 2; i++) {
+          if (hoverStates.menuDeck[i]) {
+            deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
+          } else {
+            deckOffset[i] = 0;
+          }
+          const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
+          const deckImg =
+            deckImageMap[colors[settingsRef.game.selectedDeckP[i]]];
+          ctx.drawImage(
+            deckImg,
+            menu2X + menu2W * 0.55 + i * menu2W * 0.22 + shake,
+            menu2Y + menu2H * 0.47,
+            menu2W * 0.1,
+            menu2W * 0.1 * (deckImg.height / deckImg.width),
+          );
+        }
+        // シフト
+        if (settingsRef.game.shiftCardEnabled) {
+          ctx.drawImage(
+            assets.trueActive,
+            menu2X + menu2W * 0.47,
+            menu2Y + menu2H * 0.58,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falsePassive,
+            menu2X + menu2W * 0.68,
+            menu2Y + menu2H * 0.58,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        } else {
+          ctx.drawImage(
+            assets.truePassive,
+            menu2X + menu2W * 0.47,
+            menu2Y + menu2H * 0.58,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+          ctx.drawImage(
+            assets.falseActive,
+            menu2X + menu2W * 0.68,
+            menu2Y + menu2H * 0.58,
+            (menu2H * 0.13) /
+              (assets.truePassive.height / assets.truePassive.width),
+            menu2H * 0.13,
+          );
+        }
+
+        // デッキ変更枠
+        for (let i = 0; i < 2; i++) {
+          if (settingsRef.ui.changingDeck[i]) {
+            ctx.drawImage(
+              assets.uiframe1,
+              menu2X + menu2W * 0.35 + i * menu2W * 0.22,
+              menu2Y + menu2H * 0.57,
+              menu2W * 0.5,
+              menu2W * 0.5 * (assets.uiframe1.height / assets.uiframe1.width),
+            );
+            for (let j = 0; j < 4; j++) {
+              const Img = deckImageMap[colors[j]];
+              if (decks[j].length < 20) {
+                ctx.filter = "grayscale(100%)";
+              }
+
+              ctx.drawImage(
+                Img,
+                menu2X + menu2W * 0.38 + i * menu2W * 0.22 + j * menu2W * 0.11,
+                menu2Y + menu2H * 0.59,
+                menu2W * 0.1,
+                menu2W * 0.1 * (Img.height / Img.width),
+              );
+              ctx.filter = "none";
+              ctx.font = `${menu2H * 0.02}px Komorebi`;
+              ctx.fillText(
+                names[j],
+                menu2X + menu2W * 0.43 + i * menu2W * 0.22 + j * menu2W * 0.11,
+                menu2Y + menu2H * 0.69,
+              );
+            }
+          }
+        }
       } else if (screen === "menuDeck") {
         ctx.drawImage(assets.editText, menu2X, menu2Y, menu2W, menu2H);
 
@@ -214,8 +372,6 @@ export function renderEffect(
             (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width),
             menu2H * 0.1,
           );
-          ctx.fillStyle = "#ffffff";
-          ctx.textAlign = "center";
           ctx.font = `${menu2H * 0.05}px Komorebi`;
           ctx.fillText(
             names[i],

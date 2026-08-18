@@ -1,126 +1,102 @@
 // src/canvas/assets.ts
+function loadImage(src: string): HTMLImageElement {
+  const img = new Image();
+  img.src = src;
+  return img;
+}
+
+function loadImages(...srcs: string[]): HTMLImageElement[] {
+  return srcs.map(loadImage);
+}
+
+function loadNumberedImages(
+  path: string,
+  count: number,
+  suffix = "",
+): HTMLImageElement[] {
+  return Array.from({ length: count }, (_, i) =>
+    loadImage(`${path}/${i}${suffix}.png`),
+  );
+}
+
 export const assets = {
-  titleBg: new Image(),
-  title: new Image(),
-  btnStart: new Image(),
-  btnStartHover: new Image(),
-  menuBg: new Image(),
-  leftWhite: new Image(),
-  rightBlack: new Image(),
-  buttonFrame1: new Image(),
-  menuText: [] as HTMLImageElement[],
-  backText: new Image(),
-  quickMenu: [] as HTMLImageElement[],
-  gameSettingUI: new Image(),
-  settingText: new Image(),
-  truePassive: new Image(),
-  trueActive: new Image(),
-  falsePassive: new Image(),
-  falseActive: new Image(),
-  clickPassive: new Image(),
-  clickActive: new Image(),
-  tapPassive: new Image(),
-  tapActive: new Image(),
-  editText: new Image(),
-  deckr: new Image(),
-  deckg: new Image(),
-  deckb: new Image(),
-  decky: new Image(),
-  deckw: new Image(),
-  deckn: new Image(),
-  btnOrg: new Image(),
-  btnOrgHover: new Image(),
-  makeBg: new Image(),
-  deckList: new Image(),
-  deckListBar: new Image(),
-  btnDeck: new Image(),
-  btnShift: new Image(),
-  btnSave: new Image(),
+  titleBg: loadImage("/assets/backgrounds/city_scene.png"),
+  title: loadImage("/assets/ui/title.png"),
+  btnStart: loadImage("/assets/button/start.png"),
+  btnStartHover: loadImage("/assets/button/start_hover.png"),
+  menuBg: loadImage("/assets/backgrounds/neon_city1.png"),
+  leftWhite: loadImage("/assets/ui/left_white.png"),
+  rightBlack: loadImage("/assets/ui/right_black.png"),
+  buttonFrame1: loadImage("/assets/button/button_frame1.png"),
+  menuText: loadImages(
+    "/assets/button/offline.png",
+    "/assets/button/online.png",
+    "/assets/button/help.png",
+    "/assets/button/makedeck.png",
+    "/assets/button/setting.png",
+  ),
+  backText: loadImage("/assets/button/back.png"),
+  quickMenu: loadImages(
+    "/assets/button/offline_button.png",
+    "/assets/button/online_button.png",
+    "/assets/button/help_button.png",
+    "/assets/button/makedeck_button.png",
+    "/assets/button/setting_button.png",
+  ),
+  gameSettingUI: loadImage("/assets/ui/gamesetting.png"),
+  settingText: loadImage("/assets/ui/setting_text.png"),
+  truePassive: loadImage("/assets/button/true_passive.png"),
+  trueActive: loadImage("/assets/button/true_active.png"),
+  falsePassive: loadImage("/assets/button/false_passive.png"),
+  falseActive: loadImage("/assets/button/false_active.png"),
+  clickPassive: loadImage("/assets/button/click_passive.png"),
+  clickActive: loadImage("/assets/button/click_active.png"),
+  tapPassive: loadImage("/assets/button/tap_passive.png"),
+  tapActive: loadImage("/assets/button/tap_active.png"),
+  editText: loadImage("/assets/ui/edit_text.png"),
+  deckr: loadImage("/assets/cards_token/deckr.png"),
+  deckg: loadImage("/assets/cards_token/deckg.png"),
+  deckb: loadImage("/assets/cards_token/deckb.png"),
+  decky: loadImage("/assets/cards_token/decky.png"),
+  deckw: loadImage("/assets/cards_token/deckw.png"),
+  deckn: loadImage("/assets/cards_token/deckn.png"),
+  btnOrg: loadImage("/assets/button/organize.png"),
+  btnOrgHover: loadImage("/assets/button/organize_hover.png"),
+  makeBg: loadImage("/assets/backgrounds/restaurant.png"),
+  deckList: loadImage("/assets/ui/deck_list.png"),
+  deckListBar: loadImage("/assets/ui/deck_list_bar.png"),
+  btnDeck: loadImage("/assets/button/deck.png"),
+  btnShift: loadImage("/assets/button/shift.png"),
+  btnSave: loadImage("/assets/button/save.png"),
+  arrow: loadImages(
+    "/assets/button/right_arrow.png",
+    "/assets/button/right_arrow_hover.png",
+    "/assets/button/right_arrow_click.png",
+    "/assets/button/right_arrow_hover_click.png",
+  ),
+  initialHandSize: loadImages(
+    "/assets/ui/0mai.png",
+    "/assets/ui/3mai.png",
+    "/assets/ui/5mai.png",
+    "/assets/ui/10mai.png",
+  ),
+  firstPlayer: loadImages(
+    "/assets/ui/o.png",
+    "/assets/ui/x.png",
+    "/assets/ui/random.png",
+  ),
+  uiframe1: loadImage("/assets/ui/cyber_frame1.png"),
 
   cardAssets: {
-    des: [] as HTMLImageElement[],
-    gen: [] as HTMLImageElement[],
-    dis: [] as HTMLImageElement[],
-    sup: [] as HTMLImageElement[],
+    des: loadNumberedImages("/assets/cards_token/des", 8),
+    gen: loadNumberedImages("/assets/cards_token/gen", 8),
+    dis: loadNumberedImages("/assets/cards_token/dis", 8),
+    sup: loadNumberedImages("/assets/cards_token/sup", 8),
   },
   cardBarAssets: {
-    des: [] as HTMLImageElement[],
-    gen: [] as HTMLImageElement[],
-    dis: [] as HTMLImageElement[],
-    sup: [] as HTMLImageElement[],
+    des: loadNumberedImages("/assets/cards_token/des", 8, "b"),
+    gen: loadNumberedImages("/assets/cards_token/gen", 8, "b"),
+    dis: loadNumberedImages("/assets/cards_token/dis", 8, "b"),
+    sup: loadNumberedImages("/assets/cards_token/sup", 8, "b"),
   },
 };
-
-assets.titleBg.src = "/assets/backgrounds/city_scene.png";
-assets.title.src = "/assets/ui/title.png";
-assets.btnStart.src = "/assets/button/start.png";
-assets.btnStartHover.src = "/assets/button/start_hover.png";
-assets.menuBg.src = "/assets/backgrounds/neon_city1.png";
-assets.leftWhite.src = "/assets/ui/left_white.png";
-assets.rightBlack.src = "/assets/ui/right_black.png";
-assets.buttonFrame1.src = "/assets/button/button_frame1.png";
-assets.menuText[0] = new Image();
-assets.menuText[0].src = "/assets/button/offline.png";
-assets.menuText[1] = new Image();
-assets.menuText[1].src = "/assets/button/online.png";
-assets.menuText[2] = new Image();
-assets.menuText[2].src = "/assets/button/help.png";
-assets.menuText[3] = new Image();
-assets.menuText[3].src = "/assets/button/makedeck.png";
-assets.menuText[4] = new Image();
-assets.menuText[4].src = "/assets/button/setting.png";
-assets.backText.src = "/assets/button/back.png";
-assets.quickMenu[0] = new Image();
-assets.quickMenu[0].src = "/assets/button/offline_button.png";
-assets.quickMenu[1] = new Image();
-assets.quickMenu[1].src = "/assets/button/online_button.png";
-assets.quickMenu[2] = new Image();
-assets.quickMenu[2].src = "/assets/button/help_button.png";
-assets.quickMenu[3] = new Image();
-assets.quickMenu[3].src = "/assets/button/makedeck_button.png";
-assets.quickMenu[4] = new Image();
-assets.quickMenu[4].src = "/assets/button/setting_button.png";
-assets.gameSettingUI.src = "/assets/ui/gamesetting.png";
-assets.settingText.src = "/assets/ui/setting_text.png";
-assets.truePassive.src = "/assets/button/true_passive.png";
-assets.trueActive.src = "/assets/button/true_active.png";
-assets.falsePassive.src = "/assets/button/false_passive.png";
-assets.falseActive.src = "/assets/button/false_active.png";
-assets.clickPassive.src = "/assets/button/click_passive.png";
-assets.clickActive.src = "/assets/button/click_active.png";
-assets.tapPassive.src = "/assets/button/tap_passive.png";
-assets.tapActive.src = "/assets/button/tap_active.png";
-assets.editText.src = "/assets/ui/edit_text.png";
-assets.deckr.src = "/assets/cards_token/deckr.png";
-assets.deckg.src = "/assets/cards_token/deckg.png";
-assets.decky.src = "/assets/cards_token/decky.png";
-assets.deckb.src = "/assets/cards_token/deckb.png";
-assets.deckw.src = "/assets/cards_token/deckw.png";
-assets.deckn.src = "/assets/cards_token/deckn.png";
-assets.btnOrg.src = "/assets/button/organize.png";
-assets.btnOrgHover.src = "/assets/button/organize_hover.png";
-assets.makeBg.src = "/assets/backgrounds/restaurant.png";
-assets.deckList.src = "/assets/ui/deck_list.png";
-assets.deckListBar.src = "/assets/ui/deck_list_bar.png";
-assets.btnDeck.src = "/assets/button/deck.png";
-assets.btnShift.src = "/assets/button/shift.png";
-assets.btnSave.src = "/assets/button/save.png";
-
-type Attr = keyof typeof assets.cardAssets;
-
-for (const attr of ["des", "gen", "dis", "sup"] as Attr[]) {
-  for (let i = 1; i <= 7; i++) {
-    const img = new Image();
-    img.src = `/assets/cards_token/${attr}/${i}.png`;
-    assets.cardAssets[attr][i] = img;
-  }
-}
-type AttrB = keyof typeof assets.cardBarAssets;
-
-for (const attr of ["des", "gen", "dis", "sup"] as AttrB[]) {
-  for (let i = 1; i <= 7; i++) {
-    const img = new Image();
-    img.src = `/assets/cards_token/${attr}/${i}b.png`;
-    assets.cardBarAssets[attr][i] = img;
-  }
-}

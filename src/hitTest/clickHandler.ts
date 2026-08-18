@@ -16,6 +16,12 @@ import {
   isInsideDeckButton,
   isInsideShiftButton,
   isInsideSaveButton,
+  isInsideArrowButton,
+  isInsideGameSettingDeckButton,
+  isInsideChangingDeckFrame,
+  isInsideChangingDeckDeck,
+  isInsideShiftTrue,
+  isInsideShiftFalse,
 } from "./hitTest";
 import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -412,6 +418,77 @@ export function createClickHandler({
             settingsRef.current.ui.inputLocked = false;
           }, 300);
         }, 300);
+      }
+    }
+    // 上２
+    const indexToInitialHand = [0, 3, 5, 10];
+    if (screen === "menuOffline") {
+      if (
+        settingsRef.current.ui.changingDeck[0] == false &&
+        settingsRef.current.ui.changingDeck[1] == false
+      ) {
+        if (isInsideArrowButton(x, y, ratio, 0, 0)) {
+          settingsRef.current.ui.initialHandId += 1;
+          if (settingsRef.current.ui.initialHandId > 3)
+            settingsRef.current.ui.initialHandId = 3;
+          settingsRef.game.initialHandSize =
+            indexToInitialHand[settingsRef.current.ui.initialHandId];
+        }
+        if (isInsideArrowButton(x, y, ratio, 0, 1)) {
+          settingsRef.current.ui.initialHandId -= 1;
+          if (settingsRef.current.ui.initialHandId < 0)
+            settingsRef.current.ui.initialHandId = 0;
+          settingsRef.game.initialHandSize =
+            indexToInitialHand[settingsRef.current.ui.initialHandId];
+        }
+        if (isInsideArrowButton(x, y, ratio, 1, 0)) {
+          settingsRef.current.game.firstPlayer += 1;
+          if (settingsRef.current.game.firstPlayer > 2)
+            settingsRef.current.game.firstPlayer = 2;
+        }
+        if (isInsideArrowButton(x, y, ratio, 1, 1)) {
+          settingsRef.current.game.firstPlayer -= 1;
+          if (settingsRef.current.game.firstPlayer < 0)
+            settingsRef.current.game.firstPlayer = 0;
+        }
+        // デッキ
+        for (let i = 0; i < 2; i++) {
+          if (isInsideGameSettingDeckButton(i, x, y, ratio)) {
+            settingsRef.current.ui.changingDeck[i] = true;
+          }
+        }
+
+        // シフト
+        if (isInsideShiftTrue(x, y, ratio)) {
+          settingsRef.current.game.shiftCardEnabled = true;
+        }
+        if (isInsideShiftFalse(x, y, ratio)) {
+          settingsRef.current.game.shiftCardEnabled = false;
+        }
+      } else {
+        const decks = [
+          settingsRef.current.game.deck0,
+          settingsRef.current.game.deck1,
+          settingsRef.current.game.deck2,
+          settingsRef.current.game.deck3,
+        ];
+        for (let i = 0; i < 2; i++) {
+          if (
+            !isInsideChangingDeckFrame(x, y, ratio, i) &&
+            settingsRef.current.ui.changingDeck[i]
+          ) {
+            settingsRef.current.ui.changingDeck[i] = false;
+          }
+          for (let j = 0; j < 4; j++) {
+            if (
+              isInsideChangingDeckDeck(x, y, ratio, i, j) &&
+              decks[j].length == 20
+            ) {
+              settingsRef.current.game.selectedDeckP[i] = j;
+              settingsRef.current.ui.changingDeck[i] = false;
+            }
+          }
+        }
       }
     }
   };

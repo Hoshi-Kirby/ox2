@@ -8,6 +8,8 @@ import {
   isInsideDeckBar,
   isInsideShiftButton,
   isInsideSaveButton,
+  isInsideArrowButton,
+  isInsideGameSettingDeckButton,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
 import { assets } from "../canvas/assets";
@@ -312,6 +314,60 @@ export function createHoverHandler({
 
       if (hoverStatesRef.current.save !== insideSave) {
         setHoverStates((prev) => ({ ...prev, save: insideSave }));
+      }
+    }
+
+    // オフラインメニュー前設定
+    if (
+      screen === "menuOffline" &&
+      settingsRef.current.ui.changingDeck[0] == false &&
+      settingsRef.current.ui.changingDeck[1] == false
+    ) {
+      // 矢印
+      const newHover = [
+        [false, false],
+        [false, false],
+      ];
+
+      for (let i1 = 0; i1 < 2; i1++) {
+        for (let i2 = 0; i2 < 2; i2++) {
+          if (isInsideArrowButton(x, y, ratio, i1, i2)) {
+            newHover[i1][i2] = true;
+          }
+        }
+      }
+
+      const oldHover = hoverStatesRef.current.gameSettingArrow;
+
+      let changed = false;
+      for (let i1 = 0; i1 < 2; i1++) {
+        for (let i2 = 0; i2 < 2; i2++) {
+          if (oldHover[i1][i2] !== newHover[i1][i2]) {
+            changed = true;
+            break;
+          }
+        }
+      }
+
+      if (changed) {
+        setHoverStates((prev) => ({
+          ...prev,
+          gameSettingArrow: newHover,
+        }));
+      }
+
+      // デッキ
+      for (let i = 0; i < 2; i++) {
+        const insideDeck = isInsideGameSettingDeckButton(i, x, y, ratio);
+
+        if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {
+          setHoverStates((prev) => ({
+            ...prev,
+            menuDeck: prev.menuDeck.map((v, idx) =>
+              idx === i ? insideDeck : v,
+            ),
+          }));
+        }
       }
     }
 

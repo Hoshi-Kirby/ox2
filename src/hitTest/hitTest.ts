@@ -460,3 +460,119 @@ export function isInsideSaveButton(x: number, y: number, ratio: number) {
 
   return x >= deckX && x <= deckX + btnW && y >= deckY && y <= deckY + btnH;
 }
+
+// Menu2 オフライン
+//矢印
+export function isInsideArrowButton(
+  x: number,
+  y: number,
+  ratio: number,
+  i1: number,
+  i2: number,
+) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+
+  const arrowW = menu2H * 0.08;
+  const arrowH = menu2H * 0.08;
+
+  for (let i = 0; i < 2; i++) {
+    const yPos = menu2Y + menu2H * 0.21 + i * menu2H * 0.13;
+
+    // 右矢印の位置
+    const rightX = menu2X + menu2W * 0.8;
+    const rightY = yPos;
+
+    if (
+      x >= rightX &&
+      x <= rightX + arrowW &&
+      y >= rightY &&
+      y <= rightY + arrowH &&
+      i1 == i &&
+      i2 == 0
+    ) {
+      return true;
+    }
+
+    // 左矢印の transform を展開した見た目の位置
+    const Tx = menu2X + menu2W * 0.8 - arrowW * 0.5 + arrowW;
+    const leftX = Tx - (menu2W * 0.3 + arrowW);
+    const leftY = yPos;
+
+    if (
+      x >= leftX &&
+      x <= leftX + arrowW &&
+      y >= leftY &&
+      y <= leftY + arrowH &&
+      i1 == i &&
+      i2 == 1
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+// デッキ
+export function isInsideGameSettingDeckButton(
+  index: number,
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const deckImg = assets.deckw;
+
+  const btnX = menu2X + menu2W * 0.55 + index * menu2W * 0.22;
+  const btnY = menu2Y + menu2H * 0.47;
+  const btnW = menu2W * 0.1;
+  const btnH = menu2W * 0.1 * (deckImg.height / deckImg.width);
+
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+// デッキ変更フレーム
+export function isInsideChangingDeckFrame(
+  x: number,
+  y: number,
+  ratio: number,
+  index: number,
+) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bx = menu2X + menu2W * 0.35 + index * menu2W * 0.22;
+  const by = menu2Y + menu2H * 0.57;
+  const bw = menu2W * 0.5;
+  const bh = bw * (assets.uiframe1.height / assets.uiframe1.width);
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+// デッキ変更デッキ
+export function isInsideChangingDeckDeck(
+  x: number,
+  y: number,
+  ratio: number,
+  index: number,
+  index2: number,
+) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bx =
+    menu2X + menu2W * 0.38 + index * menu2W * 0.22 + index2 * menu2W * 0.11;
+  const by = menu2Y + menu2H * 0.59;
+  const bw = menu2W * 0.1;
+  const bh = bw * (assets.deckw.height / assets.deckw.width);
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+// シフトカード
+export function isInsideShiftTrue(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bh = menu2H * 0.13;
+  const bw = bh / (assets.truePassive.height / assets.truePassive.width);
+  const bx = menu2X + menu2W * 0.47;
+  const by = menu2Y + menu2H * 0.58;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+export function isInsideShiftFalse(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bh = menu2H * 0.13;
+  const bw = bh / (assets.truePassive.height / assets.truePassive.width);
+  const bx = menu2X + menu2W * 0.68;
+  const by = menu2Y + menu2H * 0.58;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
