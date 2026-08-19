@@ -480,6 +480,8 @@ export function createClickHandler({
             setScreen("game");
             settingsRef.current.ui.inputLocked = false;
             effectTimers.fadeOut = 300;
+            effectTimers.gameStartAnim = 300;
+            effectTimers.gameStartConut = 500;
           }, 300);
         }
       } else {

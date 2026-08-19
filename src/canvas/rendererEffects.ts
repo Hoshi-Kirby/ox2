@@ -1060,6 +1060,7 @@ export function renderEffect(
       const textY = rightY + btnH * 1.05 + btnH * 0.1;
       ctx.drawImage(btnSaveImg, textX - saveOffset, textY, textW, textH);
     }
+  } else if (screen === "game") {
   }
 
   if (effectTimers.fadeIn > 0) {

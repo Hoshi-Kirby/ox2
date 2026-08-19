@@ -38,5 +38,31 @@ export function renderEmpha(
         (100 + effectTimers.screenTransition) * 3 * (ratio / 1.2) ** 0.4;
       ctx.drawImage(assets.leftWhite, 0 - leftWhiteX, 0, 1280 + 400, 720);
     }
+  } else if (screen === "game") {
+    if (layoutIsWide) {
+      const leftWipeX = -effectTimers.gameStartAnim;
+      ctx.drawImage(
+        assets.leftWipe,
+        dx + leftWipeX,
+        dy + H * 0.05,
+        H * 0.95 * (assets.leftWipe.width / assets.leftWipe.height),
+        H * 0.95,
+      );
+      const rightWipeX = effectTimers.gameStartAnim;
+      ctx.drawImage(
+        assets.rightWipe,
+        dx + rightWipeX + W - H * 0.4,
+        dy - H * 0.25,
+        H * 0.4 * (assets.rightWipe.width / assets.rightWipe.height),
+        H * 0.4,
+      );
+      ctx.drawImage(
+        assets.rightWipe,
+        dx + rightWipeX + W - H * 0.3,
+        dy + H * 0.85,
+        H * 0.4 * (assets.rightWipe.width / assets.rightWipe.height),
+        H * 0.4,
+      );
+    }
   }
 }

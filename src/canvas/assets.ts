@@ -89,6 +89,10 @@ export const assets = {
   gameStart: loadImage("/assets/button/gamestart.png"),
   gameStartHover: loadImage("/assets/button/gamestart_hover.png"),
   gameBg: loadImage("/assets/backgrounds/neon_city.png"),
+  leftWipe: loadImage("/assets/ui/left_wipe.png"),
+  rightWipe: loadImage("/assets/ui/right_wipe.png"),
+  turnEnd: loadImage("/assets/button/turnend.png"),
+  turnEndHover: loadImage("/assets/button/turnend_hover.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

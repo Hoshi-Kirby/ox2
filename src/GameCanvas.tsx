@@ -10,8 +10,8 @@ import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createClickHandler } from "./hitTest/clickHandler";
 import { createHoverHandler } from "./hitTest/hoverHandler";
 import { createScrollHandler } from "./hitTest/scrollHandler";
-import { Client } from "boardgame.io/react";
-import { MyGame } from "./game/MyGame";
+// import { createGameClickHandler } from "./hitTest/gameClickHandler";
+import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
 import type { GameState } from "./game/MyGame";
 
 import "./GameCanvas.css";
@@ -99,6 +99,7 @@ export type HoverUI = {
   shift: boolean;
   save: boolean;
   gameStart: boolean;
+  turnEnd: boolean;
 };
 export type PressTimers = {
   startButton: number;
@@ -121,6 +122,8 @@ export default function GameCanvas({ G }: { G: GameState }) {
     menu2Transition: 0,
     deckListOpen: 0,
     deckListClose: 0,
+    gameStartAnim: 0,
+    gameStartCount: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -142,6 +145,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
     shift: false,
     save: false,
     gameStart: false,
+    turnEnd: false,
   });
 
   const pressTimers = useRef<PressTimers>({
@@ -200,7 +204,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
   const animStateRef = useRef({
     active: false,
     frame: 0,
-    maxFrames: 30, // ← ここを変えれば 30/60/100 にできる
+    maxFrames: 50, ////////////////////////////////////////////////
   });
 
   const [bgmEnabled, setBgmEnabled] = useState(
@@ -362,7 +366,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
 
   // ホバー判定
   useEffect(() => {
-    const stop = createHoverHandler({
+    const stopUIHover = createHoverHandler({
       ratio,
       screen,
       mouseRef,
@@ -372,8 +376,22 @@ export default function GameCanvas({ G }: { G: GameState }) {
       pressTimers: pressTimers.current,
     });
 
-    return stop;
+    const stopGameHover = createGameHoverHandler({
+      ratio,
+      screen,
+      mouseRef,
+      hoverStatesRef,
+      setHoverStates,
+      settingsRef,
+      pressTimers: pressTimers.current,
+    });
+
+    return () => {
+      stopUIHover();
+      stopGameHover();
+    };
   }, [ratio, screen, settingsRef.current.ui.deviceMode]);
+
   // スクロール判定
   useEffect(() => {
     if (!effectRef.current) return;

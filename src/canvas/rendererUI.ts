@@ -105,5 +105,25 @@ export function renderUI(
         }
       }
     }
+  } else if (screen === "game") {
+    if (layoutIsWide) {
+      let turnEndImg = assets.turnEnd;
+      let turnEndBtnX = dx + W - H * 0.45;
+      let turnEndBtnW = H * 0.4;
+      if (ratio < 1.5) {
+        turnEndBtnX = dx + W - H * 0.36;
+        turnEndBtnW = H * 0.35;
+      }
+      if (hoverStates.turnEnd) {
+        turnEndImg = assets.turnEndHover;
+      }
+      ctx.drawImage(
+        turnEndImg,
+        turnEndBtnX,
+        dy + H * 0.45,
+        turnEndBtnW,
+        turnEndBtnW / (turnEndImg.width / turnEndImg.height),
+      );
+    }
   }
 }
