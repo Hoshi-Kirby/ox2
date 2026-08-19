@@ -10,6 +10,7 @@ import {
   isInsideSaveButton,
   isInsideArrowButton,
   isInsideGameSettingDeckButton,
+  isInsideGameSTartButton,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
 import { assets } from "../canvas/assets";
@@ -368,6 +369,12 @@ export function createHoverHandler({
             ),
           }));
         }
+      }
+      // ゲームスタート
+      const insideGameStart = isInsideGameSTartButton(x, y, ratio);
+
+      if (hoverStatesRef.current.gameStart !== insideGameStart) {
+        setHoverStates((prev) => ({ ...prev, gameStart: insideGameStart }));
       }
     }
 

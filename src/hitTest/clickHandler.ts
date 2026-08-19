@@ -22,6 +22,7 @@ import {
   isInsideChangingDeckDeck,
   isInsideShiftTrue,
   isInsideShiftFalse,
+  isInsideGameSTartButton,
 } from "./hitTest";
 import type { Screen, CardID } from "../GameCanvas";
 import { playSe } from "../audio/audioManager";
@@ -420,13 +421,13 @@ export function createClickHandler({
         }, 300);
       }
     }
-    // 上２
     const indexToInitialHand = [0, 3, 5, 10];
     if (screen === "menuOffline") {
       if (
         settingsRef.current.ui.changingDeck[0] == false &&
         settingsRef.current.ui.changingDeck[1] == false
       ) {
+        // 上２
         if (isInsideArrowButton(x, y, ratio, 0, 0)) {
           settingsRef.current.ui.initialHandId += 1;
           if (settingsRef.current.ui.initialHandId > 3)
@@ -464,6 +465,22 @@ export function createClickHandler({
         }
         if (isInsideShiftFalse(x, y, ratio)) {
           settingsRef.current.game.shiftCardEnabled = false;
+        }
+
+        // ゲームスタート
+        if (isInsideGameSTartButton(x, y, ratio)) {
+          settingsRef.current.ui.inputLocked = true;
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seStart"); //se
+          }
+          effectTimers.fadeIn = 300;
+          effectTimers.fadeOut = 600;
+
+          setTimeout(() => {
+            setScreen("game");
+            settingsRef.current.ui.inputLocked = false;
+            effectTimers.fadeOut = 300;
+          }, 300);
         }
       } else {
         const decks = [

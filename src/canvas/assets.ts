@@ -86,6 +86,9 @@ export const assets = {
     "/assets/ui/random.png",
   ),
   uiframe1: loadImage("/assets/ui/cyber_frame1.png"),
+  gameStart: loadImage("/assets/button/gamestart.png"),
+  gameStartHover: loadImage("/assets/button/gamestart_hover.png"),
+  gameBg: loadImage("/assets/backgrounds/neon_city.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

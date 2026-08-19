@@ -1,17 +1,22 @@
+function loadBgm(src: string, volume: number): HTMLAudioElement {
+  const audio = new Audio(src);
+  audio.loop = true;
+  audio.volume = volume;
+  return audio;
+}
+
+function loadSe(src: string, volume: number): HTMLAudioElement {
+  const audio = new Audio(src);
+  audio.loop = false;
+  audio.volume = volume;
+  return audio;
+}
+
 export const audioAssets = {
-  bgmTitle: new Audio("/assets/bgm/title.mp3"),
-  bgmMenu: new Audio("/assets/bgm/main_menu.mp3"),
-  bgmMake: new Audio("/assets/bgm/make_deck.mp3"),
+  bgmTitle: loadBgm("/assets/bgm/title.mp3", 0.05),
+  bgmMenu: loadBgm("/assets/bgm/main_menu.mp3", 0.03),
+  bgmMake: loadBgm("/assets/bgm/make_deck.mp3", 0.04),
+  bgmGame: loadBgm("/assets/bgm/game.mp3", 0.03),
 
-  seStart: new Audio("/assets/se/decision_tururun.wav"),
+  seStart: loadSe("/assets/se/decision_tururun.wav", 0.2),
 };
-
-audioAssets.bgmTitle.loop = true;
-audioAssets.bgmMenu.loop = true;
-audioAssets.bgmMake.loop = true;
-
-audioAssets.bgmTitle.volume = 0.05;
-audioAssets.bgmMenu.volume = 0.03;
-audioAssets.bgmMake.volume = 0.04;
-
-audioAssets.seStart.volume = 0.2;

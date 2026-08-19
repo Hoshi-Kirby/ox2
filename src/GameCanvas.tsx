@@ -4,11 +4,16 @@ import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderEmpha } from "./canvas/rendererEmpha";
 import { renderUI } from "./canvas/rendererUI";
+import { renderGame } from "./canvas/rendererGame";
 import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createClickHandler } from "./hitTest/clickHandler";
 import { createHoverHandler } from "./hitTest/hoverHandler";
 import { createScrollHandler } from "./hitTest/scrollHandler";
+import { Client } from "boardgame.io/react";
+import { MyGame } from "./game/MyGame";
+import type { GameState } from "./game/MyGame";
+
 import "./GameCanvas.css";
 export type Screen =
   | "title"
@@ -93,6 +98,7 @@ export type HoverUI = {
   hoverDeckIndex: number;
   shift: boolean;
   save: boolean;
+  gameStart: boolean;
 };
 export type PressTimers = {
   startButton: number;
@@ -100,7 +106,7 @@ export type PressTimers = {
   deckBar: number;
 };
 
-export default function GameCanvas() {
+export default function GameCanvas({ G }: { G: GameState }) {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLCanvasElement>(null);
   const emphaRef = useRef<HTMLCanvasElement>(null);
@@ -135,6 +141,7 @@ export default function GameCanvas() {
     hoverDeckIndex: -1,
     shift: false,
     save: false,
+    gameStart: false,
   });
 
   const pressTimers = useRef<PressTimers>({
@@ -190,6 +197,11 @@ export default function GameCanvas() {
       selectedDeckP: [0, 0],
     },
   });
+  const animStateRef = useRef({
+    active: false,
+    frame: 0,
+    maxFrames: 30, // ← ここを変えれば 30/60/100 にできる
+  });
 
   const [bgmEnabled, setBgmEnabled] = useState(
     settingsRef.current.ui.bgmEnabled,
@@ -235,8 +247,12 @@ export default function GameCanvas() {
     const ctx = canvas.getContext("2d")!;
     renderFrame(ctx, screen);
   }, [screen]);
-
-  // ui：screen が変わったとき最初だけマイフレーム描く
+  // game Gが変わったときにアニメーションを描く
+  useEffect(() => {
+    animStateRef.current.active = true;
+    animStateRef.current.frame = 0;
+  }, [G]);
+  // ui：screen、ホバーステータスが変わったときだけ描く
   useEffect(() => {
     const canvas = uiRef.current;
     if (!canvas) return;
@@ -247,10 +263,13 @@ export default function GameCanvas() {
   useEffect(() => {
     const effectCanvas = effectRef.current;
     const emphaCanvas = emphaRef.current;
-    if (!effectCanvas || !emphaCanvas) return;
+    const gameCanvas = worldRef.current;
+
+    if (!effectCanvas || !emphaCanvas || !gameCanvas) return;
 
     const effectCtx = effectCanvas.getContext("2d")!;
     const emphaCtx = emphaCanvas.getContext("2d")!;
+    const gameCtx = gameCanvas.getContext("2d")!;
 
     let running = true;
     let lastTime = performance.now();
@@ -262,6 +281,25 @@ export default function GameCanvas() {
       lastTime = now;
 
       updateEffectsTimer(dt, effectTimers.current);
+
+      const gameAnim = animStateRef.current;
+
+      if (gameAnim.active) {
+        renderGame(
+          gameCtx,
+          ratio,
+          screen,
+          effectTimers.current,
+          dt,
+          hoverStatesRef.current,
+          settingsRef.current,
+        );
+
+        gameAnim.frame++;
+        if (gameAnim.frame >= gameAnim.maxFrames) {
+          gameAnim.active = false;
+        }
+      }
 
       // empha レイヤーの描画
       renderEmpha(
@@ -387,6 +425,7 @@ export default function GameCanvas() {
         break;
 
       case "game":
+        bgm = audioAssets.bgmGame;
         break;
     }
 

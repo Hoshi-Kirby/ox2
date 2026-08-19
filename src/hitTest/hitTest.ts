@@ -576,3 +576,19 @@ export function isInsideShiftFalse(x: number, y: number, ratio: number) {
   const by = menu2Y + menu2H * 0.58;
   return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
 }
+//ゲームスタート
+// const gameStartW = menu2W * 0.5;
+//         ctx.drawImage(
+//           assets.gameStart,
+//           menu2X + menu2W * 0.5 - gameStartW,
+//           menu2Y + menu2H * 0.8,
+//           gameStartW,
+//           gameStartW * (assets.gameStart.height / assets.gameStart.width),
+export function isInsideGameSTartButton(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bw = menu2W * 0.5;
+  const bh = bw * (assets.gameStart.height / assets.gameStart.width);
+  const bx = menu2X + menu2W * 0.5 - bw / 2;
+  const by = menu2Y + menu2H * 0.75;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}

@@ -22,5 +22,7 @@ export function renderFrame(ctx: CanvasRenderingContext2D, screen: Screen) {
     ctx.drawImage(assets.menuBg, 0, 0, W, H);
   } else if (screen === "make") {
     ctx.drawImage(assets.makeBg, 0, 0, W, H);
+  } else if (screen === "game") {
+    ctx.drawImage(assets.gameBg, 0, 0, W, H);
   }
 }

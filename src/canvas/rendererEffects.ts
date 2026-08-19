@@ -295,6 +295,21 @@ export function renderEffect(
             menu2H * 0.13,
           );
         }
+        // ゲームスタート
+        let gameStartW = menu2W * 0.5;
+        let Img = assets.gameStart;
+        if (hoverStates.gameStart) {
+          gameStartW = menu2W * 0.52;
+          Img = assets.gameStartHover;
+        }
+        const gameStartH = gameStartW * (Img.height / Img.width);
+        ctx.drawImage(
+          Img,
+          menu2X + menu2W * 0.5 - gameStartW / 2,
+          menu2Y + menu2H * 0.8 - gameStartH / 2,
+          gameStartW,
+          gameStartH,
+        );
 
         // デッキ変更枠
         for (let i = 0; i < 2; i++) {
