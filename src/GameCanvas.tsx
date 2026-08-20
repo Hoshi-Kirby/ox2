@@ -10,7 +10,7 @@ import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createClickHandler } from "./hitTest/clickHandler";
 import { createHoverHandler } from "./hitTest/hoverHandler";
 import { createScrollHandler } from "./hitTest/scrollHandler";
-// import { createGameClickHandler } from "./hitTest/gameClickHandler";
+import { createGameClickHandler } from "./hitTest/gameClickHandler";
 import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
 import type { GameState } from "./game/MyGame";
 
@@ -106,8 +106,13 @@ export type PressTimers = {
   cardPool: number;
   deckBar: number;
 };
-
-export default function GameCanvas({ G }: { G: GameState }) {
+interface BoardProps {
+  G: GameState;
+  ctx: any;
+  moves: any;
+  playerID: string;
+}
+export default function GameCanvas({ G, ctx, moves, playerID }: BoardProps) {
   const [ready, setReady] = useState(false);
   const frameRef = useRef<HTMLCanvasElement>(null);
   const emphaRef = useRef<HTMLCanvasElement>(null);
@@ -124,6 +129,8 @@ export default function GameCanvas({ G }: { G: GameState }) {
     deckListClose: 0,
     gameStartAnim: 0,
     gameStartCount: 0,
+
+    turnStart: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -204,7 +211,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
   const animStateRef = useRef({
     active: false,
     frame: 0,
-    maxFrames: 50, ////////////////////////////////////////////////
+    maxFrames: 400, ////////////////////////////////////////////////
   });
 
   const [bgmEnabled, setBgmEnabled] = useState(
@@ -255,7 +262,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
   useEffect(() => {
     animStateRef.current.active = true;
     animStateRef.current.frame = 0;
-  }, [G]);
+  }, [G, ctx.turn, ctx.phase, ctx.currentPlayer, ratio, screen]);
   // ui：screen、ホバーステータスが変わったときだけ描く
   useEffect(() => {
     const canvas = uiRef.current;
@@ -297,6 +304,9 @@ export default function GameCanvas({ G }: { G: GameState }) {
           dt,
           hoverStatesRef.current,
           settingsRef.current,
+          G,
+          ctx,
+          playerID,
         );
 
         gameAnim.frame++;
@@ -328,9 +338,12 @@ export default function GameCanvas({ G }: { G: GameState }) {
       );
       if (!ready) {
         const canvas = frameRef.current;
-        if (!canvas) return;
+        const canvas2 = uiRef.current;
+        if (!canvas || !canvas2) return;
         const ctx = canvas.getContext("2d")!;
+        const ctx2 = canvas2.getContext("2d")!;
         renderFrame(ctx, screen);
+        renderUI(ctx2, ratio, screen, effectTimers.current, hoverStates);
         setReady(true);
       }
 
@@ -342,7 +355,7 @@ export default function GameCanvas({ G }: { G: GameState }) {
     return () => {
       running = false;
     };
-  }, [ratio, screen]);
+  }, [G, ctx.turn, ctx.phase, ctx.currentPlayer, ratio, screen]);
 
   // クリック判定
   useEffect(() => {
@@ -358,7 +371,22 @@ export default function GameCanvas({ G }: { G: GameState }) {
       setBgmEnabled,
     });
 
-    const listener = (e: MouseEvent) => onClick(e, canvas);
+    const onClickBoard = createGameClickHandler({
+      ratio,
+      screen,
+      setScreen,
+      effectTimers: effectTimers.current,
+      settingsRef,
+      G,
+      ctx,
+      moves,
+      playerID,
+    });
+
+    const listener = (e: MouseEvent) => {
+      onClick(e, canvas);
+      onClickBoard(e, canvas);
+    };
 
     canvas.addEventListener("click", listener);
     return () => canvas.removeEventListener("click", listener);

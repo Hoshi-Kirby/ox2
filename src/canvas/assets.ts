@@ -93,6 +93,14 @@ export const assets = {
   rightWipe: loadImage("/assets/ui/right_wipe.png"),
   turnEnd: loadImage("/assets/button/turnend.png"),
   turnEndHover: loadImage("/assets/button/turnend_hover.png"),
+  turnEndUI: loadImage("/assets/UI/turnend.png"),
+  neonLine: loadImage("/assets/ui/neon_line.png"),
+  token: loadImages(
+    "/assets/cards_token/token/o.png",
+    "/assets/cards_token/token/x.png",
+    "/assets/cards_token/token/ox.png",
+  ),
+  noTurn: loadImage("/assets/ui/no_turn.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

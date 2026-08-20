@@ -29,3 +29,7 @@ body {
   font-family: "Komorebi";
   src: url("/assets/fonts/komorebi-gothic-P.ttf") format("truetype");
 }
+@font-face {
+  font-family: "KiwiMaru-Medium";
+  src: url("/assets/fonts/KiwiMaru-Medium.ttf") format("truetype");
+}

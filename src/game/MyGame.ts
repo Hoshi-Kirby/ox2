@@ -1,26 +1,37 @@
 // src/game/MyGame.ts
-
+import * as basic from "./moves/basic";
 export interface GameState {
-  board: number[][];
-  pieces: { x: number; y: number }[];
+  board: number[][][];
 }
 
 export const MyGame = {
   setup: (): GameState => ({
     board: [
-      [0, 0, 0],
-      [0, 0, 0],
-      [0, 0, 0],
+      [
+        [2, 0, 0, 0, 1],
+        [2, 0, 1, 0, 1],
+        [2, 0, 1, 0, 1],
+        [2, 2, 0, 0, 1],
+        [2, 0, 0, 0, 1],
+      ],
+      [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+      [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
     ],
-    pieces: [],
   }),
 
   moves: {
-    placePiece(
-      { G, ctx }: { G: GameState; ctx: any },
-      pos: { x: number; y: number },
-    ) {
-      G.pieces.push(pos);
-    },
+    ...basic,
   },
 };

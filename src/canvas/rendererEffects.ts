@@ -1061,6 +1061,25 @@ export function renderEffect(
       ctx.drawImage(btnSaveImg, textX - saveOffset, textY, textW, textH);
     }
   } else if (screen === "game") {
+    if (effectTimers.turnStart > 0) {
+      let alpha = 1;
+      if (effectTimers.turnStart < 100) {
+        alpha = effectTimers.turnStart / 100;
+      }
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const teW = W * 0.6;
+      const teH = teW * (assets.turnEndUI.height / assets.turnEndUI.width);
+      ctx.drawImage(
+        assets.turnEndUI,
+        dx + W / 2 - teW / 2,
+        dy + H / 2 - teH / 2,
+        teW,
+        teH,
+      );
+
+      ctx.restore();
+    }
   }
 
   if (effectTimers.fadeIn > 0) {
