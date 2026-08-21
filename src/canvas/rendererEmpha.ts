@@ -1,5 +1,5 @@
 import { assets } from "./assets";
-import type { Screen, Settings, HoverUI } from "../GameCanvas";
+import type { Screen, Settings, HoverUI } from "../types";
 
 export function renderEmpha(
   ctx: CanvasRenderingContext2D,

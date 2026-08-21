@@ -1,6 +1,6 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
-import type { Screen, Settings, HoverUI, CardID } from "../GameCanvas";
+import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 let t = 0;
 let menuOffsets = [0, 0, 0, 0, 0];

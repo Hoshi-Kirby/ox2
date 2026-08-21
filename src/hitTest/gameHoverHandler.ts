@@ -1,5 +1,5 @@
 import { isInsideTurnEndButton } from "./gameHitTest";
-import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
+import type { Screen, HoverUI, PressTimers } from "../types";
 
 type HoverParams = {
   ratio: number;
@@ -7,7 +7,7 @@ type HoverParams = {
   mouseRef: React.MutableRefObject<{ x: number; y: number }>;
   hoverStatesRef: React.MutableRefObject<HoverUI>;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
-  settingsRef: any;
+  settings: any;
   pressTimers: PressTimers;
 };
 
@@ -17,7 +17,7 @@ export function createGameHoverHandler({
   mouseRef,
   hoverStatesRef,
   setHoverStates,
-  settingsRef,
+  settings,
   pressTimers,
 }: HoverParams) {
   let running = true;

@@ -24,7 +24,7 @@ import {
   isInsideShiftFalse,
   isInsideGameSTartButton,
 } from "./hitTest";
-import type { Screen, CardID } from "../GameCanvas";
+import type { Screen, CardID } from "../types";
 import { playSe } from "../audio/audioManager";
 import { assets } from "../canvas/assets";
 
@@ -432,14 +432,14 @@ export function createClickHandler({
           settingsRef.current.ui.initialHandId += 1;
           if (settingsRef.current.ui.initialHandId > 3)
             settingsRef.current.ui.initialHandId = 3;
-          settingsRef.game.initialHandSize =
+          settingsRef.current.game.initialHand =
             indexToInitialHand[settingsRef.current.ui.initialHandId];
         }
         if (isInsideArrowButton(x, y, ratio, 0, 1)) {
           settingsRef.current.ui.initialHandId -= 1;
           if (settingsRef.current.ui.initialHandId < 0)
             settingsRef.current.ui.initialHandId = 0;
-          settingsRef.game.initialHandSize =
+          settingsRef.current.game.initialHand =
             indexToInitialHand[settingsRef.current.ui.initialHandId];
         }
         if (isInsideArrowButton(x, y, ratio, 1, 0)) {

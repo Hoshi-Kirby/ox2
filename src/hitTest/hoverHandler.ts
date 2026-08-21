@@ -12,7 +12,7 @@ import {
   isInsideGameSettingDeckButton,
   isInsideGameSTartButton,
 } from "./hitTest";
-import type { Screen, HoverUI, PressTimers } from "../GameCanvas";
+import type { Screen, HoverUI, PressTimers } from "../types";
 let lastCardPoolTarget: string | null = null;
 let lastDeckBarTarget = -1;
 

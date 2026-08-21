@@ -1,22 +1,231 @@
-// import GameCanvas from "./GameCanvas";
-// import { MyGame } from "./game/MyGame";
-
-// export default function App() {
-//   const gameState = MyGame.setup();
-//   return <GameCanvas G={gameState} />;
-// }
-// App.tsx
-import { Client } from "boardgame.io/react";
-import { MyGame } from "./game/MyGame";
+import { useState, useRef, useEffect } from "react";
+import type { Screen, Settings, DeckColor } from "./types";
+import MenuScreen from "./MenuScreen";
 import GameCanvas from "./GameCanvas";
-
-const GameClient = Client({
-  game: MyGame,
-  board: GameCanvas,
-  debug: true, // ← 右側のデバッグタブを消す
-  numPlayers: 2,
-});
+import { Client } from "boardgame.io/react";
+import { createMyGame } from "./game/MyGame";
+import GameClient from "./GameClient";
 
 export default function App() {
-  return <GameClient />;
+  const [screen, setScreen] = useState<Screen>("title");
+
+  const isGameStarted = screen === "game";
+
+  const settingsRef = useRef<Settings>({
+    ui: {
+      bgmEnabled: true,
+      seEnabled: true,
+      deviceMode: "mouse",
+      deckSelected: 0,
+      inputLocked: false,
+      inputLockedSub: false,
+      scrollY: 0,
+      openDeckList: false,
+      isShift: false,
+      initialHandId: 2,
+      changingDeck: [false, false],
+    },
+    game: {
+      gameMode: "pvc",
+      initialHand: 5,
+      firstPlayer: 2,
+      eventEnabled: true,
+      shiftCardEnabled: false,
+
+      deck0: [],
+      deck1: [],
+      deck2: [],
+      deck3: [],
+      editDeck: [],
+      deckColor0: "rainbow",
+      deckColor1: "white",
+      deckColor2: "white",
+      deckColor3: "white",
+      editDeckColor: "white",
+      deckName0: "デフォルト",
+      deckName1: "デッキ1",
+      deckName2: "デッキ2",
+      deckName3: "デッキ3",
+      editDeckName: "",
+      selectedDeckP: [0, 0],
+    },
+  });
+
+  const frameRef = useRef<HTMLCanvasElement>(null);
+  const emphaRef = useRef<HTMLCanvasElement>(null);
+  const uiRef = useRef<HTMLCanvasElement>(null);
+  const worldRef = useRef<HTMLCanvasElement>(null);
+  const effectRef = useRef<HTMLCanvasElement>(null);
+
+  const effectTimers = useRef<Record<string, number>>({
+    fadeOut: 0,
+    fadeIn: 0,
+    leftWhiteSlide: 0,
+    screenTransition: 0,
+    menu2Transition: 0,
+    deckListOpen: 0,
+    deckListClose: 0,
+    gameStartAnim: 0,
+    gameStartCount: 0,
+    turnStart: 0,
+  });
+
+  const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
+
+  const mouseRef = useRef({ x: 0, y: 0 });
+
+  const animStateRef = useRef({
+    active: false,
+    frame: 0,
+    maxFrames: 400,
+  });
+
+  const [bgmEnabled, setBgmEnabled] = useState(
+    settingsRef.current.ui.bgmEnabled,
+  );
+  useEffect(() => {
+    if (window.innerWidth >= 900) {
+      settingsRef.current.ui.deviceMode = "mouse";
+    } else {
+      settingsRef.current.ui.deviceMode = "touch";
+    }
+    loadDecks(settingsRef);
+    const onResize = () => {
+      setRatio(window.innerWidth / window.innerHeight);
+    };
+    window.addEventListener("resize", onResize);
+
+    let lastTime = performance.now();
+    let animationFrameId: number;
+    function loop(now: number) {
+      const dt = now - lastTime;
+      lastTime = now;
+      updateEffectsTimer(dt, effectTimers.current);
+      animationFrameId = requestAnimationFrame(loop);
+    }
+    animationFrameId = requestAnimationFrame(loop);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = effectRef.current;
+    if (!canvas) return;
+
+    const block = (e: Event) => e.preventDefault();
+
+    canvas.addEventListener("contextmenu", block);
+    canvas.addEventListener("selectstart", block);
+
+    return () => {
+      canvas.removeEventListener("contextmenu", block);
+      canvas.removeEventListener("selectstart", block);
+    };
+  }, []);
+
+  // -----------------------------
+  // 画面切り替え
+  // -----------------------------
+  if (!isGameStarted) {
+    return (
+      <MenuScreen
+        screen={screen}
+        setScreen={setScreen}
+        settingsRef={settingsRef}
+        ratio={ratio}
+        mouseRef={mouseRef}
+        frameRef={frameRef}
+        uiRef={uiRef}
+        worldRef={worldRef}
+        effectRef={effectRef}
+        emphaRef={emphaRef}
+        effectTimers={effectTimers}
+        bgmEnabled={bgmEnabled}
+        setBgmEnabled={setBgmEnabled}
+      />
+    );
+  }
+
+  return (
+    <GameClient
+      setScreen={setScreen}
+      settings={settingsRef.current}
+      frameRef={frameRef}
+      uiRef={uiRef}
+      worldRef={worldRef}
+      effectRef={effectRef}
+      emphaRef={emphaRef}
+      ratio={ratio}
+      mouseRef={mouseRef}
+      effectTimers={effectTimers}
+      animStateRef={animStateRef}
+    />
+  );
+}
+
+function updateEffectsTimer(dt: number, timers: Record<string, number>) {
+  console.log("dt:", dt);
+  for (const key in timers) {
+    if (timers[key] > 0) {
+      timers[key] -= dt;
+      if (timers[key] < 0) timers[key] = 0;
+    }
+  }
+}
+// let lastLog = performance.now();
+// let count = 0;
+
+// function updateEffectsTimer(dt: number, timers: Record<string, number>) {
+//   count++;
+
+//   const now = performance.now();
+
+//   if (now - lastLog >= 1000) {
+//     console.log("calls/sec:", count);
+//     count = 0;
+//     lastLog = now;
+//   }
+
+//   for (const key in timers) {
+//     if (timers[key] > 0) {
+//       timers[key] -= dt;
+//       if (timers[key] < 0) timers[key] = 0;
+//     }
+//   }
+// }
+
+function loadCookie(name: string) {
+  const match = document.cookie.match(new RegExp(`${name}=([^;]+)`));
+  return match ? match[1] : null;
+}
+
+type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
+type DeckNameKey = "deckName0" | "deckName1" | "deckName2" | "deckName3";
+type DeckColorKey = "deckColor0" | "deckColor1" | "deckColor2" | "deckColor3";
+
+function loadDecks(settingsRef: React.MutableRefObject<Settings>) {
+  for (let i = 1; i <= 3; i++) {
+    const deckKey: DeckKey = `deck${i}` as DeckKey;
+    const nameKey: DeckNameKey = `deckName${i}` as DeckNameKey;
+    const colorKey: DeckColorKey = `deckColor${i}` as DeckColorKey;
+
+    const deckStr = loadCookie(deckKey);
+    const nameStr = loadCookie(nameKey);
+    const colorStr = loadCookie(colorKey);
+
+    settingsRef.current.game[deckKey] = deckStr
+      ? JSON.parse(decodeURIComponent(deckStr))
+      : [];
+
+    settingsRef.current.game[nameKey] = nameStr
+      ? decodeURIComponent(nameStr)
+      : `デッキ${i}`;
+
+    settingsRef.current.game[colorKey] = (
+      colorStr ? decodeURIComponent(colorStr) : "white"
+    ) as DeckColor;
+  }
 }

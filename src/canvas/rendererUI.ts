@@ -1,6 +1,6 @@
 // rendererUI.ts
 import { assets } from "./assets";
-import type { Screen, HoverUI } from "../GameCanvas";
+import type { Screen, HoverUI } from "../MenuScreen";
 
 export function renderUI(
   ctx: CanvasRenderingContext2D,

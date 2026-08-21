@@ -1,4 +1,4 @@
-import type { Settings } from "../GameCanvas";
+import type { Settings } from "../types";
 type ScrollParams = {
   canvas: HTMLCanvasElement;
   settingsRef: Settings;

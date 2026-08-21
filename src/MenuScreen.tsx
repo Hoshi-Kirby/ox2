@@ -4,55 +4,51 @@ import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderEmpha } from "./canvas/rendererEmpha";
 import { renderUI } from "./canvas/rendererUI";
-import { renderGame } from "./canvas/rendererGame";
 import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
-import { createGameClickHandler } from "./hitTest/gameClickHandler";
-import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
-import type { Settings, CardID, HoverUI, PressTimers, Screen } from "./types";
-import type { GameState } from "./game/MyGame";
+import { createClickHandler } from "./hitTest/clickHandler";
+import { createHoverHandler } from "./hitTest/hoverHandler";
+import { createScrollHandler } from "./hitTest/scrollHandler";
+import type {
+  Screen,
+  Settings,
+  HoverUI,
+  PressTimers,
+  DeckColor,
+} from "./types";
 
 import "./MenuScreen.css";
 
-export default function GameCanvas({
-  G,
-  ctx,
-  moves,
-  playerID,
-  settings,
+export default function MenuScreen({
+  screen,
   setScreen,
+  settingsRef,
+  ratio,
+  mouseRef,
   frameRef,
   uiRef,
   worldRef,
   effectRef,
   emphaRef,
-  ratio,
-  mouseRef,
   effectTimers,
-  animStateRef,
+  bgmEnabled,
+  setBgmEnabled,
 }: {
-  G: GameState;
-  ctx: any;
-  moves: any;
-  playerID: string;
-  settings: Settings;
+  screen: Screen;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
+  settingsRef: React.MutableRefObject<Settings>;
+  ratio: number;
+  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
   frameRef: React.MutableRefObject<HTMLCanvasElement | null>;
   uiRef: React.MutableRefObject<HTMLCanvasElement | null>;
   worldRef: React.MutableRefObject<HTMLCanvasElement | null>;
   effectRef: React.MutableRefObject<HTMLCanvasElement | null>;
   emphaRef: React.MutableRefObject<HTMLCanvasElement | null>;
-  ratio: number;
-  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
   effectTimers: React.MutableRefObject<Record<string, number>>;
-  animStateRef: React.MutableRefObject<{
-    active: boolean;
-    frame: number;
-    maxFrames: number;
-  }>;
+  bgmEnabled: boolean;
+  setBgmEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [ready, setReady] = useState(false);
-  const screen: Screen = "game";
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
     startButton: false,
@@ -95,11 +91,6 @@ export default function GameCanvas({
     const ctx = canvas.getContext("2d")!;
     renderFrame(ctx, screen);
   }, [screen]);
-  // game Gが変わったときにアニメーションを描く
-  useEffect(() => {
-    animStateRef.current.active = true;
-    animStateRef.current.frame = 0;
-  }, [G, ctx.turn, ctx.phase, ctx.currentPlayer, ratio, screen]);
   // ui：screen、ホバーステータスが変わったときだけ描く
   useEffect(() => {
     const canvas = uiRef.current;
@@ -117,7 +108,6 @@ export default function GameCanvas({
 
     const effectCtx = effectCanvas.getContext("2d")!;
     const emphaCtx = emphaCanvas.getContext("2d")!;
-    const gameCtx = gameCanvas.getContext("2d")!;
 
     let running = true;
     let lastTime = performance.now();
@@ -128,28 +118,6 @@ export default function GameCanvas({
       const dt = now - lastTime;
       lastTime = now;
 
-      const gameAnim = animStateRef.current;
-
-      if (gameAnim.active) {
-        renderGame(
-          gameCtx,
-          ratio,
-          screen,
-          effectTimers.current,
-          dt,
-          hoverStatesRef.current,
-          settings,
-          G,
-          ctx,
-          playerID,
-        );
-
-        gameAnim.frame++;
-        if (gameAnim.frame >= gameAnim.maxFrames) {
-          gameAnim.active = false;
-        }
-      }
-
       // empha レイヤーの描画
       renderEmpha(
         emphaCtx,
@@ -158,7 +126,7 @@ export default function GameCanvas({
         effectTimers.current,
         dt,
         hoverStatesRef.current,
-        settings,
+        settingsRef.current,
       );
 
       // effect レイヤーの描画
@@ -169,7 +137,7 @@ export default function GameCanvas({
         effectTimers.current,
         dt,
         hoverStatesRef.current,
-        settings,
+        settingsRef.current,
       );
       if (!ready) {
         const canvas = frameRef.current;
@@ -190,27 +158,24 @@ export default function GameCanvas({
     return () => {
       running = false;
     };
-  }, [G, ctx.turn, ctx.phase, ctx.currentPlayer, ratio, screen]);
+  }, [ratio, screen]);
 
   // クリック判定
   useEffect(() => {
     const canvas = effectRef.current;
     if (!canvas) return;
 
-    const onClickBoard = createGameClickHandler({
+    const onClick = createClickHandler({
       ratio,
       screen,
       setScreen,
       effectTimers: effectTimers.current,
-      settings,
-      G,
-      ctx,
-      moves,
-      playerID,
+      settingsRef,
+      setBgmEnabled,
     });
 
     const listener = (e: MouseEvent) => {
-      onClickBoard(e, canvas);
+      onClick(e, canvas);
     };
 
     canvas.addEventListener("click", listener);
@@ -219,20 +184,32 @@ export default function GameCanvas({
 
   // ホバー判定
   useEffect(() => {
-    const stopGameHover = createGameHoverHandler({
+    const stopUIHover = createHoverHandler({
       ratio,
       screen,
       mouseRef,
       hoverStatesRef,
       setHoverStates,
-      settings,
+      settingsRef,
       pressTimers: pressTimers.current,
     });
 
     return () => {
-      stopGameHover();
+      stopUIHover();
     };
-  }, [ratio, screen, settings.ui.deviceMode]);
+  }, [ratio, screen, settingsRef.current.ui.deviceMode]);
+
+  // スクロール判定
+  useEffect(() => {
+    if (!effectRef.current) return;
+
+    const cleanup = createScrollHandler({
+      canvas: effectRef.current,
+      settingsRef: settingsRef.current,
+    });
+
+    return cleanup;
+  }, []);
 
   // マウス座標
   useEffect(() => {
@@ -262,6 +239,16 @@ export default function GameCanvas({
   useEffect(() => {
     let bgm = audioAssets.bgmMenu;
     switch (screen) {
+      case "title":
+        bgm = audioAssets.bgmTitle;
+        break;
+      case "menu":
+        bgm = audioAssets.bgmMenu;
+        break;
+      case "make":
+        bgm = audioAssets.bgmMake;
+        break;
+
       case "game":
         bgm = audioAssets.bgmGame;
         break;
@@ -269,15 +256,15 @@ export default function GameCanvas({
 
     playBgm(bgm);
 
-    if (settings.ui.bgmEnabled) {
+    if (settingsRef.current.ui.bgmEnabled) {
       startBgm();
     } else {
       stopBgm();
     }
     console.log("screen:", screen);
-    console.log("bgmEnabled:", settings.ui.bgmEnabled);
+    console.log("bgmEnabled:", settingsRef.current.ui.bgmEnabled);
     console.log("bgm:", bgm.src);
-  }, [screen]);
+  }, [screen, bgmEnabled]);
 
   return (
     <div className="canvas-container">

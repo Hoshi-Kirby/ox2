@@ -1,5 +1,5 @@
 import { isInsideTurnEndButton } from "./gameHitTest";
-import type { Screen, CardID } from "../GameCanvas";
+import type { Screen, CardID } from "../types";
 import { playSe } from "../audio/audioManager";
 import { assets } from "../canvas/assets";
 type MoveFn = (...args: any[]) => void;
@@ -11,7 +11,7 @@ type ClickHandlerParams = {
   screen: Screen;
   setScreen: (s: Screen) => void;
   effectTimers: Record<string, number>;
-  settingsRef: any;
+  settings: any;
   G: any;
   ctx: any;
   moves: Moves;
@@ -23,14 +23,14 @@ export function createGameClickHandler({
   screen,
   setScreen,
   effectTimers,
-  settingsRef,
+  settings,
   G,
   ctx,
   moves,
   playerID,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
-    if (settingsRef.current.ui.inputLocked) {
+    if (settings.ui.inputLocked) {
       return;
     }
     const rect = canvas.getBoundingClientRect();

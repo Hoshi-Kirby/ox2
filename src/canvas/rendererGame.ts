@@ -1,6 +1,6 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
-import type { Screen, Settings, HoverUI, CardID } from "../GameCanvas";
+import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 export function renderGame(
   ctx: CanvasRenderingContext2D,

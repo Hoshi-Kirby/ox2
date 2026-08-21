@@ -1,6 +1,6 @@
 // src/canvas/rendererFrame.ts
 import { assets } from "./assets";
-import type { Screen } from "../GameCanvas";
+import type { Screen } from "../types";
 
 export function renderFrame(ctx: CanvasRenderingContext2D, screen: Screen) {
   const canvas = ctx.canvas;
