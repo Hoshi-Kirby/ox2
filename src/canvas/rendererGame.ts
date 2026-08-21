@@ -88,6 +88,43 @@ export function renderGame(
       }
     }
     // カード
+    for (let i = 0; i < 2; i++) {
+      const isBottom = i === Number(playerID);
+      let baseX = W * 0.01;
+      let cardPool = W * 0.98;
+      if (layoutIsWide) {
+        baseX = H * 0.42;
+        cardPool = W - H * 0.8;
+      }
+      let cardW = cardPool / 5.1;
+      let cardH =
+        cardW *
+        (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
+      if (cardH > H * 0.2) {
+        cardH = H * 0.2;
+        cardW =
+          cardH /
+          (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
+      }
+      const baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
+      let gap = (cardPool - cardW * 5) / 4;
+      let cardX = baseX;
+      const handSize = G.hand[i].length;
+      if (handSize > 5) {
+        gap = (cardPool - cardW * handSize) / (handSize - 1);
+      } else {
+        cardX =
+          baseX + (cardPool - handSize * cardW - (handSize - 1) * gap) / 2;
+      }
+
+      for (let j = 0; j < handSize; j++) {
+        const card = G.hand[i][j];
+        const img = assets.cardAssets[card.attr][card.index];
+        const x = dx + cardX + j * (cardW + gap);
+        const y = dy + baseY;
+        ctx.drawImage(img, x, y, cardW, cardH);
+      }
+    }
 
     // ウィンドウ
     // ターン

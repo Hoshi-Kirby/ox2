@@ -20,6 +20,9 @@ export default function GameCanvas({
   moves,
   playerID,
   settings,
+  hoverStates,
+  setHoverStates,
+  pressTimers,
   setScreen,
   frameRef,
   uiRef,
@@ -36,6 +39,9 @@ export default function GameCanvas({
   moves: any;
   playerID: string;
   settings: Settings;
+  hoverStates: HoverUI;
+  setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
+  pressTimers: React.MutableRefObject<PressTimers>;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
   frameRef: React.MutableRefObject<HTMLCanvasElement | null>;
   uiRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -53,35 +59,6 @@ export default function GameCanvas({
 }) {
   const [ready, setReady] = useState(false);
   const screen: Screen = "game";
-
-  const [hoverStates, setHoverStates] = useState<HoverUI>({
-    startButton: false,
-    back: false,
-    menu: Array(5).fill(false),
-    gameSettingArrow: Array.from({ length: 2 }, () => Array(2).fill(false)),
-    gameDeck: Array(2).fill(false),
-    selectDeck: Array(4).fill(false),
-    menuDeck: Array(3).fill(false),
-    org: false,
-    hoverCards: {
-      des: Array(5).fill(false),
-      gen: Array(5).fill(false),
-      dis: Array(5).fill(false),
-      sup: Array(5).fill(false),
-    },
-    hoverDeckIndex: -1,
-    shift: false,
-    save: false,
-    gameStart: false,
-    turnEnd: false,
-  });
-
-  const pressTimers = useRef<PressTimers>({
-    startButton: 0,
-    cardPool: 0,
-    deckBar: 0,
-  });
-
   const hoverStatesRef = useRef(hoverStates);
 
   useEffect(() => {
@@ -105,7 +82,7 @@ export default function GameCanvas({
     const canvas = uiRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
+    renderUI(ctx, ratio, screen, effectTimers.current, hoverStatesRef.current);
   }, [screen, ratio, hoverStates]);
   // effect,empha：毎フレーム描く（アニメーション）
   useEffect(() => {
@@ -178,7 +155,13 @@ export default function GameCanvas({
         const ctx = canvas.getContext("2d")!;
         const ctx2 = canvas2.getContext("2d")!;
         renderFrame(ctx, screen);
-        renderUI(ctx2, ratio, screen, effectTimers.current, hoverStates);
+        renderUI(
+          ctx2,
+          ratio,
+          screen,
+          effectTimers.current,
+          hoverStatesRef.current,
+        );
         setReady(true);
       }
 

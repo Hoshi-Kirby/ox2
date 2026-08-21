@@ -1,12 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Client } from "boardgame.io/react";
-import type { Settings, Screen } from "./types";
+import type { Settings, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";
 import { createMyGame } from "./game/MyGame";
 
 type GameClientProps = {
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
   settings: Settings;
+  hoverStates: HoverUI;
+  setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
+  pressTimers: React.MutableRefObject<PressTimers>;
   frameRef: React.RefObject<HTMLCanvasElement | null>;
   uiRef: React.RefObject<HTMLCanvasElement | null>;
   worldRef: React.RefObject<HTMLCanvasElement | null>;
@@ -25,6 +28,9 @@ type GameClientProps = {
 export default function GameClient({
   setScreen,
   settings,
+  hoverStates,
+  setHoverStates,
+  pressTimers,
   frameRef,
   uiRef,
   worldRef,
@@ -35,18 +41,26 @@ export default function GameClient({
   effectTimers,
   animStateRef,
 }: GameClientProps) {
+  const hoverStatesRef = useRef(hoverStates);
+  const ratioRef = useRef(ratio);
+
+  hoverStatesRef.current = hoverStates;
+  ratioRef.current = ratio;
   const ClientComponent = useMemo(() => {
     const Board = (boardProps: any) => (
       <GameCanvas
         {...boardProps}
         settings={settings}
+        hoverStates={hoverStatesRef.current}
+        setHoverStates={setHoverStates}
+        pressTimers={pressTimers}
         setScreen={setScreen}
         frameRef={frameRef}
         uiRef={uiRef}
         worldRef={worldRef}
         effectRef={effectRef}
         emphaRef={emphaRef}
-        ratio={ratio}
+        ratio={ratioRef.current}
         mouseRef={mouseRef}
         effectTimers={effectTimers}
         animStateRef={animStateRef}

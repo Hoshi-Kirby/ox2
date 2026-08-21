@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import type { Screen, Settings, DeckColor } from "./types";
+import type {
+  Screen,
+  Settings,
+  DeckColor,
+  HoverUI,
+  PressTimers,
+} from "./types";
 import MenuScreen from "./MenuScreen";
-import GameCanvas from "./GameCanvas";
-import { Client } from "boardgame.io/react";
-import { createMyGame } from "./game/MyGame";
 import GameClient from "./GameClient";
 
 export default function App() {
@@ -32,7 +35,28 @@ export default function App() {
       eventEnabled: true,
       shiftCardEnabled: false,
 
-      deck0: [],
+      deck0: [
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
+      ],
       deck1: [],
       deck2: [],
       deck3: [],
@@ -69,6 +93,36 @@ export default function App() {
     gameStartCount: 0,
     turnStart: 0,
   });
+
+  const [hoverStates, setHoverStates] = useState<HoverUI>({
+    startButton: false,
+    back: false,
+    menu: Array(5).fill(false),
+    gameSettingArrow: Array.from({ length: 2 }, () => Array(2).fill(false)),
+    gameDeck: Array(2).fill(false),
+    selectDeck: Array(4).fill(false),
+    menuDeck: Array(3).fill(false),
+    org: false,
+    hoverCards: {
+      des: Array(5).fill(false),
+      gen: Array(5).fill(false),
+      dis: Array(5).fill(false),
+      sup: Array(5).fill(false),
+    },
+    hoverDeckIndex: -1,
+    shift: false,
+    save: false,
+    gameStart: false,
+    turnEnd: false,
+  });
+
+  const pressTimers = useRef<PressTimers>({
+    startButton: 0,
+    cardPool: 0,
+    deckBar: 0,
+  });
+
+  const hoverStatesRef = useRef(hoverStates);
 
   const [ratio, setRatio] = useState(window.innerWidth / window.innerHeight);
 
@@ -126,6 +180,10 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    hoverStatesRef.current = hoverStates;
+  }, [hoverStates]);
+
   // -----------------------------
   // 画面切り替え
   // -----------------------------
@@ -135,6 +193,9 @@ export default function App() {
         screen={screen}
         setScreen={setScreen}
         settingsRef={settingsRef}
+        hoverStates={hoverStates}
+        setHoverStates={setHoverStates}
+        pressTimers={pressTimers}
         ratio={ratio}
         mouseRef={mouseRef}
         frameRef={frameRef}
@@ -153,6 +214,9 @@ export default function App() {
     <GameClient
       setScreen={setScreen}
       settings={settingsRef.current}
+      hoverStates={hoverStates}
+      setHoverStates={setHoverStates}
+      pressTimers={pressTimers}
       frameRef={frameRef}
       uiRef={uiRef}
       worldRef={worldRef}
@@ -167,7 +231,6 @@ export default function App() {
 }
 
 function updateEffectsTimer(dt: number, timers: Record<string, number>) {
-  console.log("dt:", dt);
   for (const key in timers) {
     if (timers[key] > 0) {
       timers[key] -= dt;

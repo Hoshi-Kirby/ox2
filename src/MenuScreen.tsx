@@ -23,6 +23,9 @@ export default function MenuScreen({
   screen,
   setScreen,
   settingsRef,
+  hoverStates,
+  setHoverStates,
+  pressTimers,
   ratio,
   mouseRef,
   frameRef,
@@ -37,6 +40,9 @@ export default function MenuScreen({
   screen: Screen;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
   settingsRef: React.MutableRefObject<Settings>;
+  hoverStates: HoverUI;
+  setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
+  pressTimers: React.MutableRefObject<PressTimers>;
   ratio: number;
   mouseRef: React.MutableRefObject<{ x: number; y: number }>;
   frameRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -49,34 +55,6 @@ export default function MenuScreen({
   setBgmEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [ready, setReady] = useState(false);
-
-  const [hoverStates, setHoverStates] = useState<HoverUI>({
-    startButton: false,
-    back: false,
-    menu: Array(5).fill(false),
-    gameSettingArrow: Array.from({ length: 2 }, () => Array(2).fill(false)),
-    gameDeck: Array(2).fill(false),
-    selectDeck: Array(4).fill(false),
-    menuDeck: Array(3).fill(false),
-    org: false,
-    hoverCards: {
-      des: Array(5).fill(false),
-      gen: Array(5).fill(false),
-      dis: Array(5).fill(false),
-      sup: Array(5).fill(false),
-    },
-    hoverDeckIndex: -1,
-    shift: false,
-    save: false,
-    gameStart: false,
-    turnEnd: false,
-  });
-
-  const pressTimers = useRef<PressTimers>({
-    startButton: 0,
-    cardPool: 0,
-    deckBar: 0,
-  });
 
   const hoverStatesRef = useRef(hoverStates);
 
@@ -96,7 +74,7 @@ export default function MenuScreen({
     const canvas = uiRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-    renderUI(ctx, ratio, screen, effectTimers.current, hoverStates);
+    renderUI(ctx, ratio, screen, effectTimers.current, hoverStatesRef.current);
   }, [screen, ratio, hoverStates]);
   // effect,empha：毎フレーム描く（アニメーション）
   useEffect(() => {
@@ -146,7 +124,13 @@ export default function MenuScreen({
         const ctx = canvas.getContext("2d")!;
         const ctx2 = canvas2.getContext("2d")!;
         renderFrame(ctx, screen);
-        renderUI(ctx2, ratio, screen, effectTimers.current, hoverStates);
+        renderUI(
+          ctx2,
+          ratio,
+          screen,
+          effectTimers.current,
+          hoverStatesRef.current,
+        );
         setReady(true);
       }
 

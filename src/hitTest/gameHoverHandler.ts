@@ -37,11 +37,11 @@ export function createGameHoverHandler({
         const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
         if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
+          console.log(hoverStatesRef.current.turnEnd);
           setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
         }
       }
     }
-
     requestAnimationFrame(loop);
   }
 
