@@ -2,7 +2,7 @@ import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
-export function renderGame(
+export function renderGameEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: Screen,
@@ -45,50 +45,11 @@ export function renderGame(
   if (screen === "game") {
     // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
     // 線
-    for (let i = 0; i < 2; i++) {
-      ctx.drawImage(
-        assets.neonLine,
-        boardX + boardW * 0.02,
-        boardY + boardH * 0.23 + boardH * 0.19 * i,
-        boardW,
-        boardW * (assets.neonLine.height / assets.neonLine.width),
-      );
-    }
-    for (let i = 0; i < 2; i++) {
-      ctx.save();
-      ctx.translate(boardX + boardW / 2, boardY + boardH / 2);
-      ctx.rotate(Math.PI / 2);
-      const lineY = -boardH / 2 + boardH * 0.23 + boardH * 0.19 * i;
-      const lineX = -boardW / 2 + boardW * 0.02;
-
-      ctx.drawImage(
-        assets.neonLine,
-        lineX,
-        lineY,
-        boardW,
-        boardW * (assets.neonLine.height / assets.neonLine.width),
-      );
-      ctx.restore();
-    }
-
     // 駒
-    for (let z = 0; z < 3; z++) {
-      for (let x = 0; x < 5; x++) {
-        for (let y = 0; y < 5; y++) {
-          if (G.board[z][y][x] >= 1) {
-            ctx.drawImage(
-              assets.token[G.board[z][y][x] - 1],
-              boardX + (boardW / 5) * x,
-              boardY + (boardH / 5) * y,
-              boardW / 5,
-              boardH / 5,
-            );
-          }
-        }
-      }
-    }
     // カード
+    // //ホバー
     for (let i = 0; i < 2; i++) {
+      console.log(hoverStates.hoverHands[i]);
       const isBottom = i === Number(playerID);
       let baseX = W * 0.01;
       let cardPool = W * 0.98;
@@ -126,58 +87,43 @@ export function renderGame(
       // //
 
       for (let j = 0; j < handSize; j++) {
-        const card = G.hand[i][j];
-        const img = assets.cardAssets[card.attr][card.index];
+        if (hoverStates.hoverHands[i] === j) {
+          const card = G.hand[i][j];
+          const img = assets.cardAssets[card.attr][card.index];
 
-        const afterX: number = getHandCardX(
-          handSize,
-          j,
-          baseX,
-          cardPool,
-          cardW,
-        );
-        const beforeX: number = getHandCardX(
-          handSize - 1, //要変更
-          j,
-          baseX,
-          cardPool,
-          cardW,
-        );
-        // 移動量
-        const moveX: number = (beforeX - afterX) * (1 - progress);
+          const afterX: number = getHandCardX(
+            handSize,
+            j,
+            baseX,
+            cardPool,
+            cardW,
+          );
+          const beforeX: number = getHandCardX(
+            handSize - 1, //要変更
+            j,
+            baseX,
+            cardPool,
+            cardW,
+          );
+          // 移動量
+          const moveX: number = (beforeX - afterX) * (1 - progress);
 
-        let x: number = dx + afterX + moveX;
-        const y: number = dy + baseY;
+          let x: number = dx + afterX + moveX;
+          const y: number = dy + baseY;
 
-        ctx.drawImage(img, x, y, cardW, cardH);
+          ctx.drawImage(
+            img,
+            x - cardW * 0.02,
+            y - cardH * 0.02,
+            cardW + cardW * 0.04,
+            cardH + cardH * 0.04,
+          );
+        }
       }
     }
 
     // ウィンドウ
     // ターン
-    if (layoutIsWide) {
-      ctx.drawImage(
-        assets.token[bgCtx.currentPlayer],
-        dx + H * 0.03,
-        dy + H * 0.175,
-        H * 0.08,
-        H * 0.08,
-      );
-      ctx.drawImage(
-        assets.noTurn,
-        dx + H * 0.1,
-        dy + H * 0.17,
-        H * 0.26,
-        H * 0.26 * (assets.noTurn.height / assets.noTurn.width),
-      );
-
-      ctx.font = "40px KiwiMaru-Medium";
-      ctx.fillStyle = "#ffffff";
-
-      const turnText = `ターン ${bgCtx.turn}`;
-
-      ctx.fillText(turnText, dx + W * 0.1, dy + H * 0.85);
-    }
   }
 }
 function getHandCardX(

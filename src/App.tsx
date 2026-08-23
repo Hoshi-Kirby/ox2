@@ -36,15 +36,14 @@ export default function App() {
       shiftCardEnabled: false,
 
       deck0: [
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
-        { attr: "des", index: 3 },
+        { attr: "gen", index: 4 },
+        { attr: "gen", index: 4 },
+        { attr: "gen", index: 4 },
+        { attr: "gen", index: 4 },
+        { attr: "gen", index: 6 },
+        { attr: "gen", index: 6 },
+        { attr: "gen", index: 6 },
+        { attr: "gen", index: 6 },
         { attr: "des", index: 3 },
         { attr: "des", index: 3 },
         { attr: "des", index: 3 },
@@ -79,6 +78,7 @@ export default function App() {
   const emphaRef = useRef<HTMLCanvasElement>(null);
   const uiRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<HTMLCanvasElement>(null);
+  const worldEffectRef = useRef<HTMLCanvasElement>(null);
   const effectRef = useRef<HTMLCanvasElement>(null);
 
   const effectTimers = useRef<Record<string, number>>({
@@ -114,12 +114,14 @@ export default function App() {
     save: false,
     gameStart: false,
     turnEnd: false,
+    hoverHands: [-1, -1],
   });
 
   const pressTimers = useRef<PressTimers>({
     startButton: 0,
     cardPool: 0,
     deckBar: 0,
+    hands: [0, 0],
   });
 
   const hoverStatesRef = useRef(hoverStates);
@@ -220,6 +222,7 @@ export default function App() {
       frameRef={frameRef}
       uiRef={uiRef}
       worldRef={worldRef}
+      worldEffectRef={worldEffectRef}
       effectRef={effectRef}
       emphaRef={emphaRef}
       ratio={ratio}

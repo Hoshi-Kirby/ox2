@@ -13,6 +13,7 @@ type GameClientProps = {
   frameRef: React.RefObject<HTMLCanvasElement | null>;
   uiRef: React.RefObject<HTMLCanvasElement | null>;
   worldRef: React.RefObject<HTMLCanvasElement | null>;
+  worldEffectRef: React.RefObject<HTMLCanvasElement | null>;
   effectRef: React.RefObject<HTMLCanvasElement | null>;
   emphaRef: React.RefObject<HTMLCanvasElement | null>;
   ratio: number;
@@ -34,6 +35,7 @@ export default function GameClient({
   frameRef,
   uiRef,
   worldRef,
+  worldEffectRef,
   effectRef,
   emphaRef,
   ratio,
@@ -58,6 +60,7 @@ export default function GameClient({
         frameRef={frameRef}
         uiRef={uiRef}
         worldRef={worldRef}
+        worldEffectRef={worldEffectRef}
         effectRef={effectRef}
         emphaRef={emphaRef}
         ratio={ratioRef.current}

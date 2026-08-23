@@ -5,6 +5,7 @@ import { renderEffect } from "./canvas/rendererEffects";
 import { renderEmpha } from "./canvas/rendererEmpha";
 import { renderUI } from "./canvas/rendererUI";
 import { renderGame } from "./canvas/rendererGame";
+import { renderGameEffect } from "./canvas/rendererGameEffects";
 import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createGameClickHandler } from "./hitTest/gameClickHandler";
@@ -27,6 +28,7 @@ export default function GameCanvas({
   frameRef,
   uiRef,
   worldRef,
+  worldEffectRef,
   effectRef,
   emphaRef,
   ratio,
@@ -46,6 +48,7 @@ export default function GameCanvas({
   frameRef: React.MutableRefObject<HTMLCanvasElement | null>;
   uiRef: React.MutableRefObject<HTMLCanvasElement | null>;
   worldRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  worldEffectRef: React.MutableRefObject<HTMLCanvasElement | null>;
   effectRef: React.MutableRefObject<HTMLCanvasElement | null>;
   emphaRef: React.MutableRefObject<HTMLCanvasElement | null>;
   ratio: number;
@@ -89,12 +92,15 @@ export default function GameCanvas({
     const effectCanvas = effectRef.current;
     const emphaCanvas = emphaRef.current;
     const gameCanvas = worldRef.current;
+    const gameEffectCanvas = worldEffectRef.current;
 
-    if (!effectCanvas || !emphaCanvas || !gameCanvas) return;
+    if (!effectCanvas || !emphaCanvas || !gameCanvas || !gameEffectCanvas)
+      return;
 
     const effectCtx = effectCanvas.getContext("2d")!;
     const emphaCtx = emphaCanvas.getContext("2d")!;
     const gameCtx = gameCanvas.getContext("2d")!;
+    const gameEffectCtx = gameEffectCanvas.getContext("2d")!;
 
     let running = true;
     let lastTime = performance.now();
@@ -122,7 +128,10 @@ export default function GameCanvas({
         );
 
         gameAnim.frame++;
-        if (gameAnim.frame >= gameAnim.maxFrames) {
+        if (
+          gameAnim.frame >= gameAnim.maxFrames &&
+          effectTimers.current.gameStartCount == 0
+        ) {
           gameAnim.active = false;
         }
       }
@@ -147,6 +156,18 @@ export default function GameCanvas({
         dt,
         hoverStatesRef.current,
         settings,
+      );
+      renderGameEffect(
+        gameEffectCtx,
+        ratio,
+        screen,
+        effectTimers.current,
+        dt,
+        hoverStatesRef.current,
+        settings,
+        G,
+        ctx,
+        playerID,
       );
       if (!ready) {
         const canvas = frameRef.current;
@@ -210,6 +231,10 @@ export default function GameCanvas({
       setHoverStates,
       settings,
       pressTimers: pressTimers.current,
+      effectTimers: effectTimers.current,
+      G,
+      ctx,
+      playerID,
     });
 
     return () => {
@@ -286,6 +311,16 @@ export default function GameCanvas({
       />
       <canvas
         ref={worldRef}
+        width={1280}
+        height={720}
+        className="layer"
+        style={{
+          width: ratio < 1280 / 720 ? "auto" : "100vw",
+          height: ratio < 1280 / 720 ? "100vh" : "auto",
+        }}
+      />
+      <canvas
+        ref={worldEffectRef}
         width={1280}
         height={720}
         className="layer"

@@ -83,9 +83,11 @@ export type HoverUI = {
   save: boolean;
   gameStart: boolean;
   turnEnd: boolean;
+  hoverHands: number[];
 };
 export type PressTimers = {
   startButton: number;
   cardPool: number;
   deckBar: number;
+  hands: number[];
 };
