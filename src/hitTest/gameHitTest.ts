@@ -24,15 +24,21 @@ function computeLayout(ratio: number) {
 
 // ターンエンド
 export function isInsideTurnEndButton(x: number, y: number, ratio: number) {
-  const { W, H, dx, dy } = computeLayout(ratio);
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
   let turnEndImg = assets.turnEnd;
   let bx = dx + W - H * 0.45;
+  let by = dy + H * 0.45;
   let bw = H * 0.4;
   if (ratio < 1.5) {
     bx = dx + W - H * 0.36;
     bw = H * 0.35;
   }
-  const by = dy + H * 0.45;
+  if (!layoutIsWide) {
+    bw = H * 0.2;
+    bx = dx + W * 0.5 - bw / 2;
+    by = dy + H * 0.7;
+  }
+
   const bh = bw / (turnEndImg.width / turnEndImg.height);
   return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
 }

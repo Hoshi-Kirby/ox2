@@ -42,13 +42,11 @@ export function createGameHoverHandler({
 
     if (screen === "game") {
       // ターンエンド
-      if (ratio > 1.2) {
-        const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
+      const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
-        if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
-          console.log(hoverStatesRef.current.turnEnd);
-          setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
-        }
+      if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
+        console.log(hoverStatesRef.current.turnEnd);
+        setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
       }
 
       // 手札ホバー

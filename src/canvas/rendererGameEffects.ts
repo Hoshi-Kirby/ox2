@@ -123,6 +123,20 @@ export function renderGameEffect(
     }
 
     // ウィンドウ
+    // // カード効果
+    for (let i = 0; i < 2; i++) {
+      if (hoverStates.hoverHands[i] >= 0 && layoutIsWide) {
+        const card = G.hand[i][hoverStates.hoverHands[i]];
+        const img = assets.cardDescriptionAssets[card.attr][card.index];
+        ctx.drawImage(
+          img,
+          dx - H * 0.005,
+          dy + H * 0.267,
+          H * 0.38,
+          H * 0.38 * (img.height / img.width),
+        );
+      }
+    }
     // ターン
   }
 }

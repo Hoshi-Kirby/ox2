@@ -114,4 +114,10 @@ export const assets = {
     dis: loadNumberedImages("/assets/cards_token/dis", 8, "b"),
     sup: loadNumberedImages("/assets/cards_token/sup", 8, "b"),
   },
+  cardDescriptionAssets: {
+    des: loadNumberedImages("/assets/ui/des", 8),
+    gen: loadNumberedImages("/assets/ui/gen", 8),
+    dis: loadNumberedImages("/assets/ui/dis", 8),
+    sup: loadNumberedImages("/assets/ui/sup", 8),
+  },
 };

@@ -1001,7 +1001,45 @@ export function renderEffect(
           deckListH,
         );
       }
+      // カード説明wideのカード
+      if (layoutIsWide) {
+        for (let a = 0; a < attrs.length; a++) {
+          for (let i = 1; i <= 5; i++) {
+            let shiftCard = 0;
+            if (settingsRef.ui.isShift && i > 3) {
+              shiftCard = 2;
+            }
+            if (hoverStates.hoverCards[attrs[a]][i - 1]) {
+              const img = assets.cardDescriptionAssets[attrs[a]][i + shiftCard];
+              ctx.drawImage(
+                img,
+                dx + W - deckListW * 0.58,
+                dy + deckListW * 0.4,
+                deckListW * 0.6,
+                deckListW * 0.6 * (img.height / img.width),
+              );
+            }
+          }
+        }
+      }
+      // カード説明　バー
+      if (
+        hoverStates.hoverDeckIndex >= 0 &&
+        hoverStates.hoverDeckIndex < settingsRef.game.editDeck.length
+      ) {
+        const deck = settingsRef.game.editDeck;
+        const card = deck[hoverStates.hoverDeckIndex];
+        const img = assets.cardDescriptionAssets[card.attr][card.index];
+        ctx.drawImage(
+          img,
+          dx + W - deckListW * 0.58,
+          dy + deckListW * 0.4,
+          deckListW * 0.6,
+          deckListW * 0.6 * (img.height / img.width),
+        );
+      }
     }
+
     // 戻る
     ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
     const backImg = assets.backText;
