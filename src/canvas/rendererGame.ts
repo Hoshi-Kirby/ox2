@@ -131,7 +131,27 @@ export function renderGame(
 
       for (let j = 0; j < handSize; j++) {
         const card = G.hand[i][j];
-        const img = assets.cardAssets[card.attr][card.index];
+        let img = assets.cardAssets[card.attr][card.index];
+
+        type DeckColorKey =
+          | "deckColor0"
+          | "deckColor1"
+          | "deckColor2"
+          | "deckColor3";
+        const backColorMap: Record<string, number> = {
+          red: 0,
+          green: 1,
+          yellow: 2,
+          blue: 3,
+          rainbow: 4,
+        };
+        const deckIndex = settingsRef.game.selectedDeckP[i];
+        const colorKey = `deckColor${deckIndex}` as DeckColorKey;
+        const colorName = settingsRef.game[colorKey];
+        const colorIndex = backColorMap[colorName] ?? 0;
+        if (G.faceDown[i][j]) {
+          img = assets.backCard[colorIndex];
+        }
 
         const afterX: number = getHandCardX(
           handSize,
@@ -166,13 +186,15 @@ export function renderGame(
         const folder = def.costType === "flip" ? "w" : "r";
         const imgN = assets.costNumber[folder][def.cost];
         // コスト数字
-        ctx.drawImage(
-          imgN,
-          x,
-          y,
-          cardW * 0.3,
-          cardW * 0.3 * (imgN.height / imgN.width),
-        );
+        if (!G.faceDown[i][j]) {
+          ctx.drawImage(
+            imgN,
+            x,
+            y,
+            cardW * 0.3,
+            cardW * 0.3 * (imgN.height / imgN.width),
+          );
+        }
       }
     }
 

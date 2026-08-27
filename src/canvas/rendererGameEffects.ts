@@ -153,39 +153,45 @@ export function renderGameEffect(
     // // カード効果
     for (let i = 0; i < 2; i++) {
       if (hoverStates.hoverHands[i] >= 0 && layoutIsWide) {
-        const card = G.hand[i][hoverStates.hoverHands[i]];
-        const img = assets.cardDescriptionAssets[card.attr][card.index];
-        ctx.drawImage(
-          img,
-          dx - H * 0.005,
-          dy + H * 0.267,
-          H * 0.38,
-          H * 0.38 * (img.height / img.width),
-        );
-      } else if (hoverStates.hoverHands[i] >= 0) {
-        const wipeRatio = assets.centerWipe.height / assets.centerWipe.width;
-        let cWipeW = W * 0.9;
-        let cWipeH = cWipeW * wipeRatio;
-        if (cWipeH > H * 0.8) {
-          cWipeH = H * 0.8;
-          cWipeW = cWipeH / wipeRatio;
+        const hoverIndex = hoverStates.hoverHands[i];
+        if (hoverIndex >= 0 && hoverIndex < G.hand[i].length) {
+          const card = G.hand[i][hoverIndex];
+          const img = assets.cardDescriptionAssets[card.attr][card.index];
+          ctx.drawImage(
+            img,
+            dx - H * 0.005,
+            dy + H * 0.267,
+            H * 0.38,
+            H * 0.38 * (img.height / img.width),
+          );
         }
-        ctx.drawImage(
-          assets.centerWipe,
-          dx + W / 2 - cWipeW / 2,
-          dy + H / 2 - cWipeH / 2,
-          cWipeW,
-          cWipeH,
-        );
-        const card = G.hand[i][hoverStates.hoverHands[i]];
-        const img = assets.cardDescriptionAssets[card.attr][card.index];
-        ctx.drawImage(
-          img,
-          dx + W / 2 - cWipeW * 0.49,
-          dy + H / 2 - cWipeH * 0.47,
-          cWipeW * 0.98,
-          cWipeH * 0.98,
-        );
+      } else if (hoverStates.hoverHands[i] >= 0) {
+        const hoverIndex = hoverStates.hoverHands[i];
+        if (hoverIndex >= 0 && hoverIndex < G.hand[i].length) {
+          const wipeRatio = assets.centerWipe.height / assets.centerWipe.width;
+          let cWipeW = W * 0.9;
+          let cWipeH = cWipeW * wipeRatio;
+          if (cWipeH > H * 0.8) {
+            cWipeH = H * 0.8;
+            cWipeW = cWipeH / wipeRatio;
+          }
+          ctx.drawImage(
+            assets.centerWipe,
+            dx + W / 2 - cWipeW / 2,
+            dy + H / 2 - cWipeH / 2,
+            cWipeW,
+            cWipeH,
+          );
+          const card = G.hand[i][hoverIndex];
+          const img = assets.cardDescriptionAssets[card.attr][card.index];
+          ctx.drawImage(
+            img,
+            dx + W / 2 - cWipeW * 0.49,
+            dy + H / 2 - cWipeH * 0.47,
+            cWipeW * 0.98,
+            cWipeH * 0.98,
+          );
+        }
       }
     }
     // ターン

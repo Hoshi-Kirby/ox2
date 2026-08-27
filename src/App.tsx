@@ -55,6 +55,7 @@ export default function App() {
         { attr: "des", index: 3 },
         { attr: "des", index: 3 },
         { attr: "des", index: 3 },
+        { attr: "des", index: 3 },
       ],
       deck1: [],
       deck2: [],

@@ -46,7 +46,6 @@ export function createGameClickHandler({
     }
 
     // カード
-    // カード
     if (effectTimers.gameStartCount == 0) {
       const result: [number, number] = [-1, -1];
 

@@ -102,6 +102,13 @@ export const assets = {
     "/assets/cards_token/token/ox.png",
   ),
   noTurn: loadImage("/assets/ui/no_turn.png"),
+  backCard: loadImages(
+    "/assets/cards_token/backr.png",
+    "/assets/cards_token/backg.png",
+    "/assets/cards_token/backy.png",
+    "/assets/cards_token/backb.png",
+    "/assets/cards_token/backn.png",
+  ),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

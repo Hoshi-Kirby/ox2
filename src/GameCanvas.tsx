@@ -219,7 +219,7 @@ export default function GameCanvas({
 
     canvas.addEventListener("click", listener);
     return () => canvas.removeEventListener("click", listener);
-  }, [ratio, screen]);
+  }, [ratio, screen, G, ctx.turn, ctx.phase, ctx.currentPlayer]);
 
   // ホバー判定
   useEffect(() => {
@@ -240,7 +240,15 @@ export default function GameCanvas({
     return () => {
       stopGameHover();
     };
-  }, [ratio, screen, settings.ui.deviceMode]);
+  }, [
+    ratio,
+    screen,
+    settings.ui.deviceMode,
+    G,
+    ctx.turn,
+    ctx.phase,
+    ctx.currentPlayer,
+  ]);
 
   // マウス座標
   useEffect(() => {

@@ -45,7 +45,6 @@ export function createGameHoverHandler({
       const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
       if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
-        console.log(hoverStatesRef.current.turnEnd);
         setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
       }
 
@@ -149,11 +148,12 @@ export function getHoverHandIndex(
     );
 
     for (let j = handSize - 1; j >= 0; j--) {
-      const inside = isInsideHandCard(x, y, ratio, i, j, handSize, playerID);
-
-      if (inside) {
-        result[i] = j;
-        break;
+      if (!G.faceDown[i][j]) {
+        const inside = isInsideHandCard(x, y, ratio, i, j, handSize, playerID);
+        if (inside) {
+          result[i] = j;
+          break;
+        }
       }
     }
   }
