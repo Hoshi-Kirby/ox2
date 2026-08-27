@@ -39,6 +39,7 @@ export function renderEmpha(
       ctx.drawImage(assets.leftWhite, 0 - leftWhiteX, 0, 1280 + 400, 720);
     }
   } else if (screen === "game") {
+    // ワイプ
     if (layoutIsWide) {
       const leftWipeX = -effectTimers.gameStartAnim;
       ctx.drawImage(
@@ -64,5 +65,30 @@ export function renderEmpha(
         H * 0.4,
       );
     }
+    // ターンエンド
+    let turnEndImg = assets.turnEnd;
+    let turnEndBtnX = dx + W - H * 0.45;
+    let turnEndBtnY = dy + H * 0.45;
+    let turnEndBtnW = H * 0.4;
+    if (ratio < 1.5) {
+      turnEndBtnX = dx + W - H * 0.36;
+      turnEndBtnW = H * 0.35;
+    }
+    if (hoverStates.turnEnd) {
+      turnEndImg = assets.turnEndHover;
+    }
+
+    if (!layoutIsWide) {
+      turnEndBtnW = H * 0.2;
+      turnEndBtnX = dx + W * 0.5 - turnEndBtnW / 2;
+      turnEndBtnY = dy + H * 0.7;
+    }
+    ctx.drawImage(
+      turnEndImg,
+      turnEndBtnX,
+      turnEndBtnY,
+      turnEndBtnW,
+      turnEndBtnW / (turnEndImg.width / turnEndImg.height),
+    );
   }
 }

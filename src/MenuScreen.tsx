@@ -245,9 +245,6 @@ export default function MenuScreen({
     } else {
       stopBgm();
     }
-    console.log("screen:", screen);
-    console.log("bgmEnabled:", settingsRef.current.ui.bgmEnabled);
-    console.log("bgm:", bgm.src);
   }, [screen, bgmEnabled]);
 
   return (

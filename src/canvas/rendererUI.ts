@@ -1,5 +1,6 @@
 // rendererUI.ts
 import { assets } from "./assets";
+import { cardDefs } from "../data";
 import type { Screen, HoverUI } from "../types";
 
 export function renderUI(
@@ -102,33 +103,20 @@ export function renderUI(
           const y = baseY + a * carddy;
 
           ctx.drawImage(img, x, y, cardW, cardH);
+
+          const def = cardDefs[attrs[a]][i];
+          const folder = def.costType === "flip" ? "w" : "r";
+          const imgN = assets.costNumber[folder][def.cost];
+          ctx.drawImage(
+            imgN,
+            x,
+            y,
+            cardW * 0.3,
+            cardW * 0.3 * (imgN.height / imgN.width),
+          );
         }
       }
     }
   } else if (screen === "game") {
-    let turnEndImg = assets.turnEnd;
-    let turnEndBtnX = dx + W - H * 0.45;
-    let turnEndBtnY = dy + H * 0.45;
-    let turnEndBtnW = H * 0.4;
-    if (ratio < 1.5) {
-      turnEndBtnX = dx + W - H * 0.36;
-      turnEndBtnW = H * 0.35;
-    }
-    if (hoverStates.turnEnd) {
-      turnEndImg = assets.turnEndHover;
-    }
-
-    if (!layoutIsWide) {
-      turnEndBtnW = H * 0.2;
-      turnEndBtnX = dx + W * 0.5 - turnEndBtnW / 2;
-      turnEndBtnY = dy + H * 0.7;
-    }
-    ctx.drawImage(
-      turnEndImg,
-      turnEndBtnX,
-      turnEndBtnY,
-      turnEndBtnW,
-      turnEndBtnW / (turnEndImg.width / turnEndImg.height),
-    );
   }
 }

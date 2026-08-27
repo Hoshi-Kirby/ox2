@@ -1,5 +1,6 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
+import { cardDefs } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 export function renderGame(
@@ -106,17 +107,20 @@ export function renderGame(
           cardH /
           (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
       }
-      const baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
+      let baseY = isBottom ? H * 0.96 - cardH : H * 0.07;
+      if (layoutIsWide) {
+        baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
+      }
 
       // //最初の手札アニメーション
       const handSize = Math.min(
         G.hand[i].length,
         Math.floor(
-          (1 - (effectTimers.gameStartConut - 1000) / 3500) * G.hand[i].length,
+          (1 - (effectTimers.gameStartCount - 1000) / 3500) * G.hand[i].length,
         ),
       );
       const animationDuration: number = 100;
-      const elapsed: number = 4500 - effectTimers.gameStartConut;
+      const elapsed: number = 4500 - effectTimers.gameStartCount;
       const animationStartTime: number = (3500 * handSize) / G.hand[i].length;
       const animationElapsed: number = elapsed - animationStartTime;
       const progress: number = Math.min(
@@ -146,10 +150,29 @@ export function renderGame(
         // 移動量
         const moveX: number = (beforeX - afterX) * (1 - progress);
 
+        let activeY = 0;
+        if (bgCtx.currentPlayer == i) {
+          if (G.phase === "payCost" && G.activeCard == j) {
+            activeY = -cardH * 0.2;
+          } else if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
+            activeY = -cardH * 0.1;
+          }
+        }
         let x: number = dx + afterX + moveX;
-        const y: number = dy + baseY;
-
+        const y: number = dy + baseY + activeY;
+        // カード画像
         ctx.drawImage(img, x, y, cardW, cardH);
+        const def = cardDefs[card.attr][card.index];
+        const folder = def.costType === "flip" ? "w" : "r";
+        const imgN = assets.costNumber[folder][def.cost];
+        // コスト数字
+        ctx.drawImage(
+          imgN,
+          x,
+          y,
+          cardW * 0.3,
+          cardW * 0.3 * (imgN.height / imgN.width),
+        );
       }
     }
 
@@ -177,6 +200,22 @@ export function renderGame(
       const turnText = `ターン ${bgCtx.turn}`;
 
       ctx.fillText(turnText, dx + W * 0.1, dy + H * 0.85);
+    } else {
+      let tuenX = H * 0.06;
+      ctx.drawImage(
+        assets.token[bgCtx.currentPlayer],
+        dx + H * 0.08,
+        dy + H * 0,
+        tuenX,
+        tuenX,
+      );
+      ctx.drawImage(
+        assets.noTurn,
+        dx + H * 0.13,
+        dy - H * 0.005,
+        (tuenX * 26) / 8,
+        ((tuenX * 26) / 8) * (assets.noTurn.height / assets.noTurn.width),
+      );
     }
   }
 }

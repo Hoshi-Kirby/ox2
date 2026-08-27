@@ -1,5 +1,6 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
+import { cardDefs } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 let t = 0;
@@ -653,6 +654,16 @@ export function renderEffect(
           const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
 
           ctx.drawImage(img, x, y, cardW, cardH);
+          const def = cardDefs[attrs[a]][i];
+          const folder = def.costType === "flip" ? "w" : "r";
+          const imgN = assets.costNumber[folder][def.cost];
+          ctx.drawImage(
+            imgN,
+            x,
+            y,
+            cardW * 0.3,
+            cardW * 0.3 * (imgN.height / imgN.width),
+          );
         }
         for (let i = 4; i <= 5; i++) {
           let shiftCard = 0;
@@ -666,6 +677,16 @@ export function renderEffect(
           const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
 
           ctx.drawImage(img, x, y, cardW, cardH);
+          const def = cardDefs[attrs[a]][i + shiftCard];
+          const folder = def.costType === "flip" ? "w" : "r";
+          const imgN = assets.costNumber[folder][def.cost];
+          ctx.drawImage(
+            imgN,
+            x,
+            y,
+            cardW * 0.3,
+            cardW * 0.3 * (imgN.height / imgN.width),
+          );
         }
       }
     }
@@ -731,6 +752,16 @@ export function renderEffect(
             const x = baseX + (i - 1) * carddx;
             const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(img, x, y, cardW, cardH);
+            const def = cardDefs[attrs[a]][i];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x,
+              y,
+              cardW * 0.3,
+              cardW * 0.3 * (imgN.height / imgN.width),
+            );
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
             ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i];
@@ -743,6 +774,17 @@ export function renderEffect(
               y - cardPoolH * 0.005,
               cardW + cardPoolW * 0.01,
               cardH + cardPoolH * 0.01,
+            );
+            const def = cardDefs[attrs[a]][i];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+              cardW * 0.3 * (imgN.height / imgN.width) +
+                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
             );
           }
           // const img = assets.cardAssets[attrs[a]][i];
@@ -776,6 +818,16 @@ export function renderEffect(
             const x = baseX + (i - 4) * carddx;
             const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(img, x, y, cardW, cardH);
+            const def = cardDefs[attrs[a]][i + shiftCard];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x,
+              y,
+              cardW * 0.3,
+              cardW * 0.3 * (imgN.height / imgN.width),
+            );
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
             ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
@@ -788,6 +840,17 @@ export function renderEffect(
               y - cardH * 0.02,
               cardW + cardW * 0.04,
               cardH + cardH * 0.04,
+            );
+            const def = cardDefs[attrs[a]][i + shiftCard];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+              cardW * 0.3 * (imgN.height / imgN.width) +
+                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
             );
           }
           // const img = assets.cardAssets[attrs[a]][i];
@@ -822,6 +885,16 @@ export function renderEffect(
             const x = baseX + (i - 1) * carddx;
             const y = baseY + a * carddy;
             ctx.drawImage(img, x, y, cardW, cardH);
+            const def = cardDefs[attrs[a]][i + shiftCard];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x,
+              y,
+              cardW * 0.3,
+              cardW * 0.3 * (imgN.height / imgN.width),
+            );
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
             ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
@@ -835,6 +908,17 @@ export function renderEffect(
               cardW + cardW * 0.04,
               cardH + cardH * 0.04,
             );
+            const def = cardDefs[attrs[a]][i + shiftCard];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x - cardPoolW * 0.005,
+              y - cardPoolH * 0.005,
+              cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+              cardW * 0.3 * (imgN.height / imgN.width) +
+                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+            );
           } else if (shiftCard == 2) {
             ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
@@ -842,6 +926,16 @@ export function renderEffect(
             const x = baseX + (i - 1) * carddx;
             const y = baseY + a * carddy;
             ctx.drawImage(img, x, y, cardW, cardH);
+            const def = cardDefs[attrs[a]][i + shiftCard];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost];
+            ctx.drawImage(
+              imgN,
+              x,
+              y,
+              cardW * 0.3,
+              cardW * 0.3 * (imgN.height / imgN.width),
+            );
           }
         }
       }
@@ -932,50 +1026,35 @@ export function renderEffect(
 
       for (let i = 0; i < deck.length; i++) {
         const card = deck[i];
-
         const img = assets.cardBarAssets[card.attr][card.index];
         if (!img || !img.complete) continue;
 
         const x = baseX;
         const y = baseY + i * cardBardy;
+        let drawX = x;
+        let drawY;
 
         if (effectTimers.deckListClose == 0) {
-          if (hoverStates.hoverDeckIndex == i) {
-            ctx.drawImage(
-              img,
-              x - H * 0.015,
-              y - (effectTimers.deckListOpen * H) / 100,
-              cardBarW,
-              cardBarH,
-            );
-          } else {
-            ctx.drawImage(
-              img,
-              x,
-              y - (effectTimers.deckListOpen * H) / 100,
-              cardBarW,
-              cardBarH,
-            );
-          }
+          drawY = y - (effectTimers.deckListOpen * H) / 100;
         } else {
-          if (hoverStates.hoverDeckIndex == i) {
-            ctx.drawImage(
-              img,
-              x - H * 0.015,
-              y - ((200 - effectTimers.deckListClose) * H) / 100,
-              cardBarW,
-              cardBarH,
-            );
-          } else {
-            ctx.drawImage(
-              img,
-              x,
-              y - ((200 - effectTimers.deckListClose) * H) / 100,
-              cardBarW,
-              cardBarH,
-            );
-          }
+          drawY = y - ((200 - effectTimers.deckListClose) * H) / 100;
         }
+        if (hoverStates.hoverDeckIndex == i) {
+          drawX -= H * 0.015;
+        }
+
+        ctx.drawImage(img, drawX, drawY, cardBarW, cardBarH);
+
+        const def = cardDefs[card.attr][card.index];
+        const folder = def.costType === "flip" ? "w" : "r";
+        const imgN = assets.costNumber[folder][def.cost];
+        ctx.drawImage(
+          imgN,
+          drawX + cardBarH * 0.3,
+          drawY,
+          (cardBarH / (imgN.height / imgN.width)) * 0.8,
+          cardBarH * 0.8,
+        );
       }
 
       // デッキリスト上

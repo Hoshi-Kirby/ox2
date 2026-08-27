@@ -282,9 +282,6 @@ export default function GameCanvas({
     } else {
       stopBgm();
     }
-    console.log("screen:", screen);
-    console.log("bgmEnabled:", settings.ui.bgmEnabled);
-    console.log("bgm:", bgm.src);
   }, [screen]);
 
   return (

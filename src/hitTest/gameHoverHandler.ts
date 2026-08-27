@@ -144,7 +144,7 @@ export function getHoverHandIndex(
     const handSize = Math.min(
       handLength,
       Math.floor(
-        (1 - (effectTimers.gameStartConut - 1000) / 3500) * handLength,
+        (1 - (effectTimers.gameStartCount - 1000) / 3500) * handLength,
       ),
     );
 

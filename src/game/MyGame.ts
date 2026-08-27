@@ -4,9 +4,18 @@ import type { CardID, Settings } from "../types";
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 
 export interface GameState {
+  phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "resolve";
   board: number[][][];
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
+
+  activeCard: number | null; // 今使おうとしている手札の index
+  costCards: number[]; // コストとして選んだ手札 index（最大9枚）
+  targets: Array<{
+    row?: number; // 駒 or マス選択用
+    col?: number; // 駒 or マス選択用
+    index?: number; // カード選択用（相手の手札）
+  }>;
 }
 
 export function createMyGame(settings: Settings) {
@@ -24,6 +33,7 @@ export function createMyGame(settings: Settings) {
         drawRandom(deck1, hand1);
       }
       return {
+        phase: "idle",
         board: [
           [
             [0, 0, 0, 0, 0],
@@ -49,6 +59,10 @@ export function createMyGame(settings: Settings) {
         ],
         deck: [deck0, deck1],
         hand: [hand0, hand1],
+
+        activeCard: null,
+        costCards: [],
+        targets: [],
       };
     },
 

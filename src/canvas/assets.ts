@@ -91,6 +91,7 @@ export const assets = {
   gameBg: loadImage("/assets/backgrounds/neon_city.png"),
   leftWipe: loadImage("/assets/ui/left_wipe.png"),
   rightWipe: loadImage("/assets/ui/right_wipe.png"),
+  centerWipe: loadImage("/assets/ui/center_wipe.png"),
   turnEnd: loadImage("/assets/button/turnend.png"),
   turnEndHover: loadImage("/assets/button/turnend_hover.png"),
   turnEndUI: loadImage("/assets/UI/turnend.png"),
@@ -119,5 +120,9 @@ export const assets = {
     gen: loadNumberedImages("/assets/ui/gen", 8),
     dis: loadNumberedImages("/assets/ui/dis", 8),
     sup: loadNumberedImages("/assets/ui/sup", 8),
+  },
+  costNumber: {
+    w: loadNumberedImages("/assets/cards_token/number", 10),
+    r: loadNumberedImages("/assets/cards_token/number", 10, "_r"),
   },
 };

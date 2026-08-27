@@ -21,6 +21,8 @@ export type CardID = {
   attr: "des" | "gen" | "dis" | "sup";
   index: number;
 };
+export type CardAttr = CardID["attr"];
+export type CardNum = CardID["index"];
 
 export type Settings = {
   ui: {
