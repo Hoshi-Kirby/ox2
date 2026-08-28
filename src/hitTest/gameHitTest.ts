@@ -85,3 +85,52 @@ export function isInsideHandCard(
   const cardY = dy + baseY;
   return x >= cardX && x <= cardX + cardW && y >= cardY && y <= cardY + cardH;
 }
+// ポーズ
+export function isInsidePauseButton(x: number, y: number, ratio: number) {
+  const { H, dx, dy, layoutIsWide } = computeLayout(ratio);
+  let bx, by, bw, bh;
+  if (layoutIsWide) {
+    bx = dx + H * 0.01;
+    by = dy + H * 0.01;
+    bw = H * 0.1;
+    bh = H * 0.1;
+  } else {
+    bx = dx + H * 0.01;
+    by = dy + H * 0.01;
+    bw = H * 0.05;
+    bh = H * 0.05;
+  }
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+export function isInsidePauseContinueButton(
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const bw = H * 0.3;
+  const bh = bw * (assets.pauseContinue.height / assets.pauseContinue.width);
+  const bx = dx + W * 0.5 - bw / 2;
+  const by = dy + H * 0.4;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+export function isInsidePauseRestartButton(
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const bw = H * 0.3;
+  const bh = bw * (assets.pauseContinue.height / assets.pauseContinue.width);
+  const bx = dx + W * 0.5 - bw / 2;
+  const by = dy + H * 0.5;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+export function isInsidePauseEndButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const bw = H * 0.3;
+  const bh = bw * (assets.pauseContinue.height / assets.pauseContinue.width);
+  const bx = dx + W * 0.5 - bw / 2;
+  const by = dy + H * 0.6;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}

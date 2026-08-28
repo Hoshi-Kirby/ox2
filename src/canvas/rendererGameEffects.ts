@@ -3,6 +3,7 @@ import type { GameState } from "../game/MyGame";
 import { cardDefs } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
+let t = 0;
 export function renderGameEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
@@ -195,6 +196,47 @@ export function renderGameEffect(
       }
     }
     // ターン
+
+    // -ポーズ-
+    if (G.isPaused) {
+      ctx.fillStyle = `rgba(0, 0, 0, 0.65)`;
+      ctx.fillRect(0, 0, 1280, 720);
+      // pause
+      ctx.imageSmoothingEnabled = false;
+      const img = assets.pause;
+      let drawW, drawH;
+      if (layoutIsWide) {
+        drawH = H * 0.23;
+        drawW = drawH * (img.width / img.height);
+      } else {
+        drawW = W * 0.8;
+        drawH = drawW / (img.width / img.height);
+      }
+      const offset = Math.sin(t) * (H * 0.01);
+      t += 0.05;
+      const x = dx + W * 0.5 - drawW / 2;
+      const y = dy + H * 0.26 - drawH / 2 + offset;
+      ctx.drawImage(img, x, y, drawW, drawH);
+      ctx.imageSmoothingEnabled = true;
+
+      // ボタン
+      const btnW = H * 0.3;
+      const btnH =
+        btnW * (assets.pauseContinue.height / assets.pauseContinue.width);
+      const btnX = dx + W * 0.5 - btnW / 2;
+      ctx.drawImage(assets.pauseContinue, btnX, dy + H * 0.4, btnW, btnH);
+      ctx.drawImage(assets.pauseRestart, btnX, dy + H * 0.5, btnW, btnH);
+      ctx.drawImage(assets.pauseEnd, btnX, dy + H * 0.6, btnW, btnH);
+      if (hoverStates.pauseContinue) {
+        ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.4, btnW, btnH);
+      }
+      if (hoverStates.pauseRestart) {
+        ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.5, btnW, btnH);
+      }
+      if (hoverStates.pauseEnd) {
+        ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.6, btnW, btnH);
+      }
+    }
   }
 }
 function getHandCardX(

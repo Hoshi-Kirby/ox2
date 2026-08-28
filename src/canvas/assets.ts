@@ -109,6 +109,12 @@ export const assets = {
     "/assets/cards_token/backb.png",
     "/assets/cards_token/backn.png",
   ),
+  pauseBtn: loadImage("/assets/button/pause.png"),
+  pause: loadImage("/assets/ui/pause.png"),
+  pauseContinue: loadImage("/assets/button/pause_continue.png"),
+  pauseRestart: loadImage("/assets/button/pause_restart.png"),
+  pauseEnd: loadImage("/assets/button/pause_end.png"),
+  pauseLight: loadImage("/assets/button/pause_light.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

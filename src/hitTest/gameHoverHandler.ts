@@ -1,4 +1,10 @@
-import { isInsideTurnEndButton, isInsideHandCard } from "./gameHitTest";
+import {
+  isInsideTurnEndButton,
+  isInsideHandCard,
+  isInsidePauseContinueButton,
+  isInsidePauseRestartButton,
+  isInsidePauseEndButton,
+} from "./gameHitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
 
 type HoverParams = {
@@ -40,7 +46,8 @@ export function createGameHoverHandler({
 
     const { x, y } = mouseRef.current;
 
-    if (screen === "game") {
+    if (!G.isPaused) {
+      // ポーズの影響を受ける------------------------------------------
       // ターンエンド
       const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
@@ -115,7 +122,22 @@ export function createGameHoverHandler({
           }));
         }
       }
+    } else {
+      // ポーズ中----------------------------------------------------
+      const insideContinue = isInsidePauseContinueButton(x, y, ratio);
+      if (hoverStatesRef.current.pauseContinue !== insideContinue) {
+        setHoverStates((prev) => ({ ...prev, pauseContinue: insideContinue }));
+      }
+      const insideRestart = isInsidePauseRestartButton(x, y, ratio);
+      if (hoverStatesRef.current.pauseRestart !== insideRestart) {
+        setHoverStates((prev) => ({ ...prev, pauseRestart: insideRestart }));
+      }
+      const insideEnd = isInsidePauseEndButton(x, y, ratio);
+      if (hoverStatesRef.current.pauseEnd !== insideEnd) {
+        setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
+      }
     }
+    // ポーズの影響を受けない------------------------------------------
 
     requestAnimationFrame(loop);
   }

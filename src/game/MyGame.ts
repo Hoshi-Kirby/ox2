@@ -1,98 +1,174 @@
-// src/game/MyGame.ts
 import * as basic from "./moves/basic";
 import type { CardID, Settings } from "../types";
+
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 
 export interface GameState {
   phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "resolve";
+  isPaused: boolean;
+  firstPlayer: number;
   board: number[][][];
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
   faceDown: [boolean[], boolean[]];
 
-  activeCard: number | null; // 今使おうとしている手札の index
-  activeCardID: CardID | null; //  activeCardの中身
-  costCards: number[]; // コストとして選んだ手札 index（最大9枚）
+  activeCard: number | null;
+  activeCardID: CardID | null;
+  costCards: number[];
   targets: Array<{
-    row?: number; // 駒 or マス選択用
-    col?: number; // 駒 or マス選択用
-    index?: number; // カード選択用（相手の手札）
+    row?: number;
+    col?: number;
+    index?: number;
   }>;
 }
 
 export function createMyGame(settings: Settings) {
   return {
-    setup: (): GameState => {
-      const deckP0 = settings.game.selectedDeckP[0];
-      const deckP1 = settings.game.selectedDeckP[1];
-      const deck0 = [...settings.game[`deck${deckP0}` as DeckKey]];
-      const deck1 = [...settings.game[`deck${deckP1}` as DeckKey]];
-      const initialHandCount = settings.game.initialHand;
-      const hand0: CardID[] = [];
-      const hand1: CardID[] = [];
-      for (let i = 0; i < initialHandCount; i++) {
-        drawRandom(deck0, hand0);
-        drawRandom(deck1, hand1);
-      }
-      return {
-        phase: "idle",
-        board: [
-          [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-          ],
-          [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-          ],
-          [
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-          ],
-        ],
-        deck: [deck0, deck1],
-        hand: [hand0, hand1],
-        faceDown: [
-          Array(hand0.length).fill(false),
-          Array(hand0.length).fill(false),
-        ],
-
-        activeCard: null,
-        activeCardID: null,
-        costCards: [],
-        targets: [],
-      };
+    setup: ({ random }: { random: any }): GameState => {
+      return createInitialState(settings, random);
     },
 
     moves: {
       ...basic,
+
+      reset: ({ G, random }: { G: GameState; random: any }) => {
+        const initialState = createInitialState(settings, random);
+
+        Object.assign(G, initialState);
+      },
     },
+
     turn: {
-      onBegin: ({ G, ctx }: { G: GameState; ctx: any }) => {
+      order: {
+        first: ({ G }: { G: GameState }) => G.firstPlayer,
+        next: ({ ctx }: { ctx: any }) => {
+          return (Number(ctx.currentPlayer) + 1) % 2;
+        },
+      },
+
+      onBegin: ({
+        G,
+        ctx,
+        random,
+      }: {
+        G: GameState;
+        ctx: any;
+        random: any;
+      }) => {
         if (ctx.turn === 1) {
           return;
         }
+
         const player = ctx.currentPlayer;
 
-        drawRandom(G.deck[player], G.hand[player]);
+        drawRandom(G.deck[player], G.hand[player], random);
         G.faceDown[player].push(false);
       },
     },
   };
 }
-function drawRandom(deck: CardID[], hand: CardID[]) {
-  if (hand.length >= 10) return; // 手札上限
 
-  const idx = Math.floor(Math.random() * deck.length);
-  const card = deck.splice(idx, 1)[0]; // 山札から抜く
-  hand.push(card); // 手札に加える
+function createInitialState(settings: Settings, random: any): GameState {
+  let firstPlayer = settings.game.firstPlayer;
+
+  if (firstPlayer === 2) {
+    firstPlayer = random.Die(2) - 1;
+  }
+
+  const deckP0 = settings.game.selectedDeckP[0];
+  const deckP1 = settings.game.selectedDeckP[1];
+
+  let deck0 = [...settings.game[`deck${deckP0}` as DeckKey]];
+
+  let deck1 = [...settings.game[`deck${deckP1}` as DeckKey]];
+
+  if (!settings.game.shiftCardEnabled) {
+    deck0 = deck0.map((card) => {
+      if (card.index === 6) {
+        return { ...card, index: 4 };
+      }
+
+      if (card.index === 7) {
+        return { ...card, index: 5 };
+      }
+
+      return card;
+    });
+
+    deck1 = deck1.map((card) => {
+      if (card.index === 6) {
+        return { ...card, index: 4 };
+      }
+
+      if (card.index === 7) {
+        return { ...card, index: 5 };
+      }
+
+      return card;
+    });
+  }
+
+  const initialHandCount = settings.game.initialHand;
+
+  const hand0: CardID[] = [];
+  const hand1: CardID[] = [];
+
+  for (let i = 0; i < initialHandCount; i++) {
+    drawRandom(deck0, hand0, random);
+    drawRandom(deck1, hand1, random);
+  }
+
+  return {
+    phase: "idle",
+    isPaused: false,
+    firstPlayer,
+
+    board: [
+      [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+      [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+      [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+      ],
+    ],
+
+    deck: [deck0, deck1],
+    hand: [hand0, hand1],
+
+    faceDown: [
+      Array(hand0.length).fill(false),
+      Array(hand1.length).fill(false),
+    ],
+
+    activeCard: null,
+    activeCardID: null,
+    costCards: [],
+    targets: [],
+  };
+}
+
+function drawRandom(deck: CardID[], hand: CardID[], random: any) {
+  if (hand.length >= 10) {
+    return;
+  }
+
+  const idx = random.Die(deck.length) - 1;
+  const card = deck.splice(idx, 1)[0];
+
+  hand.push(card);
 }

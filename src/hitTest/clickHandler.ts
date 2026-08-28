@@ -424,8 +424,8 @@ export function createClickHandler({
     const indexToInitialHand = [0, 3, 5, 10];
     if (screen === "menuOffline") {
       if (
-        settingsRef.current.ui.changingDeck[0] == false &&
-        settingsRef.current.ui.changingDeck[1] == false
+        !settingsRef.current.ui.changingDeck[0] &&
+        !settingsRef.current.ui.changingDeck[1]
       ) {
         // 上２
         if (isInsideArrowButton(x, y, ratio, 0, 0)) {
@@ -492,19 +492,21 @@ export function createClickHandler({
           settingsRef.current.game.deck3,
         ];
         for (let i = 0; i < 2; i++) {
-          if (
-            !isInsideChangingDeckFrame(x, y, ratio, i) &&
-            settingsRef.current.ui.changingDeck[i]
-          ) {
-            settingsRef.current.ui.changingDeck[i] = false;
-          }
-          for (let j = 0; j < 4; j++) {
+          if (settingsRef.current.ui.changingDeck[i]) {
             if (
-              isInsideChangingDeckDeck(x, y, ratio, i, j) &&
-              decks[j].length == 20
+              !isInsideChangingDeckFrame(x, y, ratio, i) &&
+              settingsRef.current.ui.changingDeck[i]
             ) {
-              settingsRef.current.game.selectedDeckP[i] = j;
               settingsRef.current.ui.changingDeck[i] = false;
+            }
+            for (let j = 0; j < 4; j++) {
+              if (
+                isInsideChangingDeckDeck(x, y, ratio, i, j) &&
+                decks[j].length == 20
+              ) {
+                settingsRef.current.game.selectedDeckP[i] = j;
+                settingsRef.current.ui.changingDeck[i] = false;
+              }
             }
           }
         }

@@ -239,6 +239,51 @@ export function renderGame(
         ((tuenX * 26) / 8) * (assets.noTurn.height / assets.noTurn.width),
       );
     }
+    // 山札
+    if (layoutIsWide) {
+      const rWipeX = dx + W - H * 0.39;
+
+      ctx.drawImage(
+        assets.token[1 - Number(playerID)],
+        rWipeX,
+        dy,
+        H * 0.15 * (assets.token[1].width / assets.token[1].height),
+        H * 0.15,
+      );
+      ctx.drawImage(
+        assets.token[Number(playerID)],
+        rWipeX,
+        dy + H * 0.85,
+        H * 0.15 * (assets.token[1].width / assets.token[1].height),
+        H * 0.15,
+      );
+
+      ctx.font = "40px KiwiMaru-Medium";
+      ctx.fillStyle = "#ffffff";
+      const myDeckNumber = `山札 ${G.deck[Number(playerID)].length}枚`;
+      const enemyDeckNumber = `山札 ${G.deck[1 - Number(playerID)].length}枚`;
+      ctx.fillText(myDeckNumber, rWipeX + H * 0.25, dy + H * 0.94);
+      ctx.fillText(enemyDeckNumber, rWipeX + H * 0.25, dy + H * 0.09);
+    }
+    // -ポーズ-
+
+    if (layoutIsWide) {
+      ctx.drawImage(
+        assets.pauseBtn,
+        dx + H * 0.01,
+        dy + H * 0.01,
+        H * 0.1,
+        H * 0.1,
+      );
+    } else {
+      ctx.drawImage(
+        assets.pauseBtn,
+        dx + H * 0.01,
+        dy + H * 0.01,
+        H * 0.05,
+        H * 0.05,
+      );
+    }
   }
 }
 function getHandCardX(

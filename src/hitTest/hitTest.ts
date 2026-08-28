@@ -413,7 +413,7 @@ export function isInsideDeckBar(
   }
   const baseX = dx + W - deckListW + H * 0.041;
   const baseY = dy;
-  const cardBarH = (H * 1.151) / 20;
+  const cardBarH = ((deckListH / 0.95) * 1.151) / 20;
   const cardBarW =
     (cardBarH * assets.cardBarAssets.des[1].width) /
     assets.cardBarAssets.des[1].height;

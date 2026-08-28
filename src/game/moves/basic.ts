@@ -88,3 +88,9 @@ export function useCard(
   }
   return;
 }
+export function openPause({ G }: { G: GameState }) {
+  G.isPaused = true;
+}
+export function closePause({ G }: { G: GameState }) {
+  G.isPaused = false;
+}

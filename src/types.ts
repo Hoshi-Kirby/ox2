@@ -86,6 +86,9 @@ export type HoverUI = {
   gameStart: boolean;
   turnEnd: boolean;
   hoverHands: number[];
+  pauseContinue: boolean;
+  pauseRestart: boolean;
+  pauseEnd: boolean;
 };
 export type PressTimers = {
   startButton: number;

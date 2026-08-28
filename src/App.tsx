@@ -116,6 +116,9 @@ export default function App() {
     gameStart: false,
     turnEnd: false,
     hoverHands: [-1, -1],
+    pauseContinue: false,
+    pauseRestart: false,
+    pauseEnd: false,
   });
 
   const pressTimers = useRef<PressTimers>({

@@ -20,6 +20,7 @@ export default function GameCanvas({
   ctx,
   moves,
   playerID,
+  reset,
   settings,
   hoverStates,
   setHoverStates,
@@ -40,6 +41,7 @@ export default function GameCanvas({
   ctx: any;
   moves: any;
   playerID: string;
+  reset: () => void;
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
@@ -211,6 +213,7 @@ export default function GameCanvas({
       ctx,
       moves,
       playerID,
+      reset,
     });
 
     const listener = (e: MouseEvent) => {
