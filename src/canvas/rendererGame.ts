@@ -73,12 +73,12 @@ export function renderGame(
     }
 
     // 駒
-    for (let z = 0; z < 3; z++) {
-      for (let x = 0; x < 5; x++) {
-        for (let y = 0; y < 5; y++) {
+    for (let x = 0; x < 5; x++) {
+      for (let y = 0; y < 5; y++) {
+        for (let z = 0; z < 3; z++) {
           if (G.board[z][y][x] >= 1) {
             ctx.drawImage(
-              assets.token[G.board[z][y][x] - 1],
+              assets.token[G.board[x][y][z] - 1],
               boardX + (boardW / 5) * x,
               boardY + (boardH / 5) * y,
               boardW / 5,
@@ -127,7 +127,11 @@ export function renderGame(
         1,
         animationElapsed / animationDuration,
       );
-      // //
+      // 手札を捨てたかどうか
+      const discardFlags = G.animLog.discardFlags[i];
+      const isDiscardAnim = discardFlags.some((flag) => flag);
+
+      // //カードごとのfor
 
       for (let j = 0; j < handSize; j++) {
         const card = G.hand[i][j];
@@ -153,22 +157,35 @@ export function renderGame(
           img = assets.backCard[colorIndex];
         }
 
-        const afterX: number = getHandCardX(
-          handSize,
+        const afterX = getHandCardX(handSize, j, baseX, cardPool, cardW);
+        const beforeXadd = getHandCardX(
+          handSize - 1,
           j,
           baseX,
           cardPool,
           cardW,
         );
-        const beforeX: number = getHandCardX(
-          handSize - 1, //要変更
+        const beforeXremove = getHandCardXre(
           j,
           baseX,
           cardPool,
           cardW,
+          discardFlags,
         );
-        // 移動量
-        const moveX: number = (beforeX - afterX) * (1 - progress);
+        // ゲーム開始時のみアニメ
+        let moveX = (beforeXadd - afterX) * (1 - progress);
+        // ドロー時のアニメ
+        if (G.animLog.draw[i]) {
+          moveX =
+            (beforeXadd - afterX) *
+            (Math.max(0, effectTimers.Gchange - 300) / 100);
+        }
+        // トラッシュ時のアニメ
+        if (isDiscardAnim) {
+          moveX =
+            (beforeXremove - afterX) *
+            (Math.max(0, effectTimers.Gchange - 300) / 100);
+        }
 
         let activeY = 0;
         if (bgCtx.currentPlayer == i) {
@@ -178,8 +195,28 @@ export function renderGame(
             activeY = -cardH * 0.1;
           }
         }
-        let x: number = dx + afterX + moveX;
-        const y: number = dy + baseY + activeY;
+        let x = dx + afterX + moveX;
+        let y = dy + baseY + activeY;
+
+        // 裏返すときのアニメ
+        if (
+          (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
+          effectTimers.Gchange > 200
+        ) {
+          const t = effectTimers.Gchange; // 400 → 200
+          let scaleX = Math.min(1, Math.abs(t - 300) / 100);
+          ctx.save();
+          ctx.translate(x + cardW / 2, y);
+          ctx.scale(scaleX, 1);
+
+          if (G.animLog.flipFlags[i][j] && t > 300) {
+            img = assets.cardAssets[card.attr][card.index];
+          } else if (G.animLog.unflipFlags[i][j] && t > 300) {
+            img = assets.backCard[colorIndex];
+          }
+          x = -cardW / 2;
+          y = 0;
+        }
         // カード画像
         ctx.drawImage(img, x, y, cardW, cardH);
         const def = cardDefs[card.attr][card.index];
@@ -194,6 +231,13 @@ export function renderGame(
             cardW * 0.3,
             cardW * 0.3 * (imgN.height / imgN.width),
           );
+        }
+
+        if (
+          (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
+          effectTimers.Gchange > 200
+        ) {
+          ctx.restore();
         }
       }
     }
@@ -302,5 +346,34 @@ function getHandCardX(
     cardX = baseX + (cardPool - handSize * cardW - (handSize - 1) * gap) / 2;
   }
 
+  return cardX + index * (cardW + gap);
+}
+function getHandCardXre(
+  indexb: number,
+  baseX: number,
+  cardPool: number,
+  cardW: number,
+  discardFlags: boolean[],
+): number {
+  const handSize = discardFlags.length;
+  let gap = (cardPool - cardW * 5) / 4;
+  let cardX = baseX;
+
+  if (handSize > 5) {
+    gap = (cardPool - cardW * handSize) / (handSize - 1);
+  } else {
+    cardX = baseX + (cardPool - handSize * cardW - (handSize - 1) * gap) / 2;
+  }
+  let falseCount = 0;
+  let index = 0;
+  for (let i = 0; i < discardFlags.length; i++) {
+    if (!discardFlags[i]) {
+      if (falseCount === indexb) {
+        index = i;
+        break;
+      }
+      falseCount++;
+    }
+  }
   return cardX + index * (cardW + gap);
 }

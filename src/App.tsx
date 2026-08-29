@@ -27,6 +27,8 @@ export default function App() {
       isShift: false,
       initialHandId: 2,
       changingDeck: [false, false],
+      isInputActive: false,
+      inputCursorPosition: 0,
     },
     game: {
       gameMode: "pvc",
@@ -93,6 +95,7 @@ export default function App() {
     gameStartAnim: 0,
     gameStartCount: 0,
     turnStart: 0,
+    Gchange: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -111,6 +114,7 @@ export default function App() {
       sup: Array(5).fill(false),
     },
     hoverDeckIndex: -1,
+    deckIcon: false,
     shift: false,
     save: false,
     gameStart: false,

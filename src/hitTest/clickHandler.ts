@@ -23,8 +23,9 @@ import {
   isInsideShiftTrue,
   isInsideShiftFalse,
   isInsideGameSTartButton,
+  isInsideDeckIconButton,
 } from "./hitTest";
-import type { Screen, CardID } from "../types";
+import type { Screen, CardID, DeckColor } from "../types";
 import { playSe } from "../audio/audioManager";
 import { assets } from "../canvas/assets";
 
@@ -35,6 +36,8 @@ type ClickHandlerParams = {
   effectTimers: Record<string, number>;
   settingsRef: any;
   setBgmEnabled: (v: boolean) => void;
+  setDeckName: (v: string) => void;
+  setOpenDeckList: (v: boolean) => void;
 };
 
 export function createClickHandler({
@@ -44,6 +47,8 @@ export function createClickHandler({
   effectTimers,
   settingsRef,
   setBgmEnabled,
+  setDeckName,
+  setOpenDeckList,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
     if (settingsRef.current.ui.inputLocked) {
@@ -250,6 +255,7 @@ export function createClickHandler({
         if (settingsRef.current.game.editDeckColor == "white") {
           settingsRef.current.game.editDeckColor = "rainbow";
         }
+        setDeckName(settingsRef.current.game[`deckName${deckIndex}`]);
 
         setTimeout(() => {
           setScreen("make");
@@ -272,6 +278,7 @@ export function createClickHandler({
       if (isInsideBackButton(x, y, ratio)) {
         if (settingsRef.current.ui.openDeckList && ratio < 1.2) {
           effectTimers.deckListClose = 200;
+          setOpenDeckList(false);
           settingsRef.current.ui.inputLocked = true;
           setTimeout(() => {
             settingsRef.current.ui.openDeckList = false;
@@ -370,6 +377,7 @@ export function createClickHandler({
         if (ratio < 1.2) {
           if (isInsideDeckButton(x, y, ratio)) {
             effectTimers.deckListOpen = 100;
+            setOpenDeckList(true);
             settingsRef.current.ui.openDeckList = true;
             settingsRef.current.ui.inputLocked = true;
             setTimeout(() => {
@@ -377,6 +385,20 @@ export function createClickHandler({
             }, 100);
           }
         }
+      }
+      // デッキ色
+      if (isInsideDeckIconButton(x, y, ratio)) {
+        const colors: DeckColor[] = [
+          "red",
+          "green",
+          "yellow",
+          "blue",
+          "rainbow",
+        ];
+        const cur = settingsRef.current.game.editDeckColor;
+        const idx = colors.indexOf(cur);
+        const next = colors[(idx + 1) % colors.length];
+        settingsRef.current.game.editDeckColor = next;
       }
       // シフトボタン
       if (isInsideShiftButton(x, y, ratio)) {

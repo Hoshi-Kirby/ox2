@@ -37,6 +37,8 @@ export type Settings = {
     isShift: boolean;
     initialHandId: number;
     changingDeck: boolean[];
+    isInputActive: boolean;
+    inputCursorPosition: number;
   };
 
   game: {
@@ -81,6 +83,7 @@ export type HoverUI = {
     sup: boolean[];
   };
   hoverDeckIndex: number;
+  deckIcon: boolean;
   shift: boolean;
   save: boolean;
   gameStart: boolean;

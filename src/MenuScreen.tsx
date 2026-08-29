@@ -1,4 +1,4 @@
-// src/GameCanvas.tsx
+// src/MenuScreen.tsx
 import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
@@ -55,6 +55,13 @@ export default function MenuScreen({
   setBgmEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [ready, setReady] = useState(false);
+  const [deckName, setDeckName] = useState(
+    settingsRef.current.game.editDeckName,
+  );
+
+  const [openDeckList, setOpenDeckList] = useState(
+    settingsRef.current.ui.openDeckList,
+  );
 
   const hoverStatesRef = useRef(hoverStates);
 
@@ -156,6 +163,8 @@ export default function MenuScreen({
       effectTimers: effectTimers.current,
       settingsRef,
       setBgmEnabled,
+      setDeckName,
+      setOpenDeckList,
     });
 
     const listener = (e: MouseEvent) => {
@@ -299,6 +308,34 @@ export default function MenuScreen({
           height: ratio < 1280 / 720 ? "100vh" : "auto",
         }}
       />
+      {screen === "make" && (ratio > 1.2 || openDeckList) && (
+        <input
+          type="text"
+          className="game-text-input"
+          value={deckName}
+          maxLength={5}
+          onFocus={(e) => {
+            settingsRef.current.ui.isInputActive = true;
+            settingsRef.current.ui.inputCursorPosition =
+              e.currentTarget.selectionStart ?? 0;
+          }}
+          onBlur={() => {
+            settingsRef.current.ui.isInputActive = false;
+          }}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            setDeckName(value);
+            settingsRef.current.game.editDeckName = value;
+            settingsRef.current.ui.inputCursorPosition =
+              e.currentTarget.selectionStart ?? value.length;
+          }}
+          onSelect={(e) => {
+            settingsRef.current.ui.inputCursorPosition =
+              e.currentTarget.selectionStart ?? 0;
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -422,6 +422,23 @@ export function isInsideDeckBar(
   const barY = baseY + index * cardBardy;
   return x >= barX && x <= barX + cardBarW && y >= barY && y <= barY + cardBarH;
 }
+// デッキ色変更
+export function isInsideDeckIconButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  let deckListH = H * 0.95;
+  let deckListW = deckListH * (assets.deckList.width / assets.deckList.height);
+  if (deckListW > W) {
+    deckListW = W;
+    deckListH = deckListW / (assets.deckList.width / assets.deckList.height);
+  }
+
+  let deckW = deckListW * 0.24;
+  const deckH = deckW * (assets.deckr.height / assets.deckr.width);
+  const deckX = dx + W - deckListW * 0.4;
+  const deckY = dy + deckListH * 0.05;
+
+  return x >= deckX && x <= deckX + deckW && y >= deckY && y <= deckY + deckH;
+}
 
 // deck button スマホ用
 export function isInsideDeckButton(x: number, y: number, ratio: number) {

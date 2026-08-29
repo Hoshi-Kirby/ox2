@@ -49,39 +49,49 @@ export function createGameClickHandler({
     const y = (e.clientY - rect.top) * scaleY;
     // ポーズの影響を受ける------------------------------------------
     if (!G.isPaused) {
-      if (effectTimers.gameStartCount == 0) {
-        // ターンエンド
-        if (isInsideTurnEndButton(x, y, ratio)) {
-          moves.endTurn(ctx);
-          effectTimers.turnStart = 400;
-        }
+      if (effectTimers.Gchange <= 200 && effectTimers.turnStart == 0) {
+        if (effectTimers.gameStartCount == 0) {
+          // ターンエンド
+          if (isInsideTurnEndButton(x, y, ratio)) {
+            moves.endTurn(ctx);
+            effectTimers.turnStart = 400;
+            effectTimers.Gchange = 400;
+            setTimeout(() => {
+              moves.resetAnimLog();
+            }, 400);
+          }
 
-        // カード
-        const result: [number, number] = [-1, -1];
+          // カード
+          const result: [number, number] = [-1, -1];
 
-        for (let i = 0; i < 2; i++) {
-          const handLength = G.hand[i].length;
+          for (let i = 0; i < 2; i++) {
+            const handLength = G.hand[i].length;
 
-          for (let j = handLength - 1; j >= 0; j--) {
-            const inside = isInsideHandCard(
-              x,
-              y,
-              ratio,
-              i,
-              j,
-              handLength,
-              playerID,
-            );
+            for (let j = handLength - 1; j >= 0; j--) {
+              const inside = isInsideHandCard(
+                x,
+                y,
+                ratio,
+                i,
+                j,
+                handLength,
+                playerID,
+              );
 
-            if (inside) {
-              result[i] = j;
-              break;
+              if (inside) {
+                result[i] = j;
+                break;
+              }
             }
           }
-        }
 
-        if (result[ctx.currentPlayer] >= 0) {
-          moves.useCard(result[ctx.currentPlayer]);
+          if (result[ctx.currentPlayer] >= 0) {
+            moves.useCard(result[ctx.currentPlayer]);
+            effectTimers.Gchange = 400;
+            setTimeout(() => {
+              moves.resetAnimLog();
+            }, 400);
+          }
         }
       }
       // ポーズ

@@ -4,6 +4,7 @@ import { cardDefs } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 let t = 0;
+let cursorBlinkTimer = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
 let backOffset = 0;
 let deckOffset = [0, 0, 0];
@@ -1080,6 +1081,78 @@ export function renderEffect(
           deckListH,
         );
       }
+      // デッキ色変更
+      const deckImageMap = {
+        blue: assets.deckb,
+        red: assets.deckr,
+        yellow: assets.decky,
+        green: assets.deckg,
+        rainbow: assets.deckn,
+        white: assets.deckw,
+      };
+      if (hoverStates.deckIcon) {
+        deckOffset[0] = Math.min(Math.PI * 4, deckOffset[0] + dt * 0.05);
+      } else {
+        deckOffset[0] = 0;
+      }
+      const shake = Math.sin(deckOffset[0]) * (deckListW * 0.01);
+      const deckImg = deckImageMap[settingsRef.game.editDeckColor];
+
+      if (effectTimers.deckListClose == 0) {
+        ctx.drawImage(
+          deckImg,
+          dx + W - deckListW * 0.4 + shake,
+          dy +
+            deckListH * 0.05 -
+            (effectTimers.screenTransition * H) / 200 -
+            (effectTimers.deckListOpen * H) / 100,
+          deckListW * 0.24,
+          deckListW * 0.24 * (deckImg.height / deckImg.width),
+        );
+      } else {
+        ctx.drawImage(
+          deckImg,
+          dx + W - deckListW * 0.4 + shake,
+          dy +
+            deckListH * 0.05 -
+            (effectTimers.screenTransition * H) / 200 -
+            ((200 - effectTimers.deckListClose) * H) / 100,
+          deckListW * 0.24,
+          deckListW * 0.24 * (deckImg.height / deckImg.width),
+        );
+      }
+      // デッキ名変更
+      cursorBlinkTimer += dt;
+      if (cursorBlinkTimer >= 1000) {
+        cursorBlinkTimer -= 1000;
+      }
+
+      ctx.font = `${H * 0.031}px Komorebi`;
+      ctx.textAlign = "left";
+      const text = settingsRef.game.editDeckName;
+      let textX = dx + W - H * 0.195;
+      let textY = dy + H * 0.205;
+      if (ratio <= 1007 / 1552) {
+        ctx.font = `${H * 0.022}px Komorebi`;
+        textX = dx + W * 0.7;
+        textY = dy + H * 0.15;
+      }
+      ctx.fillText(text, textX, textY);
+      const cursorPosition = settingsRef.ui.inputCursorPosition;
+      const textBeforeCursor = text.slice(0, cursorPosition);
+      const cursorOffset = ctx.measureText(textBeforeCursor).width;
+      const cursorX = textX + cursorOffset;
+      if (settingsRef.ui.isInputActive && cursorBlinkTimer < 500) {
+        ctx.fillStyle = "#ffffff";
+        if (ratio > 1007 / 1552) {
+          ctx.fillRect(cursorX, textY - H * 0.03, H * 0.003, H * 0.04);
+        } else {
+          ctx.fillRect(cursorX, textY - W * 0.05, W * 0.004, W * 0.06);
+        }
+      }
+
+      ctx.textAlign = "center";
+
       // カード説明wideのカード
       if (layoutIsWide) {
         for (let a = 0; a < attrs.length; a++) {

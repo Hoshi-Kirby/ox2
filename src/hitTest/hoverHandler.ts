@@ -11,6 +11,7 @@ import {
   isInsideArrowButton,
   isInsideGameSettingDeckButton,
   isInsideGameSTartButton,
+  isInsideDeckIconButton,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
 let lastCardPoolTarget: string | null = null;
@@ -302,6 +303,12 @@ export function createHoverHandler({
             hoverDeckIndex: newHoverIndex,
           }));
         }
+      }
+      // デッキ色
+      const insideDeckIcon = isInsideDeckIconButton(x, y, ratio);
+
+      if (hoverStatesRef.current.deckIcon !== insideDeckIcon) {
+        setHoverStates((prev) => ({ ...prev, deckIcon: insideDeckIcon }));
       }
       // シフト
       const insideShift = isInsideShiftButton(x, y, ratio);

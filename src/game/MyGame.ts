@@ -20,6 +20,15 @@ export interface GameState {
     col?: number;
     index?: number;
   }>;
+
+  animLog: {
+    draw: [boolean, boolean];
+    discardFlags: [boolean[], boolean[]];
+    flipFlags: [boolean[], boolean[]];
+    unflipFlags: [boolean[], boolean[]];
+    place: boolean[][][];
+    remove: boolean[][][];
+  };
 }
 
 export function createMyGame(settings: Settings) {
@@ -61,8 +70,10 @@ export function createMyGame(settings: Settings) {
 
         const player = ctx.currentPlayer;
 
-        drawRandom(G.deck[player], G.hand[player], random);
-        G.faceDown[player].push(false);
+        if (drawRandom(G.deck[player], G.hand[player], random)) {
+          G.animLog.draw[player] = true;
+          G.faceDown[player].push(false);
+        }
       },
     },
   };
@@ -123,29 +134,9 @@ function createInitialState(settings: Settings, random: any): GameState {
     isPaused: false,
     firstPlayer,
 
-    board: [
-      [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-      ],
-      [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-      ],
-      [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-      ],
-    ],
+    board: Array.from({ length: 5 }, () =>
+      Array.from({ length: 5 }, () => Array(3).fill(0)),
+    ),
 
     deck: [deck0, deck1],
     hand: [hand0, hand1],
@@ -159,16 +150,30 @@ function createInitialState(settings: Settings, random: any): GameState {
     activeCardID: null,
     costCards: [],
     targets: [],
+
+    animLog: {
+      draw: [false, false],
+      discardFlags: [[], []],
+      flipFlags: [[], []],
+      unflipFlags: [[], []],
+      place: Array.from({ length: 5 }, () =>
+        Array.from({ length: 5 }, () => Array(3).fill(false)),
+      ),
+      remove: Array.from({ length: 5 }, () =>
+        Array.from({ length: 5 }, () => Array(3).fill(false)),
+      ),
+    },
   };
 }
 
 function drawRandom(deck: CardID[], hand: CardID[], random: any) {
   if (hand.length >= 10) {
-    return;
+    return false;
   }
 
   const idx = random.Die(deck.length) - 1;
   const card = deck.splice(idx, 1)[0];
 
   hand.push(card);
+  return true;
 }

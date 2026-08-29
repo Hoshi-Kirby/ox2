@@ -11,7 +11,15 @@ export function endTurn({
   G: any;
   ctx: any;
 }): void {
-  G.faceDown[ctx.currentPlayer].fill(false);
+  const player = ctx.currentPlayer;
+  G.animLog.unflipFlags[player] = Array(G.faceDown[player].length).fill(false);
+  for (let i = 0; i < G.faceDown[player].length; i++) {
+    if (G.faceDown[player][i]) {
+      G.animLog.unflipFlags[player][i] = true;
+    }
+  }
+
+  G.faceDown[player].fill(false);
   events.endTurn();
 }
 // カードを使うときの共通 move
@@ -51,7 +59,23 @@ export function useCard(
       const card = G.hand[player][G.activeCard!];
       const def = cardDefs[card.attr][card.index];
       if (G.costCards.length >= def.cost) {
+        // アクティブカード、アニメログ
         G.activeCardID = { ...G.hand[player][G.activeCard!] };
+        G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
+          false,
+        );
+        if (def.costType === "discard") {
+          for (const idx of G.costCards) {
+            G.animLog.discardFlags[player][idx] = true;
+          }
+          G.animLog.discardFlags[player][G.activeCard!] = true;
+        } else if (def.costType === "flip") {
+          for (const idx of G.costCards) {
+            G.animLog.flipFlags[player][idx] = true;
+          }
+          G.animLog.discardFlags[player][G.activeCard!] = true;
+        }
+
         if (def.costType === "flip") {
           // 裏返す：対象カードの faceDown を true にする
           for (const idx of G.costCards) {
@@ -73,6 +97,8 @@ export function useCard(
             }
             G.hand[player].splice(idx, 1);
             G.faceDown[player].splice(idx, 1);
+            G.animLog.flipFlags[player].splice(idx, 1);
+            G.animLog.unflipFlags[player].splice(idx, 1);
           }
 
           G.activeCard = active;
@@ -80,6 +106,8 @@ export function useCard(
         G.hand[player].splice(G.activeCard!, 1);
         G.faceDown[player].splice(G.activeCard!, 1);
         G.deck[player].push(G.activeCardID);
+        G.animLog.flipFlags[player].splice(G.activeCard!, 1);
+        G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
         G.costCards = [];
         G.phase = "idle"; //あとで"selectTarget";
       }
@@ -93,4 +121,21 @@ export function openPause({ G }: { G: GameState }) {
 }
 export function closePause({ G }: { G: GameState }) {
   G.isPaused = false;
+}
+
+// アニメログの初期化
+export function resetAnimLog({ G }: { G: GameState }) {
+  G.animLog.draw = [false, false];
+  G.animLog.discardFlags = [[], []];
+  G.animLog.flipFlags = [[], []];
+  G.animLog.unflipFlags = [[], []];
+
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      for (let h = 0; h < 3; h++) {
+        G.animLog.place[r][c][h] = false;
+        G.animLog.remove[r][c][h] = false;
+      }
+    }
+  }
 }
