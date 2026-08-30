@@ -76,14 +76,23 @@ export function renderGame(
     for (let x = 0; x < 5; x++) {
       for (let y = 0; y < 5; y++) {
         for (let z = 0; z < 3; z++) {
-          if (G.board[z][y][x] >= 1) {
-            ctx.drawImage(
-              assets.token[G.board[x][y][z] - 1],
-              boardX + (boardW / 5) * x,
-              boardY + (boardH / 5) * y,
-              boardW / 5,
-              boardH / 5,
-            );
+          const token = G.board[x][y][z];
+          if (token >= 1) {
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * x;
+            const posY = boardY + baseH * y;
+            if (G.animLog.place[x][y][z]) {
+              const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+              const w = baseW * scale;
+              const h = baseH * scale;
+              const drawX = posX + (baseW - w) / 2;
+              const drawY = posY + (baseH - h) / 2;
+
+              ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
+            } else {
+              ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+            }
           }
         }
       }

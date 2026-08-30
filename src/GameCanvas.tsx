@@ -213,7 +213,6 @@ export default function GameCanvas({
       ctx,
       moves,
       playerID,
-      reset,
     });
 
     const listener = (e: MouseEvent) => {

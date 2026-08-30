@@ -23,6 +23,8 @@ export type CardID = {
 };
 export type CardAttr = CardID["attr"];
 export type CardNum = CardID["index"];
+export type CardKey = `card${CardNum}`;
+export type CheckKey = `check${CardNum}`;
 
 export type Settings = {
   ui: {

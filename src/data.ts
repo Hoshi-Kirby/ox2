@@ -22,7 +22,7 @@ export const cardDefs: Record<CardAttr, Record<CardNum, CardDef>> = {
     1: { cost: 1, costType: "flip" },
     2: { cost: 2, costType: "flip" },
     3: { cost: 1, costType: "discard" },
-    4: { cost: 3, costType: "flip" },
+    4: { cost: 5, costType: "flip" },
     5: { cost: 2, costType: "discard" },
     6: { cost: 1, costType: "flip" },
     7: { cost: 4, costType: "discard" },

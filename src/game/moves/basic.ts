@@ -1,5 +1,14 @@
 import type { GameState } from "../MyGame";
 import { cardDefs } from "../../data";
+import * as gen from "./gen";
+import * as dis from "./dis";
+import * as sup from "./sup";
+import * as des from "./des";
+import type { CardAttr, CardKey, CheckKey } from "../../types";
+
+type CardFunction = (G: GameState, ctx: any) => void;
+type CardModule = Record<CardKey, CardFunction>;
+type CheckModule = Record<CheckKey, CardFunction>;
 
 // ターンエンド
 export function endTurn({
@@ -109,13 +118,62 @@ export function useCard(
         G.animLog.flipFlags[player].splice(G.activeCard!, 1);
         G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
         G.costCards = [];
-        G.phase = "idle"; //あとで"selectTarget";
+        G.phase = "selectTarget";
+        callCheckFunction(G, ctx);
       }
     }
     return;
   }
   return;
 }
+// 盤面又はカード
+export function registerTarget(
+  { G, ctx }: { G: GameState; ctx: any },
+  target: { row: number | null; col: number | null; index: number | null },
+) {
+  console.log(ctx.currentPlayer);
+  if (G.phase == "selectTarget") {
+    G.targets[0] = target;
+    callCardFunction(G, ctx);
+    return;
+  }
+
+  if (G.phase == "selectTarget2") {
+    G.targets[1] = target;
+    callCardFunction(G, ctx);
+    return;
+  }
+}
+
+export function callCardFunction(G: GameState, ctx: any) {
+  const card = G.activeCardID;
+  if (!card) return;
+  const { attr, index } = card;
+  const table: Record<CardAttr, CardModule> = {
+    gen,
+    dis,
+    sup,
+    des,
+  };
+
+  const fn = table[attr][`card${index}`];
+  if (fn) fn(G, ctx);
+}
+export function callCheckFunction(G: GameState, ctx: any) {
+  const card = G.activeCardID;
+  if (!card) return;
+  const { attr, index } = card;
+  const table: Record<CardAttr, CheckModule> = {
+    gen,
+    dis,
+    sup,
+    des,
+  };
+
+  const fn = table[attr][`check${index}`];
+  if (fn) fn(G, ctx);
+}
+
 export function openPause({ G }: { G: GameState }) {
   G.isPaused = true;
 }

@@ -5,6 +5,7 @@ import {
   isInsidePauseContinueButton,
   isInsidePauseRestartButton,
   isInsidePauseEndButton,
+  isInsideBoardCell,
 } from "./gameHitTest";
 import type { Screen, CardID } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -23,7 +24,6 @@ type ClickHandlerParams = {
   ctx: any;
   moves: Moves;
   playerID: string;
-  reset: () => void;
 };
 
 export function createGameClickHandler({
@@ -36,7 +36,6 @@ export function createGameClickHandler({
   ctx,
   moves,
   playerID,
-  reset,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
     if (settings.ui.inputLocked) {
@@ -91,6 +90,34 @@ export function createGameClickHandler({
             setTimeout(() => {
               moves.resetAnimLog();
             }, 400);
+          }
+          if (result[1 - ctx.currentPlayer] >= 0) {
+            moves.registerTarget({
+              row: null,
+              col: null,
+              index: result[1 - ctx.currentPlayer],
+            });
+            effectTimers.Gchange = 400;
+            setTimeout(() => {
+              moves.resetAnimLog();
+            }, 400);
+          }
+
+          // 駒
+          for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+              if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
+                moves.registerTarget({
+                  row: j,
+                  col: i,
+                  index: null,
+                });
+                effectTimers.Gchange = 400;
+                setTimeout(() => {
+                  moves.resetAnimLog();
+                }, 400);
+              }
+            }
           }
         }
       }

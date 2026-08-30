@@ -85,6 +85,39 @@ export function isInsideHandCard(
   const cardY = dy + baseY;
   return x >= cardX && x <= cardX + cardW && y >= cardY && y <= cardY + cardH;
 }
+// 駒
+export function isInsideBoardCell(
+  x: number,
+  y: number,
+  ratio: number,
+  i: number,
+  j: number,
+  floor: number,
+) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const boardW = (() => {
+    const layoutIsWide = ratio > 1.2;
+
+    let w = H * 0.5;
+
+    if (!layoutIsWide) {
+      w = H * 0.4;
+    } else if (ratio < 1.3) {
+      w = W * 0.38;
+    }
+
+    return w;
+  })();
+  const boardH = boardW;
+  const boardX = dx + W * 0.5 - boardW / 2;
+  const boardY = dy + H * 0.5 - boardH / 2;
+  const cellW = boardW / 5;
+  const cellH = boardH / 5;
+  const cellX = boardX + cellW * i;
+  const cellY = boardY + cellH * j;
+  return x >= cellX && x <= cellX + cellW && y >= cellY && y <= cellY + cellH;
+}
+
 // ポーズ
 export function isInsidePauseButton(x: number, y: number, ratio: number) {
   const { H, dx, dy, layoutIsWide } = computeLayout(ratio);

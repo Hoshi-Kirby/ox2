@@ -4,10 +4,11 @@ import type { CardID, Settings } from "../types";
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 
 export interface GameState {
-  phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "resolve";
+  phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "selectTarget2";
   isPaused: boolean;
   firstPlayer: number;
   board: number[][][];
+  floor: number;
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
   faceDown: [boolean[], boolean[]];
@@ -16,9 +17,9 @@ export interface GameState {
   activeCardID: CardID | null;
   costCards: number[];
   targets: Array<{
-    row?: number;
-    col?: number;
-    index?: number;
+    row: number | null;
+    col: number | null;
+    index: number | null;
   }>;
 
   animLog: {
@@ -137,6 +138,7 @@ function createInitialState(settings: Settings, random: any): GameState {
     board: Array.from({ length: 5 }, () =>
       Array.from({ length: 5 }, () => Array(3).fill(0)),
     ),
+    floor: 0,
 
     deck: [deck0, deck1],
     hand: [hand0, hand1],
