@@ -6,6 +6,7 @@ import {
   isInsidePauseRestartButton,
   isInsidePauseEndButton,
   isInsideBoardCell,
+  isInsideMidBoardCell,
 } from "./gameHitTest";
 import type { Screen, CardID } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -63,20 +64,37 @@ export function createGameClickHandler({
               }
             }
             // 駒
-            for (let i = 0; i < 5; i++) {
-              for (let j = 0; j < 5; j++) {
-                if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
-                  moves.registerTarget({
-                    row: j,
-                    col: i,
-                    index: null,
-                  });
-                  effectTimers.Gchange = 400;
-                  setTimeout(() => {
-                    moves.resetAnimLog();
-                  }, 300);
+            let target: { row: number; col: number } | null = null;
+            for (let i = 0; i < 2; i++) {
+              for (let j = 0; j < 2; j++) {
+                if (isInsideMidBoardCell(x, y, ratio, i, j, G.floor)) {
+                  target = { row: j + 1.5, col: i + 1.5 };
+                  break;
                 }
               }
+              if (target) break;
+            }
+            if (!target) {
+              for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 5; j++) {
+                  if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
+                    target = { row: j, col: i };
+                    break;
+                  }
+                }
+                if (target) break;
+              }
+            }
+            if (target) {
+              moves.registerTarget({
+                row: target.row,
+                col: target.col,
+                index: null,
+              });
+              effectTimers.Gchange = 400;
+              setTimeout(() => {
+                moves.resetAnimLog();
+              }, 300);
             }
           }
           // カード

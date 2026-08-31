@@ -81,6 +81,39 @@ export function renderGameEffect(
         }
       }
     }
+    for (let x = 0; x < 2; x++) {
+      for (let y = 0; y < 2; y++) {
+        for (let z = 0; z < 3; z++) {
+          let can = false;
+          const activeCardID = G.activeCardID;
+
+          if (G.phase === "selectTarget" && activeCardID) {
+            if (activeCardID.attr === "des" && activeCardID.index === 3) {
+              can = false;
+            } else {
+              can = canPlace(
+                G,
+                bgCtx,
+                x + 1.5,
+                y + 1.5,
+                z,
+                activeCardID.attr,
+                activeCardID.index,
+              );
+            }
+          }
+          if (G.phase === "selectTarget2") {
+          }
+          if (can) {
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * (x + 1.5);
+            const posY = boardY + baseH * (y + 1.5);
+            ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
+          }
+        }
+      }
+    }
     // カード
     // //ホバー
     for (let i = 0; i < 2; i++) {

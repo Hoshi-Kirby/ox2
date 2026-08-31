@@ -124,6 +124,26 @@ export function canPlace(
   if (attr === "des" && index === 7) {
     return true;
   }
+  // シュレ猫
+  if (attr === "gen" && index === 1) {
+    return z == f && token === 2 - player;
+  }
+  // 外れ値
+  if (attr === "gen" && index === 2) {
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      (x == 0 || x == 4 || y == 0 || y == 4) &&
+      z == f &&
+      token === 0
+    );
+  }
+  // 囲碁
+  if (attr === "gen" && index === 3) {
+    return (
+      !Number.isInteger(x) && !Number.isInteger(y) && z == f && token === 0
+    );
+  }
 
   // append
   if (attr === "gen" && index === 4) {

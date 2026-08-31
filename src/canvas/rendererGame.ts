@@ -109,6 +109,42 @@ export function renderGame(
         }
       }
     }
+    for (let x = 0; x < 2; x++) {
+      for (let y = 0; y < 2; y++) {
+        for (let z = 0; z < 3; z++) {
+          const token = G.midBoard[x][y][z];
+          if (token >= 1) {
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * (x + 1.5);
+            const posY = boardY + baseH * (y + 1.5);
+            if (G.animLog.placeMid[x][y][z]) {
+              const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+              const w = baseW * scale;
+              const h = baseH * scale;
+              const drawX = posX + (baseW - w) / 2;
+              const drawY = posY + (baseH - h) / 2;
+
+              ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
+            } else {
+              ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+            }
+          } else if (G.animLog.remove[x][y][z] >= 1) {
+            const animToken = G.animLog.remove[x][y][z];
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * x;
+            const posY = boardY + baseH * y;
+            const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
+            const w = baseW * scale;
+            const h = baseH * scale;
+            const drawX = posX + (baseW - w) / 2;
+            const drawY = posY + (baseH - h) / 2;
+            ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
+          }
+        }
+      }
+    }
     // カード
     for (let i = 0; i < 2; i++) {
       const isBottom = i === Number(playerID);

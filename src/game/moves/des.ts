@@ -111,7 +111,8 @@ export function card4(G: GameState, ctx: any) {
   }
   const t = targets[Math.floor(Math.random() * targets.length)];
   if (t.isMid) {
-    G.animLog.removeMid[t.x][t.y][t.z] = G.midBoard[t.x - 1.5][t.y - 1.5][t.z];
+    G.animLog.removeMid[t.x - 1.5][t.y - 1.5][t.z] =
+      G.midBoard[t.x - 1.5][t.y - 1.5][t.z];
     G.midBoard[t.x - 1.5][t.y - 1.5][t.z] = 0;
   } else {
     G.animLog.remove[t.x][t.y][t.z] = G.board[t.x][t.y][t.z];

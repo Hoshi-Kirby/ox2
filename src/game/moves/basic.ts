@@ -220,4 +220,12 @@ export function resetAnimLog({ G }: { G: GameState }) {
       }
     }
   }
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 2; c++) {
+      for (let h = 0; h < 3; h++) {
+        G.animLog.placeMid[r][c][h] = false;
+        G.animLog.removeMid[r][c][h] = 0;
+      }
+    }
+  }
 }
