@@ -8,6 +8,7 @@ export interface GameState {
   isPaused: boolean;
   firstPlayer: number;
   board: number[][][];
+  midBoard: number[][][];
   floor: number;
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
@@ -28,7 +29,7 @@ export interface GameState {
     flipFlags: [boolean[], boolean[]];
     unflipFlags: [boolean[], boolean[]];
     place: boolean[][][];
-    remove: boolean[][][];
+    remove: number[][][];
   };
 }
 
@@ -138,6 +139,10 @@ function createInitialState(settings: Settings, random: any): GameState {
     board: Array.from({ length: 5 }, () =>
       Array.from({ length: 5 }, () => Array(3).fill(0)),
     ),
+    midBoard: Array.from({ length: 2 }, () =>
+      Array.from({ length: 2 }, () => Array(3).fill(0)),
+    ),
+
     floor: 0,
 
     deck: [deck0, deck1],

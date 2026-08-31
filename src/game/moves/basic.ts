@@ -1,5 +1,5 @@
 import type { GameState } from "../MyGame";
-import { cardDefs } from "../../data";
+import { cardDefs, canPlace } from "../../data";
 import * as gen from "./gen";
 import * as dis from "./dis";
 import * as sup from "./sup";
@@ -119,7 +119,12 @@ export function useCard(
         G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
         G.costCards = [];
         G.phase = "selectTarget";
-        callCheckFunction(G, ctx);
+        if (
+          !canPlaceAnywhere(G, ctx, G.activeCardID.attr, G.activeCardID.index)
+        ) {
+          G.phase = "idle";
+          G.targets = [];
+        }
       }
     }
     return;
@@ -131,7 +136,6 @@ export function registerTarget(
   { G, ctx }: { G: GameState; ctx: any },
   target: { row: number | null; col: number | null; index: number | null },
 ) {
-  console.log(ctx.currentPlayer);
   if (G.phase == "selectTarget") {
     G.targets[0] = target;
     callCardFunction(G, ctx);
@@ -144,7 +148,7 @@ export function registerTarget(
     return;
   }
 }
-
+// それぞれの関数呼び出し
 export function callCardFunction(G: GameState, ctx: any) {
   const card = G.activeCardID;
   if (!card) return;
@@ -159,19 +163,22 @@ export function callCardFunction(G: GameState, ctx: any) {
   const fn = table[attr][`card${index}`];
   if (fn) fn(G, ctx);
 }
-export function callCheckFunction(G: GameState, ctx: any) {
-  const card = G.activeCardID;
-  if (!card) return;
-  const { attr, index } = card;
-  const table: Record<CardAttr, CheckModule> = {
-    gen,
-    dis,
-    sup,
-    des,
-  };
-
-  const fn = table[attr][`check${index}`];
-  if (fn) fn(G, ctx);
+export function canPlaceAnywhere(
+  G: GameState,
+  ctx: any,
+  attr: CardAttr,
+  index: number,
+) {
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let z = 0; z < 3; z++) {
+        if (canPlace(G, ctx, x, y, z, attr, index)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 export function openPause({ G }: { G: GameState }) {
@@ -192,7 +199,7 @@ export function resetAnimLog({ G }: { G: GameState }) {
     for (let c = 0; c < 5; c++) {
       for (let h = 0; h < 3; h++) {
         G.animLog.place[r][c][h] = false;
-        G.animLog.remove[r][c][h] = false;
+        G.animLog.remove[r][c][h] = 0;
       }
     }
   }

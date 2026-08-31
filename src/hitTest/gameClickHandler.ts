@@ -49,17 +49,18 @@ export function createGameClickHandler({
     // ポーズの影響を受ける------------------------------------------
     if (!G.isPaused) {
       if (effectTimers.Gchange <= 200 && effectTimers.turnStart == 0) {
-        if (effectTimers.gameStartCount == 0) {
+        if (effectTimers.gameStartCount == 0 && effectTimers.Gchange == 0) {
           // ターンエンド
-          if (isInsideTurnEndButton(x, y, ratio)) {
-            moves.endTurn(ctx);
-            effectTimers.turnStart = 400;
-            effectTimers.Gchange = 400;
-            setTimeout(() => {
-              moves.resetAnimLog();
-            }, 400);
+          if (G.phase === "idle") {
+            if (isInsideTurnEndButton(x, y, ratio)) {
+              moves.endTurn(ctx);
+              effectTimers.turnStart = 400;
+              effectTimers.Gchange = 400;
+              setTimeout(() => {
+                moves.resetAnimLog();
+              }, 300);
+            }
           }
-
           // カード
           const result: [number, number] = [-1, -1];
 
@@ -89,7 +90,7 @@ export function createGameClickHandler({
             effectTimers.Gchange = 400;
             setTimeout(() => {
               moves.resetAnimLog();
-            }, 400);
+            }, 300);
           }
           if (result[1 - ctx.currentPlayer] >= 0) {
             moves.registerTarget({
@@ -100,7 +101,7 @@ export function createGameClickHandler({
             effectTimers.Gchange = 400;
             setTimeout(() => {
               moves.resetAnimLog();
-            }, 400);
+            }, 300);
           }
 
           // 駒
@@ -115,7 +116,7 @@ export function createGameClickHandler({
                 effectTimers.Gchange = 400;
                 setTimeout(() => {
                   moves.resetAnimLog();
-                }, 400);
+                }, 300);
               }
             }
           }

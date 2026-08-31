@@ -1,4 +1,5 @@
 import type { GameState } from "../MyGame";
+import { canPlace } from "../../data";
 
 export function card1(G: GameState, ctx: any) {
   if (G.phase === "selectTarget") {

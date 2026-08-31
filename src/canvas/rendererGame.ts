@@ -93,6 +93,18 @@ export function renderGame(
             } else {
               ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
             }
+          } else if (G.animLog.remove[x][y][z] >= 1) {
+            const animToken = G.animLog.remove[x][y][z];
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * x;
+            const posY = boardY + baseH * y;
+            const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
+            const w = baseW * scale;
+            const h = baseH * scale;
+            const drawX = posX + (baseW - w) / 2;
+            const drawY = posY + (baseH - h) / 2;
+            ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
           }
         }
       }

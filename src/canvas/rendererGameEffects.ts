@@ -1,6 +1,6 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
-import { cardDefs } from "../data";
+import { cardDefs, canPlace } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 let t = 0;
@@ -48,6 +48,35 @@ export function renderGameEffect(
     // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
     // 線
     // 駒
+    for (let x = 0; x < 5; x++) {
+      for (let y = 0; y < 5; y++) {
+        for (let z = 0; z < 3; z++) {
+          let can = false;
+          const activeCardID = G.activeCardID;
+
+          if (G.phase === "selectTarget" && activeCardID) {
+            can = canPlace(
+              G,
+              bgCtx,
+              x,
+              y,
+              z,
+              activeCardID.attr,
+              activeCardID.index,
+            );
+          }
+          if (G.phase === "selectTarget2") {
+          }
+          if (can) {
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * x;
+            const posY = boardY + baseH * y;
+            ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
+          }
+        }
+      }
+    }
     // カード
     // //ホバー
     for (let i = 0; i < 2; i++) {

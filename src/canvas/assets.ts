@@ -101,6 +101,7 @@ export const assets = {
     "/assets/cards_token/token/x.png",
     "/assets/cards_token/token/ox.png",
   ),
+  dot: loadImage("/assets/cards_token/token/dot.png"),
   noTurn: loadImage("/assets/ui/no_turn.png"),
   backCard: loadImages(
     "/assets/cards_token/backr.png",
