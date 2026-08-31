@@ -118,13 +118,20 @@ export function useCard(
         G.animLog.flipFlags[player].splice(G.activeCard!, 1);
         G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
         G.costCards = [];
-        G.phase = "selectTarget";
         if (
           !canPlaceAnywhere(G, ctx, G.activeCardID.attr, G.activeCardID.index)
         ) {
           G.phase = "idle";
           G.targets = [];
+          return;
         }
+        if (def.auto) {
+          callCardFunction(G, ctx);
+          G.phase = "idle";
+          G.targets = [];
+          return;
+        }
+        G.phase = "selectTarget";
       }
     }
     return;
@@ -178,6 +185,16 @@ export function canPlaceAnywhere(
       }
     }
   }
+  for (let x = 0; x < 2; x++) {
+    for (let y = 0; y < 2; y++) {
+      for (let z = 0; z < 3; z++) {
+        if (canPlace(G, ctx, x + 1.5, y + 1.5, z, attr, index)) {
+          return true;
+        }
+      }
+    }
+  }
+
   return false;
 }
 

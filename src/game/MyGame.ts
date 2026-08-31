@@ -30,6 +30,8 @@ export interface GameState {
     unflipFlags: [boolean[], boolean[]];
     place: boolean[][][];
     remove: number[][][];
+    placeMid: boolean[][][];
+    removeMid: number[][][];
   };
 }
 
@@ -167,7 +169,13 @@ function createInitialState(settings: Settings, random: any): GameState {
         Array.from({ length: 5 }, () => Array(3).fill(false)),
       ),
       remove: Array.from({ length: 5 }, () =>
-        Array.from({ length: 5 }, () => Array(3).fill(false)),
+        Array.from({ length: 5 }, () => Array(3).fill(0)),
+      ),
+      placeMid: Array.from({ length: 2 }, () =>
+        Array.from({ length: 2 }, () => Array(3).fill(false)),
+      ),
+      removeMid: Array.from({ length: 2 }, () =>
+        Array.from({ length: 2 }, () => Array(3).fill(0)),
       ),
     },
   };

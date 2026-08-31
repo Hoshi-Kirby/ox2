@@ -5,46 +5,47 @@ import type { GameState } from "./game/MyGame";
 export interface CardDef {
   cost: number;
   costType: "flip" | "discard";
+  auto: boolean;
 }
 export const cardDefs: Record<CardAttr, Record<CardNum, CardDef>> = {
   des: {
-    1: { cost: 3, costType: "discard" },
-    2: { cost: 2, costType: "discard" },
-    3: { cost: 1, costType: "flip" },
-    4: { cost: 9, costType: "discard" },
-    5: { cost: 2, costType: "flip" },
-    6: { cost: 9, costType: "flip" },
-    7: { cost: 4, costType: "discard" },
+    1: { cost: 3, costType: "discard", auto: false },
+    2: { cost: 2, costType: "discard", auto: false },
+    3: { cost: 1, costType: "flip", auto: false },
+    4: { cost: 9, costType: "discard", auto: true },
+    5: { cost: 2, costType: "flip", auto: true },
+    6: { cost: 9, costType: "flip", auto: true },
+    7: { cost: 4, costType: "discard", auto: true },
   },
 
   gen: {
-    1: { cost: 1, costType: "flip" },
-    2: { cost: 2, costType: "flip" },
-    3: { cost: 1, costType: "discard" },
-    4: { cost: 5, costType: "flip" },
-    5: { cost: 2, costType: "discard" },
-    6: { cost: 1, costType: "flip" },
-    7: { cost: 4, costType: "discard" },
+    1: { cost: 1, costType: "flip", auto: false },
+    2: { cost: 2, costType: "flip", auto: false },
+    3: { cost: 1, costType: "discard", auto: false },
+    4: { cost: 5, costType: "flip", auto: false },
+    5: { cost: 2, costType: "discard", auto: false },
+    6: { cost: 1, costType: "flip", auto: false },
+    7: { cost: 4, costType: "discard", auto: false },
   },
 
   dis: {
-    1: { cost: 0, costType: "flip" },
-    2: { cost: 2, costType: "discard" },
-    3: { cost: 1, costType: "flip" },
-    4: { cost: 3, costType: "discard" },
-    5: { cost: 2, costType: "flip" },
-    6: { cost: 1, costType: "flip" },
-    7: { cost: 4, costType: "discard" },
+    1: { cost: 0, costType: "flip", auto: false },
+    2: { cost: 2, costType: "discard", auto: false },
+    3: { cost: 1, costType: "flip", auto: false },
+    4: { cost: 3, costType: "discard", auto: false },
+    5: { cost: 2, costType: "flip", auto: false },
+    6: { cost: 1, costType: "flip", auto: false },
+    7: { cost: 4, costType: "discard", auto: false },
   },
 
   sup: {
-    1: { cost: 1, costType: "flip" },
-    2: { cost: 2, costType: "flip" },
-    3: { cost: 1, costType: "discard" },
-    4: { cost: 3, costType: "flip" },
-    5: { cost: 2, costType: "discard" },
-    6: { cost: 1, costType: "flip" },
-    7: { cost: 4, costType: "discard" },
+    1: { cost: 1, costType: "flip", auto: false },
+    2: { cost: 2, costType: "flip", auto: false },
+    3: { cost: 1, costType: "discard", auto: false },
+    4: { cost: 3, costType: "flip", auto: false },
+    5: { cost: 2, costType: "discard", auto: false },
+    6: { cost: 1, costType: "flip", auto: false },
+    7: { cost: 4, costType: "discard", auto: false },
   },
 };
 
@@ -59,7 +60,12 @@ export function canPlace(
 ): boolean {
   const player = Number(ctx.currentPlayer);
   const f = G.floor;
-  const token = G.board[x][y][z];
+  let token;
+  if (Number.isInteger(x) && Number.isInteger(y)) {
+    token = G.board[x][y][z];
+  } else {
+    token = G.midBoard[x - 1.5][y - 1.5][z];
+  }
 
   // deleteキー
   if (attr === "des" && index === 1) {
@@ -73,6 +79,50 @@ export function canPlace(
       z == f &&
       (token === 2 - player || token === 3 || token === 5 - player)
     );
+  }
+
+  // 超新星爆発
+  if (attr === "des" && index === 2) {
+    if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
+    if (z !== f) return false;
+    const dirs = [
+      [0, 0],
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
+    for (const [dx, dy] of dirs) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || nx > 4 || ny < 0 || ny > 4) continue;
+      if (G.board[nx][ny][z] !== 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+  // 狙撃
+  if (attr === "des" && index === 3) {
+    const enemy = 1 - Number(ctx.currentPlayer);
+    return G.hand[enemy].length !== 0;
+  }
+  // メテオ
+  if (attr === "des" && index === 4) {
+    return z == f && token != 0;
+  }
+  // ダーツ
+  if (attr === "des" && index === 5) {
+    const enemy = 1 - Number(ctx.currentPlayer);
+    return G.hand[enemy].length !== 0;
+  }
+  // 流星群
+  if (attr === "des" && index === 6) {
+    return z == f && token != 0;
+  }
+  // 世界恐慌
+  if (attr === "des" && index === 7) {
+    return true;
   }
 
   // append

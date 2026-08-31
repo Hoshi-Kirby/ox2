@@ -55,15 +55,19 @@ export function renderGameEffect(
           const activeCardID = G.activeCardID;
 
           if (G.phase === "selectTarget" && activeCardID) {
-            can = canPlace(
-              G,
-              bgCtx,
-              x,
-              y,
-              z,
-              activeCardID.attr,
-              activeCardID.index,
-            );
+            if (activeCardID.attr === "des" && activeCardID.index === 3) {
+              can = false;
+            } else {
+              can = canPlace(
+                G,
+                bgCtx,
+                x,
+                y,
+                z,
+                activeCardID.attr,
+                activeCardID.index,
+              );
+            }
           }
           if (G.phase === "selectTarget2") {
           }

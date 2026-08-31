@@ -49,16 +49,34 @@ export function createGameClickHandler({
     // ポーズの影響を受ける------------------------------------------
     if (!G.isPaused) {
       if (effectTimers.Gchange <= 200 && effectTimers.turnStart == 0) {
-        if (effectTimers.gameStartCount == 0 && effectTimers.Gchange == 0) {
-          // ターンエンド
-          if (G.phase === "idle") {
-            if (isInsideTurnEndButton(x, y, ratio)) {
-              moves.endTurn(ctx);
-              effectTimers.turnStart = 400;
-              effectTimers.Gchange = 400;
-              setTimeout(() => {
-                moves.resetAnimLog();
-              }, 300);
+        if (effectTimers.gameStartCount == 0) {
+          if (effectTimers.Gchange == 0) {
+            // ターンエンド
+            if (G.phase === "idle") {
+              if (isInsideTurnEndButton(x, y, ratio)) {
+                moves.endTurn(ctx);
+                effectTimers.turnStart = 400;
+                effectTimers.Gchange = 400;
+                setTimeout(() => {
+                  moves.resetAnimLog();
+                }, 300);
+              }
+            }
+            // 駒
+            for (let i = 0; i < 5; i++) {
+              for (let j = 0; j < 5; j++) {
+                if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
+                  moves.registerTarget({
+                    row: j,
+                    col: i,
+                    index: null,
+                  });
+                  effectTimers.Gchange = 400;
+                  setTimeout(() => {
+                    moves.resetAnimLog();
+                  }, 300);
+                }
+              }
             }
           }
           // カード
@@ -102,23 +120,6 @@ export function createGameClickHandler({
             setTimeout(() => {
               moves.resetAnimLog();
             }, 300);
-          }
-
-          // 駒
-          for (let i = 0; i < 5; i++) {
-            for (let j = 0; j < 5; j++) {
-              if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
-                moves.registerTarget({
-                  row: j,
-                  col: i,
-                  index: null,
-                });
-                effectTimers.Gchange = 400;
-                setTimeout(() => {
-                  moves.resetAnimLog();
-                }, 300);
-              }
-            }
           }
         }
       }
