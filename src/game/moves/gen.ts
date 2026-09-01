@@ -91,17 +91,45 @@ export function card4(G: GameState, ctx: any) {
   }
 }
 export function card5(G: GameState, ctx: any) {
+  // ジャンプ
   if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
+    const t = G.targets[0];
+    if (!t) return;
+    const { row, col } = t;
+    if (row === null || col === null) return;
+    if (row === undefined || col === undefined) return;
+    const f = G.floor;
+
+    if (canPlace(G, ctx, col, row, f, "gen", 5)) {
+      G.board[col][row][f] = 5 - Number(ctx.currentPlayer);
+      G.phase = "idle";
+      G.targets = [];
+      G.animLog.place[col][row][f] = true;
+      return;
+    }
+    return;
   }
 }
 export function card6(G: GameState, ctx: any) {
+  // prepend
   if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
+    const t = G.targets[0];
+    if (!t) return;
+    const { row, col } = t;
+    if (row === null || col === null) return;
+    if (row === undefined || col === undefined) return;
+
+    if (canPlace(G, ctx, col, row, 0, "gen", 6)) {
+      G.board[col][row][0] = Number(ctx.currentPlayer) + 1;
+      G.phase = "idle";
+      G.targets = [];
+      G.animLog.place[col][row][0] = true;
+      return;
+    }
+    return;
   }
 }
 export function card7(G: GameState, ctx: any) {
-  if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
-  }
+  //  積み将棋
+  G.floor++;
 }

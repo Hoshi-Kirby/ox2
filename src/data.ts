@@ -25,7 +25,7 @@ export const cardDefs: Record<CardAttr, Record<CardNum, CardDef>> = {
     4: { cost: 5, costType: "flip", auto: false },
     5: { cost: 2, costType: "discard", auto: false },
     6: { cost: 1, costType: "flip", auto: false },
-    7: { cost: 4, costType: "discard", auto: false },
+    7: { cost: 4, costType: "discard", auto: true },
   },
 
   dis: {
@@ -109,7 +109,7 @@ export function canPlace(
   }
   // メテオ
   if (attr === "des" && index === 4) {
-    return z == f && token != 0;
+    return token != 0;
   }
   // ダーツ
   if (attr === "des" && index === 5) {
@@ -118,7 +118,7 @@ export function canPlace(
   }
   // 流星群
   if (attr === "des" && index === 6) {
-    return z == f && token != 0;
+    return token != 0;
   }
   // 世界恐慌
   if (attr === "des" && index === 7) {
@@ -157,6 +157,36 @@ export function canPlace(
       z == f &&
       token === 0
     );
+  }
+  // ジャンプ
+  if (attr === "gen" && index === 5) {
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      x != 0 &&
+      x != 4 &&
+      y != 0 &&
+      y != 4 &&
+      z == f &&
+      token === 2 - player
+    );
+  }
+  // prepend
+  if (attr === "gen" && index === 6) {
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      x != 0 &&
+      x != 4 &&
+      y != 0 &&
+      y != 4 &&
+      z == 0 &&
+      token === 0
+    );
+  }
+  // 積み将棋
+  if (attr === "gen" && index === 7) {
+    return f < 2;
   }
 
   // 他のカードは後で追加

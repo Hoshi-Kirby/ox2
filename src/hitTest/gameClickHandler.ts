@@ -77,7 +77,16 @@ export function createGameClickHandler({
             if (!target) {
               for (let i = 0; i < 5; i++) {
                 for (let j = 0; j < 5; j++) {
-                  if (isInsideBoardCell(x, y, ratio, i, j, G.floor)) {
+                  let f = G.floor;
+                  const activeCardID = G.activeCardID;
+                  if (
+                    activeCardID &&
+                    activeCardID.attr === "gen" &&
+                    activeCardID.index === 6
+                  ) {
+                    f = 0;
+                  }
+                  if (isInsideBoardCell(x, y, ratio, i, j, f)) {
                     target = { row: j, col: i };
                     break;
                   }

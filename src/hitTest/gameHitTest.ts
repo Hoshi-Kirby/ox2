@@ -109,12 +109,13 @@ export function isInsideBoardCell(
     return w;
   })();
   const boardH = boardW;
+  const floorOffset = -boardH * 0.05;
   const boardX = dx + W * 0.5 - boardW / 2;
   const boardY = dy + H * 0.5 - boardH / 2;
   const cellW = boardW / 5;
   const cellH = boardH / 5;
   const cellX = boardX + cellW * i;
-  const cellY = boardY + cellH * j;
+  const cellY = boardY + cellH * j + floorOffset * floor;
   return x >= cellX && x <= cellX + cellW && y >= cellY && y <= cellY + cellH;
 }
 // 囲碁駒
@@ -143,12 +144,13 @@ export function isInsideMidBoardCell(
     return w;
   })();
   const boardH = boardW;
+  const floorOffset = -boardH * 0.05;
   const boardX = dx + W * 0.5 - boardW / 2;
   const boardY = dy + H * 0.5 - boardH / 2;
   const cellW = boardW / 5;
   const cellH = boardH / 5;
   const px = boardX + cellW * (i + 2);
-  const py = boardY + cellH * (j + 2);
+  const py = boardY + cellH * (j + 2) + floorOffset * floor;
   const radius = cellW * 0.35; // 半径
   const dx2 = x - px;
   const dy2 = y - py;

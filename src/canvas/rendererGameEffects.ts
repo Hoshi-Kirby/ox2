@@ -48,9 +48,10 @@ export function renderGameEffect(
     // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
     // 線
     // 駒
-    for (let x = 0; x < 5; x++) {
-      for (let y = 0; y < 5; y++) {
-        for (let z = 0; z < 3; z++) {
+    const floorOffset = -boardH * 0.05;
+    for (let z = 0; z < 3; z++) {
+      for (let x = 0; x < 5; x++) {
+        for (let y = 0; y < 5; y++) {
           let can = false;
           const activeCardID = G.activeCardID;
 
@@ -75,7 +76,7 @@ export function renderGameEffect(
             const baseW = boardW / 5;
             const baseH = boardH / 5;
             const posX = boardX + baseW * x;
-            const posY = boardY + baseH * y;
+            const posY = boardY + baseH * y + floorOffset * z;
             ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
           }
         }
@@ -108,7 +109,7 @@ export function renderGameEffect(
             const baseW = boardW / 5;
             const baseH = boardH / 5;
             const posX = boardX + baseW * (x + 1.5);
-            const posY = boardY + baseH * (y + 1.5);
+            const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
             ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
           }
         }
