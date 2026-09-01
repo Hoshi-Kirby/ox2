@@ -47,23 +47,35 @@ export function renderGame(
     // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
     // 線
     for (let i = 0; i < 2; i++) {
+      let img = assets.neonLine;
+      if (G.firewall.horizontal[i]) {
+        ctx.save();
+        ctx.filter = "brightness(0.5)";
+      }
       ctx.drawImage(
-        assets.neonLine,
+        img,
         boardX + boardW * 0.02,
         boardY + boardH * 0.23 + boardH * 0.19 * i,
         boardW,
         boardW * (assets.neonLine.height / assets.neonLine.width),
       );
+      if (G.firewall.horizontal[i]) {
+        ctx.restore();
+      }
     }
     for (let i = 0; i < 2; i++) {
       ctx.save();
+      let img = assets.neonLine;
+      if (G.firewall.vertical[1 - i]) {
+        ctx.filter = "brightness(0.5)";
+      }
       ctx.translate(boardX + boardW / 2, boardY + boardH / 2);
       ctx.rotate(Math.PI / 2);
       const lineY = -boardH / 2 + boardH * 0.23 + boardH * 0.19 * i;
       const lineX = -boardW / 2 + boardW * 0.02;
 
       ctx.drawImage(
-        assets.neonLine,
+        img,
         lineX,
         lineY,
         boardW,
@@ -141,12 +153,12 @@ export function renderGame(
             } else {
               ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
             }
-          } else if (G.animLog.remove[x][y][z] >= 1) {
-            const animToken = G.animLog.remove[x][y][z];
+          } else if (G.animLog.removeMid[x][y][z] >= 1) {
+            const animToken = G.animLog.removeMid[x][y][z];
             const baseW = boardW / 5;
             const baseH = boardH / 5;
-            const posX = boardX + baseW * x;
-            const posY = boardY + baseH * y + floorOffset * z;
+            const posX = boardX + baseW * (x + 1.5);
+            const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
             const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
             const w = baseW * scale;
             const h = baseH * scale;
@@ -255,6 +267,20 @@ export function renderGame(
             (beforeXremove - afterX) *
             (Math.max(0, effectTimers.Gchange - 300) / 100);
         }
+        // コスト変動時のアニメ
+        let moveY = 0,
+          dCost = 0;
+        if (G.animLog.costChange[i] !== 0) {
+          if (effectTimers.Gchange > 300) {
+            moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
+            dCost = G.animLog.costChange[i];
+          } else if (effectTimers.Gchange > 200) {
+            moveY = (cardH * (effectTimers.Gchange - 200)) / 100;
+          }
+          if (!isBottom) {
+            moveY = -moveY;
+          }
+        }
 
         let activeY = 0;
         if (bgCtx.currentPlayer == i) {
@@ -265,7 +291,7 @@ export function renderGame(
           }
         }
         let x = dx + afterX + moveX;
-        let y = dy + baseY + activeY;
+        let y = dy + baseY + moveY + activeY;
 
         // 裏返すときのアニメ
         if (
@@ -290,7 +316,8 @@ export function renderGame(
         ctx.drawImage(img, x, y, cardW, cardH);
         const def = cardDefs[card.attr][card.index];
         const folder = def.costType === "flip" ? "w" : "r";
-        const imgN = assets.costNumber[folder][def.cost];
+        const imgN =
+          assets.costNumber[folder][def.cost + G.costChange[i] - dCost];
         // コスト数字
         if (!G.faceDown[i][j]) {
           ctx.drawImage(

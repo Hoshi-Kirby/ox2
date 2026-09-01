@@ -47,6 +47,49 @@ export function renderGameEffect(
   if (screen === "game") {
     // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
     // 線
+    const activeCardID = G.activeCardID;
+    if (
+      (G.phase === "selectTarget" || G.phase === "selectTarget2") &&
+      activeCardID
+    ) {
+      if (activeCardID.attr === "dis" && activeCardID.index === 2) {
+        for (let i = 0; i < 2; i++) {
+          let img = assets.neonLine;
+          if (!G.firewall.horizontal[i]) {
+            ctx.save();
+            ctx.filter = "brightness(1.5)";
+            ctx.drawImage(
+              img,
+              boardX + boardW * 0.02,
+              boardY + boardH * 0.23 + boardH * 0.19 * i,
+              boardW,
+              boardW * (assets.neonLine.height / assets.neonLine.width),
+            );
+            ctx.restore();
+          }
+        }
+        for (let i = 0; i < 2; i++) {
+          let img = assets.neonLine;
+          if (!G.firewall.vertical[1 - i]) {
+            ctx.save();
+            ctx.filter = "brightness(1.5)";
+            ctx.translate(boardX + boardW / 2, boardY + boardH / 2);
+            ctx.rotate(Math.PI / 2);
+            const lineY = -boardH / 2 + boardH * 0.23 + boardH * 0.19 * i;
+            const lineX = -boardW / 2 + boardW * 0.02;
+
+            ctx.drawImage(
+              img,
+              lineX,
+              lineY,
+              boardW,
+              boardW * (assets.neonLine.height / assets.neonLine.width),
+            );
+            ctx.restore();
+          }
+        }
+      }
+    }
     // 駒
     const floorOffset = -boardH * 0.05;
     for (let z = 0; z < 3; z++) {
@@ -56,7 +99,10 @@ export function renderGameEffect(
           const activeCardID = G.activeCardID;
 
           if (G.phase === "selectTarget" && activeCardID) {
-            if (activeCardID.attr === "des" && activeCardID.index === 3) {
+            if (
+              (activeCardID.attr === "des" && activeCardID.index === 3) ||
+              (activeCardID.attr === "dis" && activeCardID.index === 2)
+            ) {
               can = false;
             } else {
               can = canPlace(
@@ -117,102 +163,105 @@ export function renderGameEffect(
     }
     // カード
     // //ホバー
-    for (let i = 0; i < 2; i++) {
-      const isBottom = i === Number(playerID);
-      let baseX = W * 0.01;
-      let cardPool = W * 0.98;
-      if (layoutIsWide) {
-        baseX = H * 0.42;
-        cardPool = W - H * 0.8;
-      }
-      let cardW = cardPool / 5.1;
-      let cardH =
-        cardW *
-        (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
-      if (cardH > H * 0.2) {
-        cardH = H * 0.2;
-        cardW =
-          cardH /
-          (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
-      }
-      let baseY = isBottom ? H * 0.96 - cardH : H * 0.07;
-      if (layoutIsWide) {
-        baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
-      }
-
-      // //最初の手札アニメーション
-      const handSize = Math.min(
-        G.hand[i].length,
-        Math.floor(
-          (1 - (effectTimers.gameStartCount - 1000) / 3500) * G.hand[i].length,
-        ),
-      );
-      const animationDuration: number = 100;
-      const elapsed: number = 4500 - effectTimers.gameStartCount;
-      const animationStartTime: number = (3500 * handSize) / G.hand[i].length;
-      const animationElapsed: number = elapsed - animationStartTime;
-      const progress: number = Math.min(
-        1,
-        animationElapsed / animationDuration,
-      );
-      // //
-
-      for (let j = 0; j < handSize; j++) {
-        if (
-          G.phase === "payCost" &&
-          G.activeCard === j &&
-          bgCtx.currentPlayer == i
-        ) {
-          continue;
+    if (effectTimers.Gchange <= 300) {
+      for (let i = 0; i < 2; i++) {
+        const isBottom = i === Number(playerID);
+        let baseX = W * 0.01;
+        let cardPool = W * 0.98;
+        if (layoutIsWide) {
+          baseX = H * 0.42;
+          cardPool = W - H * 0.8;
         }
-        if (hoverStates.hoverHands[i] === j) {
-          const card = G.hand[i][j];
-          const img = assets.cardAssets[card.attr][card.index];
+        let cardW = cardPool / 5.1;
+        let cardH =
+          cardW *
+          (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
+        if (cardH > H * 0.2) {
+          cardH = H * 0.2;
+          cardW =
+            cardH /
+            (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
+        }
+        let baseY = isBottom ? H * 0.96 - cardH : H * 0.07;
+        if (layoutIsWide) {
+          baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
+        }
 
-          const afterX: number = getHandCardX(
-            handSize,
-            j,
-            baseX,
-            cardPool,
-            cardW,
-          );
-          const beforeX: number = getHandCardX(
-            handSize - 1, //要変更
-            j,
-            baseX,
-            cardPool,
-            cardW,
-          );
-          // 移動量
-          const moveX: number = (beforeX - afterX) * (1 - progress);
-          let activeY = 0;
+        // //最初の手札アニメーション
+        const handSize = Math.min(
+          G.hand[i].length,
+          Math.floor(
+            (1 - (effectTimers.gameStartCount - 1000) / 3500) *
+              G.hand[i].length,
+          ),
+        );
+        const animationDuration: number = 100;
+        const elapsed: number = 4500 - effectTimers.gameStartCount;
+        const animationStartTime: number = (3500 * handSize) / G.hand[i].length;
+        const animationElapsed: number = elapsed - animationStartTime;
+        const progress: number = Math.min(
+          1,
+          animationElapsed / animationDuration,
+        );
+        // //
 
-          if (bgCtx.currentPlayer == i) {
-            if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
-              activeY = -cardH * 0.1;
-            }
+        for (let j = 0; j < handSize; j++) {
+          if (
+            G.phase === "payCost" &&
+            G.activeCard === j &&
+            bgCtx.currentPlayer == i
+          ) {
+            continue;
           }
-          let x: number = dx + afterX + moveX;
-          const y: number = dy + baseY + activeY;
-          // カード画像
-          ctx.drawImage(
-            img,
-            x - cardW * 0.02,
-            y - cardH * 0.02,
-            cardW + cardW * 0.04,
-            cardH + cardH * 0.04,
-          );
-          const def = cardDefs[card.attr][card.index];
-          const folder = def.costType === "flip" ? "w" : "r";
-          const imgN = assets.costNumber[folder][def.cost];
-          // コスト数字
-          ctx.drawImage(
-            imgN,
-            x - cardW * 0.02,
-            y - cardH * 0.02,
-            (cardW + cardW * 0.04) * 0.3,
-            (cardW + cardW * 0.04) * 0.3 * (imgN.height / imgN.width),
-          );
+          if (hoverStates.hoverHands[i] === j) {
+            const card = G.hand[i][j];
+            const img = assets.cardAssets[card.attr][card.index];
+
+            const afterX: number = getHandCardX(
+              handSize,
+              j,
+              baseX,
+              cardPool,
+              cardW,
+            );
+            const beforeX: number = getHandCardX(
+              handSize - 1, //要変更
+              j,
+              baseX,
+              cardPool,
+              cardW,
+            );
+            // 移動量
+            const moveX: number = (beforeX - afterX) * (1 - progress);
+            let activeY = 0;
+
+            if (bgCtx.currentPlayer == i) {
+              if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
+                activeY = -cardH * 0.1;
+              }
+            }
+            let x: number = dx + afterX + moveX;
+            const y: number = dy + baseY + activeY;
+            // カード画像
+            ctx.drawImage(
+              img,
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              cardW + cardW * 0.04,
+              cardH + cardH * 0.04,
+            );
+            const def = cardDefs[card.attr][card.index];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN = assets.costNumber[folder][def.cost + G.costChange[i]];
+            // コスト数字
+            ctx.drawImage(
+              imgN,
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              (cardW + cardW * 0.04) * 0.3,
+              (cardW + cardW * 0.04) * 0.3 * (imgN.height / imgN.width),
+            );
+          }
         }
       }
     }

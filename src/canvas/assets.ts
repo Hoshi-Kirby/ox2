@@ -103,6 +103,7 @@ export const assets = {
     "/assets/cards_token/token/o_jump.png",
     "/assets/cards_token/token/x_jump.png",
     "/assets/cards_token/token/not.png",
+    "/assets/cards_token/token/not.png",
   ),
   dot: loadImage("/assets/cards_token/token/dot.png"),
   noTurn: loadImage("/assets/ui/no_turn.png"),

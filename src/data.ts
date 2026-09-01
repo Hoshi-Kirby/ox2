@@ -29,13 +29,13 @@ export const cardDefs: Record<CardAttr, Record<CardNum, CardDef>> = {
   },
 
   dis: {
-    1: { cost: 0, costType: "flip", auto: false },
+    1: { cost: 0, costType: "flip", auto: true },
     2: { cost: 2, costType: "discard", auto: false },
     3: { cost: 1, costType: "flip", auto: false },
-    4: { cost: 3, costType: "discard", auto: false },
-    5: { cost: 2, costType: "flip", auto: false },
-    6: { cost: 1, costType: "flip", auto: false },
-    7: { cost: 4, costType: "discard", auto: false },
+    4: { cost: 3, costType: "discard", auto: true },
+    5: { cost: 2, costType: "flip", auto: true },
+    6: { cost: 1, costType: "flip", auto: true },
+    7: { cost: 4, costType: "discard", auto: true },
   },
 
   sup: {
@@ -155,7 +155,7 @@ export function canPlace(
       y != 0 &&
       y != 4 &&
       z == f &&
-      token === 0
+      (token === 0 || token === 6 + player)
     );
   }
   // ジャンプ
@@ -181,12 +181,44 @@ export function canPlace(
       y != 0 &&
       y != 4 &&
       z == 0 &&
-      token === 0
+      (token === 0 || token === 6 + player)
     );
   }
   // 積み将棋
   if (attr === "gen" && index === 7) {
     return f < 2;
+  }
+  // ハイパーインフレ
+  if (attr === "dis" && index === 1) {
+    return true;
+  }
+  // ファイアウォール
+  if (attr === "dis" && index === 2) {
+    let res = false;
+    if (x == 0 && y < 2) {
+      res = !G.firewall.horizontal[y];
+    }
+    if (x == 1 && y < 2) {
+      res = !G.firewall.vertical[y];
+    }
+    return res;
+  }
+  // NOT FOUND
+  if (attr === "dis" && index === 3) {
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      x != 0 &&
+      x != 4 &&
+      y != 0 &&
+      y != 4 &&
+      z == f &&
+      token === 0
+    );
+  }
+  // 落石注意
+  if (attr === "dis" && index === 4) {
+    return true;
   }
 
   // 他のカードは後で追加

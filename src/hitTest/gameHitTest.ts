@@ -157,6 +157,55 @@ export function isInsideMidBoardCell(
 
   return dx2 * dx2 + dy2 * dy2 <= radius * radius;
 }
+// 罫線
+export function isInsideFireWall(
+  x: number,
+  y: number,
+  ratio: number,
+  i: number,
+  j: number,
+) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  const boardW = (() => {
+    const layoutIsWide = ratio > 1.2;
+    let w = H * 0.5;
+    if (!layoutIsWide) {
+      w = H * 0.4;
+    } else if (ratio < 1.3) {
+      w = W * 0.38;
+    }
+    return w;
+  })();
+  const boardH = boardW;
+  const boardX = dx + W * 0.5 - boardW / 2;
+  const boardY = dy + H * 0.5 - boardH / 2;
+  const cellW = boardW / 5;
+  const cellH = boardH / 5;
+
+  const lineThickness = cellH * 0.2;
+
+  if (i === 0) {
+    // 横方向の境界線
+    const lineY = boardY + cellH * (j + 2);
+    return (
+      x >= boardX &&
+      x <= boardX + boardW &&
+      y >= lineY - lineThickness / 2 &&
+      y <= lineY + lineThickness / 2
+    );
+  }
+  if (i === 1) {
+    // 縦方向の境界線
+    const lineX = boardX + cellW * (j + 2);
+    return (
+      x >= lineX - lineThickness / 2 &&
+      x <= lineX + lineThickness / 2 &&
+      y >= boardY &&
+      y <= boardY + boardH
+    );
+  }
+  return false;
+}
 
 // ポーズ
 export function isInsidePauseButton(x: number, y: number, ratio: number) {

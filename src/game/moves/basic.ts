@@ -29,6 +29,10 @@ export function endTurn({
   }
 
   G.faceDown[player].fill(false);
+  G.animLog.costChange[player] = -G.costChange[player];
+  G.costChange[player] = 0;
+  decreaseTurnEffects({ G });
+
   events.endTurn();
 }
 // カードを使うときの共通 move
@@ -44,9 +48,36 @@ export function useCard(
       const card = G.hand[player][cardIndex];
       const def = cardDefs[card.attr][card.index];
 
-      if (faceUpCount >= def.cost + 1) {
+      if (faceUpCount >= def.cost + 1 + G.costChange[player]) {
         G.activeCard = cardIndex; // 今使うカードをセット
-        G.phase = "payCost"; // 次のフェーズへ}
+        G.phase = "payCost"; // 次のフェーズへ
+        if (def.cost + G.costChange[player] < 1) {
+          // コスト0
+          G.activeCardID = { ...G.hand[player][G.activeCard!] };
+          G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
+            false,
+          );
+          G.animLog.discardFlags[player][G.activeCard!] = true;
+          G.hand[player].splice(G.activeCard!, 1);
+          G.faceDown[player].splice(G.activeCard!, 1);
+          G.deck[player].push(G.activeCardID);
+          G.animLog.flipFlags[player].splice(G.activeCard!, 1);
+          G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
+          if (
+            !canPlaceAnywhere(G, ctx, G.activeCardID.attr, G.activeCardID.index)
+          ) {
+            G.phase = "idle";
+            G.targets = [];
+            return;
+          }
+          if (def.auto) {
+            callCardFunction(G, ctx);
+            G.phase = "idle";
+            G.targets = [];
+            return;
+          }
+          G.phase = "selectTarget";
+        }
         return;
       }
     }
@@ -67,7 +98,7 @@ export function useCard(
       const player = ctx.currentPlayer;
       const card = G.hand[player][G.activeCard!];
       const def = cardDefs[card.attr][card.index];
-      if (G.costCards.length >= def.cost) {
+      if (G.costCards.length >= Math.max(0, def.cost + G.costChange[player])) {
         // アクティブカード、アニメログ
         G.activeCardID = { ...G.hand[player][G.activeCard!] };
         G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
@@ -141,7 +172,13 @@ export function useCard(
 // 盤面又はカード
 export function registerTarget(
   { G, ctx }: { G: GameState; ctx: any },
-  target: { row: number | null; col: number | null; index: number | null },
+  target: {
+    row: number | null;
+    col: number | null;
+    index: number | null;
+    indexH: number | null;
+    indexV: number | null;
+  },
 ) {
   if (G.phase == "selectTarget") {
     G.targets[0] = target;
@@ -211,6 +248,7 @@ export function resetAnimLog({ G }: { G: GameState }) {
   G.animLog.discardFlags = [[], []];
   G.animLog.flipFlags = [[], []];
   G.animLog.unflipFlags = [[], []];
+  G.animLog.costChange = [0, 0];
 
   for (let r = 0; r < 5; r++) {
     for (let c = 0; c < 5; c++) {
@@ -225,6 +263,37 @@ export function resetAnimLog({ G }: { G: GameState }) {
       for (let h = 0; h < 3; h++) {
         G.animLog.placeMid[r][c][h] = false;
         G.animLog.removeMid[r][c][h] = 0;
+      }
+    }
+  }
+}
+// ターン数減らす
+export function decreaseTurnEffects({ G }: { G: GameState }) {
+  // NOTFOUND（5×5×3）
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let z = 0; z < 3; z++) {
+        if (G.notFoundTurns[x][y][z] > 0) {
+          G.notFoundTurns[x][y][z]--;
+          if (G.notFoundTurns[x][y][z] == 0) {
+            G.board[x][y][z] = 0;
+            G.animLog.remove[x][y][z] = 6;
+          }
+        }
+      }
+    }
+  }
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      if (G.firewallTurns[i][j] > 0) {
+        G.firewallTurns[i][j]--;
+        if (G.firewallTurns[i][j] == 0) {
+          if (i == 0) {
+            G.firewall.horizontal[j] = false;
+          } else {
+            G.firewall.vertical[j] = false;
+          }
+        }
       }
     }
   }

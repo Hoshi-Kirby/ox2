@@ -9,6 +9,11 @@ export interface GameState {
   firstPlayer: number;
   board: number[][][];
   midBoard: number[][][];
+  firewall: {
+    horizontal: boolean[];
+    vertical: boolean[];
+  };
+
   floor: number;
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
@@ -21,7 +26,12 @@ export interface GameState {
     row: number | null;
     col: number | null;
     index: number | null;
+    indexH: number | null;
+    indexV: number | null;
   }>;
+  costChange: number[];
+  notFoundTurns: number[][][];
+  firewallTurns: number[][];
 
   animLog: {
     draw: [boolean, boolean];
@@ -32,6 +42,7 @@ export interface GameState {
     remove: number[][][];
     placeMid: boolean[][][];
     removeMid: number[][][];
+    costChange: number[];
   };
 }
 
@@ -144,6 +155,10 @@ function createInitialState(settings: Settings, random: any): GameState {
     midBoard: Array.from({ length: 2 }, () =>
       Array.from({ length: 2 }, () => Array(3).fill(0)),
     ),
+    firewall: {
+      horizontal: [false, false],
+      vertical: [false, false],
+    },
 
     floor: 0,
 
@@ -159,6 +174,14 @@ function createInitialState(settings: Settings, random: any): GameState {
     activeCardID: null,
     costCards: [],
     targets: [],
+    costChange: [0, 0],
+    notFoundTurns: Array.from({ length: 5 }, () =>
+      Array.from({ length: 5 }, () => Array(3).fill(0)),
+    ),
+    firewallTurns: [
+      [0, 0],
+      [0, 0],
+    ],
 
     animLog: {
       draw: [false, false],
@@ -177,6 +200,7 @@ function createInitialState(settings: Settings, random: any): GameState {
       removeMid: Array.from({ length: 2 }, () =>
         Array.from({ length: 2 }, () => Array(3).fill(0)),
       ),
+      costChange: [0, 0],
     },
   };
 }
