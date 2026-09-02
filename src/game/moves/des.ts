@@ -12,8 +12,14 @@ export function card1(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "des", 1)) {
-      G.animLog.remove[col][row][f] = G.board[col][row][f];
-      G.board[col][row][f] = 0;
+      const player = Number(ctx.currentPlayer);
+      if (G.board[col][row][f] == 3) {
+        G.board[col][row][f] = player + 1;
+        G.animLog.place[col][row][f] = true;
+      } else {
+        G.animLog.remove[col][row][f] = G.board[col][row][f];
+        G.board[col][row][f] = 0;
+      }
       G.phase = "idle";
       G.targets = [];
       return;
@@ -61,6 +67,8 @@ export function card3(G: GameState, ctx: any) {
     const { index } = t;
     if (index === null || index === undefined) return;
     const enemy = 1 - Number(ctx.currentPlayer);
+    G.animLog.discardHand[enemy] = [...G.hand[enemy]];
+    G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
     const hand = G.hand[enemy];
     const faceDown = G.faceDown[enemy];
     if (index < 0 || index >= hand.length) return;
@@ -146,9 +154,11 @@ export function card6(G: GameState, ctx: any) {
 }
 export function card7(G: GameState, ctx: any) {
   // 世界恐慌card4(G, ctx);
+  const enemy = 1 - Number(ctx.currentPlayer);
+  G.animLog.discardHand[enemy] = [...G.hand[enemy]];
+  G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
   card4(G, ctx);
   card5(G, ctx);
-  const enemy = 1 - Number(ctx.currentPlayer);
   const hand = G.hand[enemy];
   const faceDown = G.faceDown[enemy];
 

@@ -217,6 +217,7 @@ export function renderGame(
       for (let j = 0; j < handSize; j++) {
         const card = G.hand[i][j];
         let img = assets.cardAssets[card.attr][card.index];
+        let x, y;
 
         type DeckColorKey =
           | "deckColor0"
@@ -239,8 +240,9 @@ export function renderGame(
         }
 
         const afterX = getHandCardX(handSize, j, baseX, cardPool, cardW);
-        const beforeXadd = getHandCardX(
-          handSize - 1,
+        const beforeXadd = getHandCardXad(
+          handSize - G.animLog.drawCount[i],
+          G.animLog.drawCount[i],
           j,
           baseX,
           cardPool,
@@ -262,14 +264,16 @@ export function renderGame(
             (Math.max(0, effectTimers.Gchange - 300) / 100);
         }
         // トラッシュ時のアニメ
-        if (isDiscardAnim) {
-          moveX =
-            (beforeXremove - afterX) *
-            (Math.max(0, effectTimers.Gchange - 300) / 100);
+        let moveY = 0;
+        if (j < handSize - G.animLog.drawCount[i]) {
+          if (isDiscardAnim) {
+            moveX =
+              (beforeXremove - afterX) *
+              (Math.max(0, effectTimers.Gchange - 300) / 100);
+          }
         }
         // コスト変動時のアニメ
-        let moveY = 0,
-          dCost = 0;
+        let dCost = 0;
         if (G.animLog.costChange[i] !== 0) {
           if (effectTimers.Gchange > 300) {
             moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
@@ -290,8 +294,8 @@ export function renderGame(
             activeY = -cardH * 0.1;
           }
         }
-        let x = dx + afterX + moveX;
-        let y = dy + baseY + moveY + activeY;
+        x = dx + afterX + moveX;
+        y = dy + baseY + moveY + activeY;
 
         // 裏返すときのアニメ
         if (
@@ -317,7 +321,9 @@ export function renderGame(
         const def = cardDefs[card.attr][card.index];
         const folder = def.costType === "flip" ? "w" : "r";
         const imgN =
-          assets.costNumber[folder][def.cost + G.costChange[i] - dCost];
+          assets.costNumber[folder][
+            Math.max(0, def.cost + G.costChange[i] - dCost)
+          ];
         // コスト数字
         if (!G.faceDown[i][j]) {
           ctx.drawImage(
@@ -334,6 +340,68 @@ export function renderGame(
           effectTimers.Gchange > 200
         ) {
           ctx.restore();
+        }
+      }
+      // トラッシュ時のアニメ
+
+      if (isDiscardAnim) {
+        for (let j = 0; j < G.animLog.discardHand[i].length; j++) {
+          if (G.animLog.discardFlags[i][j] && effectTimers.Gchange > 300) {
+            const card = G.animLog.discardHand[i][j];
+            let img = assets.cardAssets[card.attr][card.index];
+            let x, y;
+            type DeckColorKey =
+              | "deckColor0"
+              | "deckColor1"
+              | "deckColor2"
+              | "deckColor3";
+            const backColorMap: Record<string, number> = {
+              red: 0,
+              green: 1,
+              yellow: 2,
+              blue: 3,
+              rainbow: 4,
+            };
+            const deckIndex = settingsRef.game.selectedDeckP[i];
+            const colorKey = `deckColor${deckIndex}` as DeckColorKey;
+            const colorName = settingsRef.game[colorKey];
+            const colorIndex = backColorMap[colorName] ?? 0;
+            if (G.animLog.discardFaceDown[i][j]) {
+              img = assets.backCard[colorIndex];
+            }
+            const afterX = getHandCardX(
+              G.animLog.discardHand[i].length,
+              j,
+              baseX,
+              cardPool,
+              cardW,
+            );
+
+            let moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
+            if (!isBottom) {
+              moveY = -moveY;
+            }
+            x = dx + afterX;
+            y = dy + baseY + moveY;
+            // カード画像
+            ctx.drawImage(img, x, y, cardW, cardH);
+            const def = cardDefs[card.attr][card.index];
+            const folder = def.costType === "flip" ? "w" : "r";
+            const imgN =
+              assets.costNumber[folder][
+                Math.max(0, def.cost + G.costChange[i])
+              ];
+            // コスト数字
+            if (!G.animLog.discardFaceDown[i][j]) {
+              ctx.drawImage(
+                imgN,
+                x,
+                y,
+                cardW * 0.3,
+                cardW * 0.3 * (imgN.height / imgN.width),
+              );
+            }
+          }
         }
       }
     }
@@ -428,6 +496,25 @@ export function renderGame(
 }
 function getHandCardX(
   handSize: number,
+  index: number,
+  baseX: number,
+  cardPool: number,
+  cardW: number,
+): number {
+  let gap = (cardPool - cardW * 5) / 4;
+  let cardX = baseX;
+
+  if (handSize > 5) {
+    gap = (cardPool - cardW * handSize) / (handSize - 1);
+  } else {
+    cardX = baseX + (cardPool - handSize * cardW - (handSize - 1) * gap) / 2;
+  }
+
+  return cardX + index * (cardW + gap);
+}
+function getHandCardXad(
+  handSize: number,
+  cardCount: number,
   index: number,
   baseX: number,
   cardPool: number,

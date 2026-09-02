@@ -85,6 +85,7 @@ export function card4(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.place[col][row][f] = true;
+      G.notFoundTurns[col][row][f] = 0;
       return;
     }
     return;
@@ -124,6 +125,7 @@ export function card6(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.place[col][row][0] = true;
+      G.notFoundTurns[col][row][0] = 0;
       return;
     }
     return;

@@ -96,6 +96,7 @@ export function renderGameEffect(
       for (let x = 0; x < 5; x++) {
         for (let y = 0; y < 5; y++) {
           let can = false;
+          let skipCanPlace = false;
           const activeCardID = G.activeCardID;
 
           if (G.phase === "selectTarget" && activeCardID) {
@@ -116,7 +117,44 @@ export function renderGameEffect(
               );
             }
           }
-          if (G.phase === "selectTarget2") {
+          if (G.phase === "selectTarget2" && activeCardID) {
+            let dIndex = 0;
+            if (activeCardID.attr === "sup" && activeCardID.index === 2) {
+              if (G.floor !== z) break;
+
+              const t = G.targets[0];
+              const { row, col } = t;
+              if (row === null || col === null) break;
+              if (row === undefined || col === undefined) break;
+              if (col == x && row == y) {
+                skipCanPlace = true;
+              }
+              const f = G.floor;
+              if (Number.isInteger(col) && Number.isInteger(row)) {
+                if (G.board[col][row][f] == 3) {
+                  dIndex = 10;
+                }
+              } else {
+                const mx = col - 1.5;
+                const my = row - 1.5;
+                if (G.midBoard[mx][my][f] == 3) {
+                  dIndex = 10;
+                } else {
+                  dIndex = 20;
+                }
+              }
+            }
+            if (!skipCanPlace) {
+              can = canPlace(
+                G,
+                bgCtx,
+                x,
+                y,
+                z,
+                activeCardID.attr,
+                activeCardID.index + 10 + dIndex,
+              );
+            }
           }
           if (can) {
             const baseW = boardW / 5;
@@ -252,7 +290,10 @@ export function renderGameEffect(
             );
             const def = cardDefs[card.attr][card.index];
             const folder = def.costType === "flip" ? "w" : "r";
-            const imgN = assets.costNumber[folder][def.cost + G.costChange[i]];
+            const imgN =
+              assets.costNumber[folder][
+                Math.max(0, def.cost + G.costChange[i])
+              ];
             // コスト数字
             ctx.drawImage(
               imgN,

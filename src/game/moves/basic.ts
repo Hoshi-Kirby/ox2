@@ -104,6 +104,7 @@ export function useCard(
         G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
           false,
         );
+        G.animLog.discardHand[player] = [...G.hand[player]];
         if (def.costType === "discard") {
           for (const idx of G.costCards) {
             G.animLog.discardFlags[player][idx] = true;
@@ -245,6 +246,7 @@ export function closePause({ G }: { G: GameState }) {
 // アニメログの初期化
 export function resetAnimLog({ G }: { G: GameState }) {
   G.animLog.draw = [false, false];
+  G.animLog.drawCount = [1, 1];
   G.animLog.discardFlags = [[], []];
   G.animLog.flipFlags = [[], []];
   G.animLog.unflipFlags = [[], []];

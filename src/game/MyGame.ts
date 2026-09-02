@@ -35,7 +35,10 @@ export interface GameState {
 
   animLog: {
     draw: [boolean, boolean];
+    drawCount: number[];
     discardFlags: [boolean[], boolean[]];
+    discardHand: [CardID[], CardID[]];
+    discardFaceDown: [boolean[], boolean[]];
     flipFlags: [boolean[], boolean[]];
     unflipFlags: [boolean[], boolean[]];
     place: boolean[][][];
@@ -79,15 +82,17 @@ export function createMyGame(settings: Settings) {
         ctx: any;
         random: any;
       }) => {
+        ctx.random = random;
         if (ctx.turn === 1) {
           return;
         }
 
         const player = ctx.currentPlayer;
 
-        if (drawRandom(G.deck[player], G.hand[player], random)) {
+        if (
+          drawRandom(G.deck[player], G.hand[player], G.faceDown[player], random)
+        ) {
           G.animLog.draw[player] = true;
-          G.faceDown[player].push(false);
         }
       },
     },
@@ -138,10 +143,11 @@ function createInitialState(settings: Settings, random: any): GameState {
 
   const hand0: CardID[] = [];
   const hand1: CardID[] = [];
+  const face: boolean[] = [];
 
   for (let i = 0; i < initialHandCount; i++) {
-    drawRandom(deck0, hand0, random);
-    drawRandom(deck1, hand1, random);
+    drawRandom(deck0, hand0, face, random);
+    drawRandom(deck1, hand1, face, random);
   }
 
   return {
@@ -185,7 +191,10 @@ function createInitialState(settings: Settings, random: any): GameState {
 
     animLog: {
       draw: [false, false],
+      drawCount: [1, 1],
       discardFlags: [[], []],
+      discardHand: [[], []],
+      discardFaceDown: [[], []],
       flipFlags: [[], []],
       unflipFlags: [[], []],
       place: Array.from({ length: 5 }, () =>
@@ -205,7 +214,12 @@ function createInitialState(settings: Settings, random: any): GameState {
   };
 }
 
-function drawRandom(deck: CardID[], hand: CardID[], random: any) {
+export function drawRandom(
+  deck: CardID[],
+  hand: CardID[],
+  face: boolean[],
+  random: any,
+) {
   if (hand.length >= 10) {
     return false;
   }
@@ -214,5 +228,6 @@ function drawRandom(deck: CardID[], hand: CardID[], random: any) {
   const card = deck.splice(idx, 1)[0];
 
   hand.push(card);
+  face.push(false);
   return true;
 }
