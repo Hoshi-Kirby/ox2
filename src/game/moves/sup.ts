@@ -118,17 +118,189 @@ export function card4(G: GameState, ctx: any) {
   }
 }
 export function card5(G: GameState, ctx: any) {
-  if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
+  // 酸化還元
+  const circles = [];
+  const crosses = [];
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let z = 0; z < 3; z++) {
+        const p = G.board[x][y][z];
+        if (p === 1) circles.push({ x, y, z });
+        if (p === 2) crosses.push({ x, y, z });
+      }
+    }
   }
+  if (circles.length === 0 || crosses.length === 0) return;
+  const c0 = circles[Math.floor(Math.random() * circles.length)];
+  const c1 = crosses[Math.floor(Math.random() * crosses.length)];
+
+  const temp = G.board[c0.x][c0.y][c0.z];
+  G.board[c0.x][c0.y][c0.z] = G.board[c1.x][c1.y][c1.z];
+  G.board[c1.x][c1.y][c1.z] = temp;
+  G.animLog.place[c0.x][c0.y][c0.z] = true;
+  G.animLog.place[c1.x][c1.y][c1.z] = true;
+
+  G.phase = "idle";
+  G.targets = [];
 }
 export function card6(G: GameState, ctx: any) {
-  if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
+  // 革命
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let z = 0; z < 3; z++) {
+        G.animLog.place[x][y][z] = true;
+        switch (G.board[x][y][z]) {
+          case 1:
+            G.board[x][y][z] = 2;
+            break;
+          case 2:
+            G.board[x][y][z] = 1;
+            break;
+          case 4:
+            G.board[x][y][z] = 5;
+            break;
+          case 5:
+            G.board[x][y][z] = 4;
+            break;
+          case 6:
+            G.board[x][y][z] = 7;
+            break;
+          case 7:
+            G.board[x][y][z] = 6;
+            break;
+          default:
+            G.animLog.place[x][y][z] = false;
+            break;
+        }
+      }
+    }
   }
 }
 export function card7(G: GameState, ctx: any) {
-  if (G.phase === "selectTarget") {
-    // ここに card の効果処理を書く
+  // スライド
+  const dirs = ["right", "left", "down", "up"];
+  const dir = dirs[Math.floor(Math.random() * 4)];
+
+  if (dir === "right") {
+    for (let x = 4; x >= 0; x--) {
+      for (let y = 0; y < 5; y++) {
+        for (let z = 0; z < 3; z++) {
+          slideCell(G, x, y, z, 1, 0);
+        }
+      }
+    }
+    for (let x = 1; x >= 0; x--) {
+      for (let y = 0; y < 2; y++) {
+        for (let z = 0; z < 3; z++) {
+          slideCellMidBoard(G, x, y, z, 1, 0);
+        }
+      }
+    }
   }
+
+  if (dir === "left") {
+    for (let x = 0; x < 5; x++) {
+      for (let y = 0; y < 5; y++) {
+        for (let z = 0; z < 3; z++) {
+          slideCell(G, x, y, z, -1, 0);
+        }
+      }
+    }
+    for (let x = 0; x < 2; x++) {
+      for (let y = 0; y < 2; y++) {
+        for (let z = 0; z < 3; z++) {
+          slideCellMidBoard(G, x, y, z, -1, 0);
+        }
+      }
+    }
+  }
+
+  if (dir === "down") {
+    for (let y = 4; y >= 0; y--) {
+      for (let x = 0; x < 5; x++) {
+        for (let z = 0; z < 3; z++) {
+          slideCell(G, x, y, z, 0, 1);
+        }
+      }
+    }
+    for (let y = 1; y >= 0; y--) {
+      for (let x = 0; x < 2; x++) {
+        for (let z = 0; z < 3; z++) {
+          slideCellMidBoard(G, x, y, z, 0, 1);
+        }
+      }
+    }
+  }
+
+  if (dir === "up") {
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        for (let z = 0; z < 3; z++) {
+          slideCell(G, x, y, z, 0, -1);
+        }
+      }
+    }
+    for (let y = 0; y < 2; y++) {
+      for (let x = 0; x < 2; x++) {
+        for (let z = 0; z < 3; z++) {
+          slideCellMidBoard(G, x, y, z, 0, -1);
+        }
+      }
+    }
+  }
+}
+
+function slideCell(
+  G: GameState,
+  x: number,
+  y: number,
+  z: number,
+  dx: number,
+  dy: number,
+) {
+  const piece = G.board[x][y][z];
+  if (piece === 0) return;
+  const wasInner = 1 <= x && x <= 3 && 1 <= y && y <= 3;
+  let nx = x;
+  let ny = y;
+
+  while (true) {
+    const nextX = nx + dx;
+    const nextY = ny + dy;
+    if (nextX < 0 || nextX >= 5 || nextY < 0 || nextY >= 5) break;
+
+    const nextInner = 1 <= nextX && nextX <= 3 && 1 <= nextY && nextY <= 3;
+    if (wasInner && !nextInner) break;
+    if (G.board[nextX][nextY][z] !== 0) break;
+    G.board[nextX][nextY][z] = piece;
+    G.board[nx][ny][z] = 0;
+    nx = nextX;
+    ny = nextY;
+  }
+  if (x != nx || y != ny) {
+    G.animLog.remove[x][y][z] = piece;
+    G.animLog.place[nx][ny][z] = true;
+    G.notFoundTurns[nx][ny][z] = G.notFoundTurns[x][y][z];
+    G.notFoundTurns[x][y][z] = 0;
+  }
+}
+function slideCellMidBoard(
+  G: GameState,
+  x: number,
+  y: number,
+  z: number,
+  dx: number,
+  dy: number,
+) {
+  const piece = G.midBoard[x][y][z];
+  if (piece === 0) return;
+  const nx = x + dx;
+  const ny = y + dy;
+  if (nx < 0 || nx >= 2 || ny < 0 || ny >= 2) return;
+  if (G.midBoard[nx][ny][z] !== 0) return;
+
+  G.animLog.removeMid[x][y][z] = piece;
+  G.animLog.placeMid[nx][ny][z] = true;
+  G.midBoard[nx][ny][z] = piece;
+  G.midBoard[x][y][z] = 0;
 }

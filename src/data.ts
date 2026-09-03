@@ -301,7 +301,26 @@ export function canPlace(
       (token === 2 - player || token === 3 || token === 5 - player)
     );
   }
-
-  // 他のカードは後で追加
+  // 酸化還元
+  if (attr === "sup" && index === 5) {
+    return (
+      Number.isInteger(x) &&
+      Number.isInteger(y) &&
+      x != 0 &&
+      x != 4 &&
+      y != 0 &&
+      y != 4 &&
+      z == f &&
+      token === 2 - player
+    );
+  }
+  // 革命
+  if (attr === "sup" && index === 6) {
+    return true;
+  }
+  // スライド
+  if (attr === "sup" && index === 7) {
+    return true;
+  }
   return false;
 }
