@@ -426,10 +426,79 @@ export function renderGame(
 
       ctx.font = "40px KiwiMaru-Medium";
       ctx.fillStyle = "#ffffff";
+      // 左下
+      const nfTurnsSet = new Set<number>();
+      for (let y = 1; y < 4; y++) {
+        for (let x = 1; x < 4; x++) {
+          for (let z = 0; z < 3; z++) {
+            const t = G.notFoundTurns[x][y][z];
+            if (t > 0) nfTurnsSet.add(t);
+          }
+        }
+      }
+      const nfTurns = Array.from(nfTurnsSet).sort((a, b) => a - b);
 
-      const turnText = `ターン ${bgCtx.turn}`;
+      const fwTurnsSet = new Set<number>();
+      for (let y = 0; y < 2; y++) {
+        for (let x = 0; x < 2; x++) {
+          const t = G.firewallTurns[x][y];
+          if (t > 0) fwTurnsSet.add(t);
+        }
+      }
+      const fwTurns = Array.from(fwTurnsSet).sort((a, b) => a - b);
 
-      ctx.fillText(turnText, dx + W * 0.1, dy + H * 0.85);
+      // costChange: [c0, c1]
+      const [c0, c1] = G.costChange;
+      let dsTurns: number[] = [];
+      let hiTurns: number[] = [];
+      if (c0 !== 0 || c1 !== 0) {
+        if (bgCtx.currentPlayer === "0") {
+          if (c0 !== 0) {
+            const turns = 1;
+            if (c0 > 0) hiTurns.push(turns);
+            if (c0 < 0) dsTurns.push(turns);
+          }
+          if (c1 !== 0) {
+            const turns = 2;
+            if (c1 > 0) hiTurns.push(turns);
+            if (c1 < 0) dsTurns.push(turns);
+          }
+        } else {
+          if (c1 !== 0) {
+            const turns = 1;
+            if (c1 > 0) hiTurns.push(turns);
+            if (c1 < 0) dsTurns.push(turns);
+          }
+          if (c0 !== 0) {
+            const turns = 2;
+            if (c0 > 0) hiTurns.push(turns);
+            if (c0 < 0) dsTurns.push(turns);
+          }
+        }
+      }
+
+      type EffectEntry = { turns: number; label: string };
+
+      const effects: EffectEntry[] = [];
+
+      nfTurns.forEach((t) => effects.push({ turns: t, label: `NF ${t}turn` }));
+      fwTurns.forEach((t) => effects.push({ turns: t, label: `FW ${t}turn` }));
+      dsTurns.forEach((t) => effects.push({ turns: t, label: `DS ${t}turn` }));
+      hiTurns.forEach((t) => effects.push({ turns: t, label: `HI ${t}turn` }));
+
+      effects.sort((a, b) => a.turns - b.turns);
+      const effectsToShow = effects.slice(0, 3);
+      const baseX = dx + H * 0.19;
+      let baseY = dy + H * 0.84;
+      const stepY = H * 0.06;
+
+      if (effectsToShow.length > 0) {
+        for (let i = 0; i < effectsToShow.length; i++) {
+          ctx.fillText(effectsToShow[i].label, baseX, baseY + stepY * i);
+        }
+      } else {
+        ctx.fillText(`ターン ${bgCtx.turn}`, baseX, baseY);
+      }
     } else {
       let tuenX = H * 0.06;
       ctx.drawImage(

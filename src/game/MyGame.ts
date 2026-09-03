@@ -58,10 +58,11 @@ export function createMyGame(settings: Settings) {
     moves: {
       ...basic,
 
-      reset: ({ G, random }: { G: GameState; random: any }) => {
+      reset: ({ G, ctx, random }: { G: GameState; ctx: any; random: any }) => {
         const initialState = createInitialState(settings, random);
 
         Object.assign(G, initialState);
+        ctx.turn = 1;
       },
     },
 
