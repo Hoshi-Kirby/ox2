@@ -1,5 +1,6 @@
 import type { GameState } from "../MyGame";
 import { canPlace } from "../../data";
+import { updateWinner } from "./check";
 
 export function card1(G: GameState, ctx: any) {
   // deleteキー
@@ -87,6 +88,61 @@ export function card3(G: GameState, ctx: any) {
 
 export function card4(G: GameState, ctx: any) {
   // メテオ
+  meteo(G);
+  G.phase = "idle";
+  G.targets = [];
+  updateWinner(G, ctx);
+}
+export function card5(G: GameState, ctx: any) {
+  // ダーツ
+  const enemy = 1 - Number(ctx.currentPlayer);
+  const hand = G.hand[enemy];
+  const faceDown = G.faceDown[enemy];
+  const index = Math.floor(Math.random() * hand.length);
+
+  G.animLog.discardFlags[enemy] = Array(hand.length).fill(false);
+  G.animLog.discardFlags[enemy][index] = true;
+  G.deck[enemy].push(hand[index]);
+  hand.splice(index, 1);
+  if (index < faceDown.length) {
+    faceDown.splice(index, 1);
+  }
+  G.phase = "idle";
+  G.targets = [];
+}
+export function card6(G: GameState, ctx: any) {
+  // 流星群
+  for (let i = 0; i < 3; i++) {
+    meteo(G);
+  }
+  G.phase = "idle";
+  G.targets = [];
+  updateWinner(G, ctx);
+}
+export function card7(G: GameState, ctx: any) {
+  // 世界恐慌card4(G, ctx);
+  const enemy = 1 - Number(ctx.currentPlayer);
+  G.animLog.discardHand[enemy] = [...G.hand[enemy]];
+  G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
+  card4(G, ctx);
+  card5(G, ctx);
+  const hand = G.hand[enemy];
+  const faceDown = G.faceDown[enemy];
+
+  if (hand.length > 0) {
+    // ランダムで 1 枚裏返す
+    const index = Math.floor(Math.random() * hand.length);
+    faceDown[index] = true;
+    G.animLog.flipFlags[enemy][index] = true;
+  }
+
+  G.phase = "idle";
+  G.targets = [];
+  updateWinner(G, ctx);
+}
+
+// メテオ
+function meteo(G: GameState) {
   const targets = [];
   for (let x = 0; x < 5; x++) {
     for (let y = 0; y < 5; y++) {
@@ -126,49 +182,4 @@ export function card4(G: GameState, ctx: any) {
     G.animLog.remove[t.x][t.y][t.z] = G.board[t.x][t.y][t.z];
     G.board[t.x][t.y][t.z] = 0;
   }
-  G.phase = "idle";
-  G.targets = [];
-}
-export function card5(G: GameState, ctx: any) {
-  // 狙撃
-  const enemy = 1 - Number(ctx.currentPlayer);
-  const hand = G.hand[enemy];
-  const faceDown = G.faceDown[enemy];
-  const index = Math.floor(Math.random() * hand.length);
-
-  G.animLog.discardFlags[enemy] = Array(hand.length).fill(false);
-  G.animLog.discardFlags[enemy][index] = true;
-  G.deck[enemy].push(hand[index]);
-  hand.splice(index, 1);
-  if (index < faceDown.length) {
-    faceDown.splice(index, 1);
-  }
-  G.phase = "idle";
-  G.targets = [];
-}
-export function card6(G: GameState, ctx: any) {
-  // 流星群
-  for (let i = 0; i < 3; i++) {
-    card4(G, ctx);
-  }
-}
-export function card7(G: GameState, ctx: any) {
-  // 世界恐慌card4(G, ctx);
-  const enemy = 1 - Number(ctx.currentPlayer);
-  G.animLog.discardHand[enemy] = [...G.hand[enemy]];
-  G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
-  card4(G, ctx);
-  card5(G, ctx);
-  const hand = G.hand[enemy];
-  const faceDown = G.faceDown[enemy];
-
-  if (hand.length > 0) {
-    // ランダムで 1 枚裏返す
-    const index = Math.floor(Math.random() * hand.length);
-    faceDown[index] = true;
-    G.animLog.flipFlags[enemy][index] = true;
-  }
-
-  G.phase = "idle";
-  G.targets = [];
 }

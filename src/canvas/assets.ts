@@ -89,6 +89,9 @@ export const assets = {
   gameStart: loadImage("/assets/button/gamestart.png"),
   gameStartHover: loadImage("/assets/button/gamestart_hover.png"),
   gameBg: loadImage("/assets/backgrounds/neon_city.png"),
+  ready: loadImage("/assets/ui/ready.png"),
+  start: loadImage("/assets/ui/start!.png"),
+  gameSet: loadImage("/assets/ui/gameset.png"),
   leftWipe: loadImage("/assets/ui/left_wipe.png"),
   rightWipe: loadImage("/assets/ui/right_wipe.png"),
   centerWipe: loadImage("/assets/ui/center_wipe.png"),
@@ -123,6 +126,9 @@ export const assets = {
   pauseEnd: loadImage("/assets/button/pause_end.png"),
   pauseLight: loadImage("/assets/button/pause_light.png"),
 
+  resultFrameW: loadImage("/assets/ui/result_frame_w.png"),
+  resultFrameH: loadImage("/assets/ui/result_frame_h.png"),
+
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),
     gen: loadNumberedImages("/assets/cards_token/gen", 8),
@@ -144,5 +150,6 @@ export const assets = {
   costNumber: {
     w: loadNumberedImages("/assets/cards_token/number", 10),
     r: loadNumberedImages("/assets/cards_token/number", 10, "_r"),
+    rw: loadNumberedImages("/assets/cards_token/number", 10, "_rw"),
   },
 };

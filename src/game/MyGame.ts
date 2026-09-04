@@ -2,7 +2,11 @@ import * as basic from "./moves/basic";
 import type { CardID, Settings } from "../types";
 
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
-
+type Pos = {
+  x: number; // 0〜4 or 1.5/2.5
+  y: number; // 0〜4 or 1.5/2.5
+  z: number; // 0〜2
+};
 export interface GameState {
   phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "selectTarget2";
   isPaused: boolean;
@@ -33,6 +37,8 @@ export interface GameState {
   notFoundTurns: number[][][];
   firewallTurns: number[][];
 
+  winner: number | null;
+  winnerLines: Pos[][];
   animLog: {
     draw: [boolean, boolean];
     drawCount: number[];
@@ -47,6 +53,7 @@ export interface GameState {
     removeMid: number[][][];
     costChange: number[];
   };
+  isResult: boolean;
 }
 
 export function createMyGame(settings: Settings) {
@@ -56,8 +63,12 @@ export function createMyGame(settings: Settings) {
     },
 
     moves: {
-      ...basic,
-
+      endTurn: basic.endTurn,
+      useCard: basic.useCard,
+      registerTarget: basic.registerTarget,
+      resetAnimLog: basic.resetAnimLog,
+      openPause: basic.openPause,
+      closePause: basic.closePause,
       reset: ({ G, ctx, random }: { G: GameState; ctx: any; random: any }) => {
         const initialState = createInitialState(settings, random);
 
@@ -94,6 +105,18 @@ export function createMyGame(settings: Settings) {
           drawRandom(G.deck[player], G.hand[player], G.faceDown[player], random)
         ) {
           G.animLog.draw[player] = true;
+          if (ctx.turn > 2) {
+            if (
+              drawRandom(
+                G.deck[player],
+                G.hand[player],
+                G.faceDown[player],
+                random,
+              )
+            ) {
+              G.animLog.drawCount[player] = 2;
+            }
+          }
         }
       },
     },
@@ -190,6 +213,8 @@ function createInitialState(settings: Settings, random: any): GameState {
       [0, 0],
     ],
 
+    winner: null,
+    winnerLines: [],
     animLog: {
       draw: [false, false],
       drawCount: [1, 1],
@@ -212,6 +237,7 @@ function createInitialState(settings: Settings, random: any): GameState {
       ),
       costChange: [0, 0],
     },
+    isResult: true,
   };
 }
 

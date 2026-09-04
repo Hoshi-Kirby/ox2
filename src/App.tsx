@@ -32,7 +32,7 @@ export default function App() {
     },
     game: {
       gameMode: "pvc",
-      initialHand: 5,
+      initialHand: 6,
       firstPlayer: 2,
       eventEnabled: true,
       shiftCardEnabled: false,
@@ -96,6 +96,8 @@ export default function App() {
     gameStartCount: 0,
     turnStart: 0,
     Gchange: 0,
+    finish: 0,
+    result: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({

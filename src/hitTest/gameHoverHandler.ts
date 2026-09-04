@@ -47,79 +47,81 @@ export function createGameHoverHandler({
     const { x, y } = mouseRef.current;
 
     if (!G.isPaused) {
-      // ポーズの影響を受ける------------------------------------------
-      // ターンエンド
-      const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
+      if (!(effectTimers.finish == 0 && G.winner !== null && G.isResult)) {
+        // ポーズの影響を受ける------------------------------------------
+        // ターンエンド
+        const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
-      if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
-        setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
-      }
-
-      // 手札ホバー
-      const [h0, h1] = getHoverHandIndex(
-        x,
-        y,
-        ratio,
-        G,
-        playerID,
-        effectTimers,
-      );
-
-      const targets: [number, number] = [h0, h1];
-      if (settings.ui.deviceMode === "mouse") {
-        // マウス → 即時 hover
-
-        if (
-          hoverStatesRef.current.hoverHands[0] !== h0 ||
-          hoverStatesRef.current.hoverHands[1] !== h1
-        ) {
-          hoverStatesRef.current.hoverHands = [h0, h1];
-
-          setHoverStates((prev) => ({
-            ...prev,
-            hoverHands: [h0, h1],
-          }));
+        if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
+          setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
         }
-      } else {
-        // タッチ → 長押し
 
-        const nextHover: [number, number] = [
-          hoverStatesRef.current.hoverHands[0],
-          hoverStatesRef.current.hoverHands[1],
-        ];
+        // 手札ホバー
+        const [h0, h1] = getHoverHandIndex(
+          x,
+          y,
+          ratio,
+          G,
+          playerID,
+          effectTimers,
+        );
 
-        for (let i = 0; i < 2; i++) {
-          const target = targets[i];
+        const targets: [number, number] = [h0, h1];
+        if (settings.ui.deviceMode === "mouse") {
+          // マウス → 即時 hover
 
-          if (pressHandTarget[i] !== target) {
-            pressHandTarget[i] = target;
+          if (
+            hoverStatesRef.current.hoverHands[0] !== h0 ||
+            hoverStatesRef.current.hoverHands[1] !== h1
+          ) {
+            hoverStatesRef.current.hoverHands = [h0, h1];
 
-            pressTimers.hands[i] = 0;
+            setHoverStates((prev) => ({
+              ...prev,
+              hoverHands: [h0, h1],
+            }));
+          }
+        } else {
+          // タッチ → 長押し
 
-            if (target === -1) {
-              nextHover[i] = -1;
+          const nextHover: [number, number] = [
+            hoverStatesRef.current.hoverHands[0],
+            hoverStatesRef.current.hoverHands[1],
+          ];
+
+          for (let i = 0; i < 2; i++) {
+            const target = targets[i];
+
+            if (pressHandTarget[i] !== target) {
+              pressHandTarget[i] = target;
+
+              pressTimers.hands[i] = 0;
+
+              if (target === -1) {
+                nextHover[i] = -1;
+              }
+            }
+
+            if (target !== -1) {
+              pressTimers.hands[i] += dt;
+
+              if (pressTimers.hands[i] > 300 && nextHover[i] !== target) {
+                nextHover[i] = target;
+              }
             }
           }
 
-          if (target !== -1) {
-            pressTimers.hands[i] += dt;
+          if (
+            nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
+            nextHover[1] !== hoverStatesRef.current.hoverHands[1]
+          ) {
+            hoverStatesRef.current.hoverHands = nextHover;
 
-            if (pressTimers.hands[i] > 300 && nextHover[i] !== target) {
-              nextHover[i] = target;
-            }
+            setHoverStates((prev) => ({
+              ...prev,
+              hoverHands: nextHover,
+            }));
           }
-        }
-
-        if (
-          nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
-          nextHover[1] !== hoverStatesRef.current.hoverHands[1]
-        ) {
-          hoverStatesRef.current.hoverHands = nextHover;
-
-          setHoverStates((prev) => ({
-            ...prev,
-            hoverHands: nextHover,
-          }));
         }
       }
     } else {

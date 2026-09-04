@@ -1,6 +1,7 @@
 import type { GameState } from "../MyGame";
 import { drawRandom } from "../MyGame";
 import { canPlace } from "../../data";
+import { updateWinner } from "./check";
 
 export function card1(G: GameState, ctx: any) {
   //デフレスパイラル
@@ -49,6 +50,7 @@ export function card2(G: GameState, ctx: any) {
           G.animLog.place[col2][row2][f] = true;
           G.phase = "idle";
           G.targets = [];
+          updateWinner(G, ctx);
           return;
         }
       } else if (canPlace(G, ctx, col2, row2, f, "sup", 12)) {
@@ -59,6 +61,7 @@ export function card2(G: GameState, ctx: any) {
         G.animLog.place[col2][row2][f] = true;
         G.phase = "idle";
         G.targets = [];
+        updateWinner(G, ctx);
         return;
       }
     } else {
@@ -74,6 +77,7 @@ export function card2(G: GameState, ctx: any) {
           G.animLog.place[col2][row2][f] = true;
           G.phase = "idle";
           G.targets = [];
+          updateWinner(G, ctx);
           return;
         }
       } else if (canPlace(G, ctx, col2, row2, f, "sup", 32)) {
@@ -84,6 +88,7 @@ export function card2(G: GameState, ctx: any) {
         G.animLog.place[col2][row2][f] = true;
         G.phase = "idle";
         G.targets = [];
+        updateWinner(G, ctx);
         return;
       }
     }
@@ -112,6 +117,7 @@ export function card4(G: GameState, ctx: any) {
       G.animLog.place[col][row][f] = true;
       G.phase = "idle";
       G.targets = [];
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -142,6 +148,7 @@ export function card5(G: GameState, ctx: any) {
 
   G.phase = "idle";
   G.targets = [];
+  updateWinner(G, ctx);
 }
 export function card6(G: GameState, ctx: any) {
   // 革命
@@ -248,6 +255,7 @@ export function card7(G: GameState, ctx: any) {
       }
     }
   }
+  updateWinner(G, ctx);
 }
 
 function slideCell(

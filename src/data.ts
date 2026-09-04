@@ -4,48 +4,48 @@ import type { GameState } from "./game/MyGame";
 
 export interface CardDef {
   cost: number;
-  costType: "flip" | "discard";
+  costType: "flip" | "discard" | "mix";
   auto: boolean;
 }
 export const cardDefs: Record<CardAttr, Record<CardNum, CardDef>> = {
   des: {
-    1: { cost: 3, costType: "discard", auto: false },
-    2: { cost: 2, costType: "discard", auto: false },
-    3: { cost: 1, costType: "flip", auto: false },
-    4: { cost: 9, costType: "discard", auto: true },
-    5: { cost: 2, costType: "flip", auto: true },
-    6: { cost: 9, costType: "flip", auto: true },
-    7: { cost: 4, costType: "discard", auto: true },
+    1: { cost: 2, costType: "discard", auto: false }, //deleteキー
+    2: { cost: 3, costType: "discard", auto: false }, //超新星爆発
+    3: { cost: 1, costType: "discard", auto: false }, //狙撃
+    4: { cost: 2, costType: "mix", auto: true }, //メテオ
+    5: { cost: 3, costType: "flip", auto: true }, //ダーツ
+    6: { cost: 2, costType: "mix", auto: true }, //流星群
+    7: { cost: 3, costType: "mix", auto: true }, //世界恐慌
   },
 
   gen: {
-    1: { cost: 1, costType: "flip", auto: false },
-    2: { cost: 2, costType: "flip", auto: false },
-    3: { cost: 1, costType: "discard", auto: false },
-    4: { cost: 5, costType: "flip", auto: false },
-    5: { cost: 2, costType: "discard", auto: false },
-    6: { cost: 1, costType: "flip", auto: false },
-    7: { cost: 4, costType: "discard", auto: true },
+    1: { cost: 6, costType: "mix", auto: false }, //シュレ猫
+    2: { cost: 6, costType: "mix", auto: false }, //外れ値
+    3: { cost: 7, costType: "mix", auto: false }, //囲碁
+    4: { cost: 5, costType: "mix", auto: false }, //append
+    5: { cost: 1, costType: "discard", auto: false }, //ジャンプ
+    6: { cost: 5, costType: "mix", auto: false }, //prepend
+    7: { cost: 3, costType: "flip", auto: true }, //積み将棋
   },
 
   dis: {
-    1: { cost: 0, costType: "flip", auto: true },
-    2: { cost: 2, costType: "discard", auto: false },
-    3: { cost: 1, costType: "flip", auto: false },
-    4: { cost: 3, costType: "discard", auto: true },
-    5: { cost: 2, costType: "flip", auto: true },
-    6: { cost: 1, costType: "flip", auto: true },
-    7: { cost: 4, costType: "discard", auto: true },
+    1: { cost: 0, costType: "flip", auto: true }, //ハイパーインフレ
+    2: { cost: 2, costType: "mix", auto: false }, //ファイアウォール
+    3: { cost: 1, costType: "discard", auto: false }, //NOT FOUND
+    4: { cost: 3, costType: "flip", auto: true }, //落石注意
+    5: { cost: 4, costType: "flip", auto: true }, //再結晶
+    6: { cost: 3, costType: "discard", auto: true }, //ゲシュタルト崩壊
+    7: { cost: 5, costType: "flip", auto: true }, //オールイン
   },
 
   sup: {
-    1: { cost: 1, costType: "flip", auto: true },
-    2: { cost: 2, costType: "flip", auto: false },
-    3: { cost: 1, costType: "discard", auto: true },
-    4: { cost: 3, costType: "flip", auto: false },
-    5: { cost: 2, costType: "discard", auto: true },
-    6: { cost: 1, costType: "flip", auto: true },
-    7: { cost: 4, costType: "discard", auto: true },
+    1: { cost: 1, costType: "discard", auto: true }, //デフレスパイラル
+    2: { cost: 2, costType: "flip", auto: false }, //倒置法
+    3: { cost: 2, costType: "mix", auto: true }, //北抜き
+    4: { cost: 7, costType: "mix", auto: false }, //一石返し
+    5: { cost: 4, costType: "flip", auto: true }, //酸化還元
+    6: { cost: 4, costType: "discard", auto: true }, //革命
+    7: { cost: 3, costType: "discard", auto: true }, //スライド
   },
 };
 
@@ -310,7 +310,6 @@ export function canPlace(
       x != 4 &&
       y != 0 &&
       y != 4 &&
-      z == f &&
       token === 2 - player
     );
   }

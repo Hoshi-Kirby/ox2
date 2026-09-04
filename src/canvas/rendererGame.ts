@@ -291,7 +291,31 @@ export function renderGame(
           if (G.phase === "payCost" && G.activeCard == j) {
             activeY = -cardH * 0.2;
           } else if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
-            activeY = -cardH * 0.1;
+            if (G.activeCard !== null) {
+              const card = G.hand[i][G.activeCard];
+              const def = cardDefs[card.attr][card.index];
+              if (def.costType === "flip") {
+                activeY = -cardH * 0.1;
+              } else if (def.costType === "discard") {
+                activeY = +cardH * 0.1;
+              } else if (def.costType === "mix") {
+                const total = def.cost;
+                const flipCount = Math.ceil(total / 2);
+                const discardCount = Math.floor(total / 2);
+
+                const flipTargets = G.costCards.slice(0, flipCount);
+                const discardTargets = G.costCards.slice(
+                  flipCount,
+                  flipCount + discardCount,
+                );
+
+                if (flipTargets.indexOf(j) >= 0) {
+                  activeY = -cardH * 0.1;
+                } else if (discardTargets.indexOf(j) >= 0) {
+                  activeY = +cardH * 0.1;
+                }
+              }
+            }
           }
         }
         x = dx + afterX + moveX;
@@ -319,7 +343,14 @@ export function renderGame(
         // カード画像
         ctx.drawImage(img, x, y, cardW, cardH);
         const def = cardDefs[card.attr][card.index];
-        const folder = def.costType === "flip" ? "w" : "r";
+
+        type FolderKey = "w" | "r" | "rw";
+        const folderMap: Record<string, FolderKey> = {
+          flip: "w",
+          discard: "r",
+          mix: "rw",
+        };
+        const folder = folderMap[def.costType] as FolderKey;
         const imgN =
           assets.costNumber[folder][
             Math.max(0, def.cost + G.costChange[i] - dCost)
@@ -386,7 +417,14 @@ export function renderGame(
             // カード画像
             ctx.drawImage(img, x, y, cardW, cardH);
             const def = cardDefs[card.attr][card.index];
-            const folder = def.costType === "flip" ? "w" : "r";
+
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN =
               assets.costNumber[folder][
                 Math.max(0, def.cost + G.costChange[i])

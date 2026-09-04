@@ -105,7 +105,13 @@ export function renderUI(
           ctx.drawImage(img, x, y, cardW, cardH);
 
           const def = cardDefs[attrs[a]][i];
-          const folder = def.costType === "flip" ? "w" : "r";
+          type FolderKey = "w" | "r" | "rw";
+          const folderMap: Record<string, FolderKey> = {
+            flip: "w",
+            discard: "r",
+            mix: "rw",
+          };
+          const folder = folderMap[def.costType] as FolderKey;
           const imgN = assets.costNumber[folder][def.cost];
           ctx.drawImage(
             imgN,

@@ -4,6 +4,7 @@ import { cardDefs, canPlace } from "../data";
 import type { Screen, Settings, HoverUI, CardID } from "../types";
 
 let t = 0;
+let winBlinkTimer = 0;
 export function renderGameEffect(
   ctx: CanvasRenderingContext2D,
   ratio: number,
@@ -91,6 +92,20 @@ export function renderGameEffect(
       }
     }
     // 駒
+    winBlinkTimer += dt;
+    if (winBlinkTimer >= 1000) {
+      winBlinkTimer -= 1000;
+    }
+    const blinkAlpha =
+      (Math.sin((winBlinkTimer / 1000) * Math.PI * 2) + 1) / 4 + 0.5;
+    const winPosSet = new Set<string>();
+    if (G.winner !== null) {
+      for (const line of G.winnerLines) {
+        for (const p of line) {
+          winPosSet.add(`${p.x},${p.y},${p.z}`);
+        }
+      }
+    }
     const floorOffset = -boardH * 0.05;
     for (let z = 0; z < 3; z++) {
       for (let x = 0; x < 5; x++) {
@@ -163,6 +178,20 @@ export function renderGameEffect(
             const posY = boardY + baseH * y + floorOffset * z;
             ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
           }
+          // リザルト時
+          const isWinPos = winPosSet.has(`${x},${y},${z}`);
+          if (isWinPos) {
+            ctx.globalAlpha = blinkAlpha;
+            const token = G.board[x][y][z];
+            if (token >= 1) {
+              const baseW = boardW / 5;
+              const baseH = boardH / 5;
+              const posX = boardX + baseW * x;
+              const posY = boardY + baseH * y + floorOffset * z;
+              ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+            }
+            ctx.globalAlpha = 1.0;
+          }
         }
       }
     }
@@ -196,8 +225,44 @@ export function renderGameEffect(
             const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
             ctx.drawImage(assets.dot, posX, posY, baseW, baseH);
           }
+          const isWinPos = winPosSet.has(`${x + 1.5},${y + 1.5},${z}`);
+          if (isWinPos) {
+            ctx.globalAlpha = blinkAlpha;
+            const token = G.midBoard[x][y][z];
+            const baseW = boardW / 5;
+            const baseH = boardH / 5;
+            const posX = boardX + baseW * (x + 1.5);
+            const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
+            ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+            ctx.globalAlpha = 1.0;
+          }
         }
       }
+    }
+    if (G.winner !== null) {
+      ctx.globalAlpha = blinkAlpha;
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = boardW * 0.03;
+
+      for (const line of G.winnerLines) {
+        const p0 = line[0];
+        const p2 = line[line.length - 1];
+
+        const baseW = boardW / 5;
+        const baseH = boardH / 5;
+
+        const x0 = boardX + baseW * p0.x;
+        const y0 = boardY + baseH * p0.y + floorOffset * p0.z;
+
+        const x2 = boardX + baseW * p2.x;
+        const y2 = boardY + baseH * p2.y + floorOffset * p2.z;
+
+        ctx.beginPath();
+        ctx.moveTo(x0 + baseW / 2, y0 + baseH / 2);
+        ctx.lineTo(x2 + baseW / 2, y2 + baseH / 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1.0;
     }
     // カード
     // //ホバー
@@ -275,7 +340,31 @@ export function renderGameEffect(
 
             if (bgCtx.currentPlayer == i) {
               if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
-                activeY = -cardH * 0.1;
+                if (G.activeCard !== null) {
+                  const card = G.hand[i][G.activeCard];
+                  const def = cardDefs[card.attr][card.index];
+                  if (def.costType === "flip") {
+                    activeY = -cardH * 0.1;
+                  } else if (def.costType === "discard") {
+                    activeY = +cardH * 0.1;
+                  } else if (def.costType === "mix") {
+                    const total = def.cost;
+                    const flipCount = Math.ceil(total / 2);
+                    const discardCount = Math.floor(total / 2);
+
+                    const flipTargets = G.costCards.slice(0, flipCount);
+                    const discardTargets = G.costCards.slice(
+                      flipCount,
+                      flipCount + discardCount,
+                    );
+
+                    if (flipTargets.indexOf(j) >= 0) {
+                      activeY = -cardH * 0.1;
+                    } else if (discardTargets.indexOf(j) >= 0) {
+                      activeY = +cardH * 0.1;
+                    }
+                  }
+                }
               }
             }
             let x: number = dx + afterX + moveX;
@@ -289,7 +378,14 @@ export function renderGameEffect(
               cardH + cardH * 0.04,
             );
             const def = cardDefs[card.attr][card.index];
-            const folder = def.costType === "flip" ? "w" : "r";
+
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN =
               assets.costNumber[folder][
                 Math.max(0, def.cost + G.costChange[i])
@@ -353,9 +449,91 @@ export function renderGameEffect(
       }
     }
     // ターン
+    // スタート
+    if (effectTimers.gameStartCount > 600) {
+      let alpha = 1;
+      if (effectTimers.gameStartCount < 1100) {
+        alpha = (effectTimers.gameStartCount - 600) / 500;
+      }
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const teW = W * 0.3;
+      const teH = teW * (assets.ready.height / assets.ready.width);
+      ctx.drawImage(
+        assets.ready,
+        dx + W / 2 - teW / 2,
+        dy + H / 2 - teH / 2,
+        teW,
+        teH,
+      );
 
-    // -ポーズ-
+      ctx.restore();
+    }
+    if (600 > effectTimers.gameStartCount && effectTimers.gameStartCount > 0) {
+      let alpha = 1;
+      if (effectTimers.gameStartCount < 300) {
+        alpha = effectTimers.gameStartCount / 300;
+      }
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const teW = W * 0.3;
+      const teH = teW * (assets.start!.height / assets.start!.width);
+      ctx.drawImage(
+        assets.start!,
+        dx + W / 2 - teW / 2,
+        dy + H / 2 - teH / 2,
+        teW,
+        teH,
+      );
+
+      ctx.restore();
+    }
+    if (effectTimers.finish > 0) {
+      let alpha = 1;
+      if (effectTimers.finish < 500) {
+        alpha = effectTimers.finish / 500;
+      }
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const teW = W * 0.7;
+      const teH = teW * (assets.gameSet.height / assets.gameSet.width);
+      ctx.drawImage(
+        assets.gameSet,
+        dx + W / 2 - teW / 2,
+        dy + H / 2 - teH / 2,
+        teW,
+        teH,
+      );
+
+      ctx.restore();
+    }
+
+    // リザルト
+    if (effectTimers.finish == 0 && G.winner !== null && G.isResult) {
+      let img = assets.resultFrameH;
+      if (ratio > 1) {
+        img = assets.resultFrameW;
+      }
+      const wipeRatio = img.height / img.width;
+
+      let cWipeW = W * 1;
+      let cWipeH = cWipeW * wipeRatio;
+      if (cWipeH > H * 1) {
+        cWipeH = H * 1;
+        cWipeW = cWipeH / wipeRatio;
+      }
+
+      ctx.drawImage(
+        img,
+        dx + W / 2 - cWipeW / 2,
+        dy + H / 2 - cWipeH / 2,
+        cWipeW,
+        cWipeH,
+      );
+    }
+
     if (G.isPaused) {
+      // -ポーズ-
       ctx.fillStyle = `rgba(0, 0, 0, 0.65)`;
       ctx.fillRect(0, 0, 1280, 720);
       // pause

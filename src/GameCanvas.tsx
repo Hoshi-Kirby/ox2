@@ -10,7 +10,7 @@ import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createGameClickHandler } from "./hitTest/gameClickHandler";
 import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
-import type { Settings, CardID, HoverUI, PressTimers, Screen } from "./types";
+import type { Settings, HoverUI, PressTimers, Screen } from "./types";
 import type { GameState } from "./game/MyGame";
 
 import "./MenuScreen.css";
@@ -20,7 +20,6 @@ export default function GameCanvas({
   ctx,
   moves,
   playerID,
-  reset,
   settings,
   hoverStates,
   setHoverStates,
@@ -41,7 +40,6 @@ export default function GameCanvas({
   ctx: any;
   moves: any;
   playerID: string;
-  reset: () => void;
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
@@ -69,6 +67,13 @@ export default function GameCanvas({
   useEffect(() => {
     hoverStatesRef.current = hoverStates;
   }, [hoverStates]);
+  // 勝利
+  useEffect(() => {
+    if (G.winner !== null) {
+      effectTimers.current.finish = 1000;
+      effectTimers.current.result = 2000;
+    }
+  }, [G.winner]);
 
   // frame：screen が変わったときだけ描く
   useEffect(() => {
@@ -110,7 +115,7 @@ export default function GameCanvas({
     function loop(now: number) {
       if (!running) return;
 
-      const dt = now - lastTime;
+      let dt = now - lastTime;
       lastTime = now;
 
       const gameAnim = animStateRef.current;

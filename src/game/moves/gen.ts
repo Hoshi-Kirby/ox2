@@ -1,5 +1,6 @@
 import type { GameState } from "../MyGame";
 import { canPlace } from "../../data";
+import { updateWinner } from "./check";
 
 export function card1(G: GameState, ctx: any) {
   // シュレ猫
@@ -23,6 +24,7 @@ export function card1(G: GameState, ctx: any) {
       }
       G.phase = "idle";
       G.targets = [];
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -43,6 +45,7 @@ export function card2(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.place[col][row][f] = true;
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -65,6 +68,7 @@ export function card3(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.placeMid[mx][my][f] = true;
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -86,6 +90,7 @@ export function card4(G: GameState, ctx: any) {
       G.targets = [];
       G.animLog.place[col][row][f] = true;
       G.notFoundTurns[col][row][f] = 0;
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -106,6 +111,7 @@ export function card5(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.place[col][row][f] = true;
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -126,6 +132,7 @@ export function card6(G: GameState, ctx: any) {
       G.targets = [];
       G.animLog.place[col][row][0] = true;
       G.notFoundTurns[col][row][0] = 0;
+      updateWinner(G, ctx);
       return;
     }
     return;
@@ -134,4 +141,5 @@ export function card6(G: GameState, ctx: any) {
 export function card7(G: GameState, ctx: any) {
   //  積み将棋
   G.floor++;
+  G.phase = "idle";
 }

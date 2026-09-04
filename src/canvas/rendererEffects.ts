@@ -656,7 +656,15 @@ export function renderEffect(
 
           ctx.drawImage(img, x, y, cardW, cardH);
           const def = cardDefs[attrs[a]][i];
-          const folder = def.costType === "flip" ? "w" : "r";
+
+          type FolderKey = "w" | "r" | "rw";
+          const folderMap: Record<string, FolderKey> = {
+            flip: "w",
+            discard: "r",
+            mix: "rw",
+          };
+          const folder = folderMap[def.costType] as FolderKey;
+
           const imgN = assets.costNumber[folder][def.cost];
           ctx.drawImage(
             imgN,
@@ -679,7 +687,13 @@ export function renderEffect(
 
           ctx.drawImage(img, x, y, cardW, cardH);
           const def = cardDefs[attrs[a]][i + shiftCard];
-          const folder = def.costType === "flip" ? "w" : "r";
+          type FolderKey = "w" | "r" | "rw";
+          const folderMap: Record<string, FolderKey> = {
+            flip: "w",
+            discard: "r",
+            mix: "rw",
+          };
+          const folder = folderMap[def.costType] as FolderKey;
           const imgN = assets.costNumber[folder][def.cost];
           ctx.drawImage(
             imgN,
@@ -754,7 +768,13 @@ export function renderEffect(
             const y = baseY + a * 2 * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(img, x, y, cardW, cardH);
             const def = cardDefs[attrs[a]][i];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -777,7 +797,13 @@ export function renderEffect(
               cardH + cardPoolH * 0.01,
             );
             const def = cardDefs[attrs[a]][i];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -820,7 +846,13 @@ export function renderEffect(
             const y = baseY + (a * 2 + 1) * carddy - settingsRef.ui.scrollY / n;
             ctx.drawImage(img, x, y, cardW, cardH);
             const def = cardDefs[attrs[a]][i + shiftCard];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -843,7 +875,13 @@ export function renderEffect(
               cardH + cardH * 0.04,
             );
             const def = cardDefs[attrs[a]][i + shiftCard];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -887,7 +925,13 @@ export function renderEffect(
             const y = baseY + a * carddy;
             ctx.drawImage(img, x, y, cardW, cardH);
             const def = cardDefs[attrs[a]][i + shiftCard];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -910,7 +954,13 @@ export function renderEffect(
               cardH + cardH * 0.04,
             );
             const def = cardDefs[attrs[a]][i + shiftCard];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -928,7 +978,13 @@ export function renderEffect(
             const y = baseY + a * carddy;
             ctx.drawImage(img, x, y, cardW, cardH);
             const def = cardDefs[attrs[a]][i + shiftCard];
-            const folder = def.costType === "flip" ? "w" : "r";
+            type FolderKey = "w" | "r" | "rw";
+            const folderMap: Record<string, FolderKey> = {
+              flip: "w",
+              discard: "r",
+              mix: "rw",
+            };
+            const folder = folderMap[def.costType] as FolderKey;
             const imgN = assets.costNumber[folder][def.cost];
             ctx.drawImage(
               imgN,
@@ -1047,7 +1103,13 @@ export function renderEffect(
         ctx.drawImage(img, drawX, drawY, cardBarW, cardBarH);
 
         const def = cardDefs[card.attr][card.index];
-        const folder = def.costType === "flip" ? "w" : "r";
+        type FolderKey = "w" | "r" | "rw";
+        const folderMap: Record<string, FolderKey> = {
+          flip: "w",
+          discard: "r",
+          mix: "rw",
+        };
+        const folder = folderMap[def.costType] as FolderKey;
         const imgN = assets.costNumber[folder][def.cost];
         ctx.drawImage(
           imgN,

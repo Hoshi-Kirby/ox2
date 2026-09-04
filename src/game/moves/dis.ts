@@ -1,6 +1,7 @@
 import type { GameState } from "../MyGame";
 import { drawRandom } from "../MyGame";
 import { canPlace } from "../../data";
+import { updateWinner } from "./check";
 
 export function card1(G: GameState, ctx: any) {
   // ハイパーインフレ
@@ -139,6 +140,9 @@ export function card4(G: GameState, ctx: any) {
       }
     }
   }
+  G.phase = "idle";
+  G.targets = [];
+  updateWinner(G, ctx);
 }
 export function card5(G: GameState, ctx: any) {
   // 再結晶
@@ -185,6 +189,8 @@ export function card5(G: GameState, ctx: any) {
       ctx.random,
     );
   }
+  G.phase = "idle";
+  G.targets = [];
 }
 export function card6(G: GameState, ctx: any) {
   // ゲシュタルト崩壊
@@ -238,6 +244,9 @@ export function card6(G: GameState, ctx: any) {
       }
     }
   }
+  G.phase = "idle";
+  G.targets = [];
+  updateWinner(G, ctx);
 }
 export function card7(G: GameState, ctx: any) {
   // オールイン
@@ -262,6 +271,8 @@ export function card7(G: GameState, ctx: any) {
     }
   }
   G.faceDown[player] = Array(10).fill(true);
+  G.phase = "idle";
+  G.targets = [];
 }
 
 // 組み合わせ関数

@@ -443,7 +443,7 @@ export function createClickHandler({
         }, 300);
       }
     }
-    const indexToInitialHand = [0, 3, 5, 10];
+    const indexToInitialHand = [0, 3, 6, 10];
     if (screen === "menuOffline") {
       if (
         !settingsRef.current.ui.changingDeck[0] &&
@@ -503,7 +503,7 @@ export function createClickHandler({
             settingsRef.current.ui.inputLocked = false;
             effectTimers.fadeOut = 300;
             effectTimers.gameStartAnim = 300;
-            effectTimers.gameStartCount = 4500;
+            effectTimers.gameStartCount = 4800;
           }, 300);
         }
       } else {
