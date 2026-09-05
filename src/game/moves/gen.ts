@@ -22,6 +22,7 @@ export function card1(G: GameState, ctx: any) {
         G.midBoard[mx][my][f] = 3;
         G.animLog.placeMid[mx][my][f] = true;
       }
+      G.placeCount[ctx.currentPlayer]++;
       G.phase = "idle";
       G.targets = [];
       updateWinner(G, ctx);
@@ -46,6 +47,7 @@ export function card2(G: GameState, ctx: any) {
       G.targets = [];
       G.animLog.place[col][row][f] = true;
       updateWinner(G, ctx);
+      G.placeCount[ctx.currentPlayer]++;
       return;
     }
     return;
@@ -68,6 +70,7 @@ export function card3(G: GameState, ctx: any) {
       G.phase = "idle";
       G.targets = [];
       G.animLog.placeMid[mx][my][f] = true;
+      G.placeCount[ctx.currentPlayer]++;
       updateWinner(G, ctx);
       return;
     }
@@ -90,6 +93,7 @@ export function card4(G: GameState, ctx: any) {
       G.targets = [];
       G.animLog.place[col][row][f] = true;
       G.notFoundTurns[col][row][f] = 0;
+      G.placeCount[ctx.currentPlayer]++;
       updateWinner(G, ctx);
       return;
     }
@@ -132,6 +136,7 @@ export function card6(G: GameState, ctx: any) {
       G.targets = [];
       G.animLog.place[col][row][0] = true;
       G.notFoundTurns[col][row][0] = 0;
+      G.placeCount[ctx.currentPlayer]++;
       updateWinner(G, ctx);
       return;
     }

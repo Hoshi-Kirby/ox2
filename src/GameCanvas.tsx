@@ -1,5 +1,5 @@
 // src/GameCanvas.tsx
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, type RefObject } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderEmpha } from "./canvas/rendererEmpha";
@@ -23,6 +23,7 @@ export default function GameCanvas({
   settings,
   hoverStates,
   setHoverStates,
+  isTouching,
   pressTimers,
   setScreen,
   frameRef,
@@ -43,6 +44,7 @@ export default function GameCanvas({
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
+  isTouching: React.MutableRefObject<boolean>;
   pressTimers: React.MutableRefObject<PressTimers>;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
   frameRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -220,12 +222,27 @@ export default function GameCanvas({
       playerID,
     });
 
+    const onPointerDown = () => {
+      isTouching.current = true;
+    };
+
+    const onPointerUp = () => {
+      isTouching.current = false;
+    };
+
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerUp);
+
     const listener = (e: MouseEvent) => {
       onClickBoard(e, canvas);
     };
 
     canvas.addEventListener("click", listener);
-    return () => canvas.removeEventListener("click", listener);
+    return () => {
+      canvas.removeEventListener("click", listener);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+    };
   }, [ratio, screen, G, ctx.turn, ctx.phase, ctx.currentPlayer]);
 
   // ホバー判定
@@ -237,6 +254,7 @@ export default function GameCanvas({
       hoverStatesRef,
       setHoverStates,
       settings,
+      isTouching,
       pressTimers: pressTimers.current,
       effectTimers: effectTimers.current,
       G,

@@ -4,6 +4,8 @@ import {
   isInsidePauseContinueButton,
   isInsidePauseRestartButton,
   isInsidePauseEndButton,
+  isInsideOneMoreButton,
+  isInsideEndButton,
 } from "./gameHitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
 
@@ -14,6 +16,7 @@ type HoverParams = {
   hoverStatesRef: React.MutableRefObject<HoverUI>;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
   settings: any;
+  isTouching: React.MutableRefObject<boolean>;
   pressTimers: PressTimers;
   effectTimers: Record<string, number>;
   G: any;
@@ -28,6 +31,7 @@ export function createGameHoverHandler({
   hoverStatesRef,
   setHoverStates,
   settings,
+  isTouching,
   pressTimers,
   effectTimers,
   G,
@@ -88,6 +92,23 @@ export function createGameHoverHandler({
             hoverStatesRef.current.hoverHands[0],
             hoverStatesRef.current.hoverHands[1],
           ];
+          if (!isTouching.current) {
+            pressTimers.hands[0] = 0;
+            pressTimers.hands[1] = 0;
+            pressHandTarget = [-1, -1];
+
+            nextHover[0] = -1;
+            nextHover[1] = -1;
+
+            if (
+              nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
+              nextHover[1] !== hoverStatesRef.current.hoverHands[1]
+            ) {
+              hoverStatesRef.current.hoverHands = nextHover;
+              setHoverStates((prev) => ({ ...prev, hoverHands: nextHover }));
+            }
+            return requestAnimationFrame(loop);
+          }
 
           for (let i = 0; i < 2; i++) {
             const target = targets[i];
@@ -122,6 +143,18 @@ export function createGameHoverHandler({
               hoverHands: nextHover,
             }));
           }
+        }
+      } else {
+        // リザルトのボタン
+        const insideOne = isInsideOneMoreButton(x, y, ratio);
+
+        if (hoverStatesRef.current.resultOneMore !== insideOne) {
+          setHoverStates((prev) => ({ ...prev, resultOneMore: insideOne }));
+        }
+        const insideEnd = isInsideEndButton(x, y, ratio);
+
+        if (hoverStatesRef.current.resultEnd !== insideEnd) {
+          setHoverStates((prev) => ({ ...prev, resultEnd: insideEnd }));
         }
       }
     } else {

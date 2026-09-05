@@ -256,3 +256,88 @@ export function isInsidePauseEndButton(x: number, y: number, ratio: number) {
   const by = dy + H * 0.6;
   return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
 }
+// タグ
+export function isInsideHideButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  let img = assets.resultFrameH;
+  if (ratio > 1) {
+    img = assets.resultFrameW;
+  }
+  const wipeRatio = img.height / img.width;
+
+  let cWipeW = W * 1;
+  let cWipeH = cWipeW * wipeRatio;
+  if (cWipeH > H * 1) {
+    cWipeW = cWipeH / wipeRatio;
+  }
+
+  const bw = cWipeW * 0.4;
+  const bh = bw * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+  const bx = dx + W - bw / 2;
+  const by = dy + H * 0.3;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+// リザルトのボタン
+// const buttonY = cWipeW * 0.05;
+//           ctx.drawImage(
+//             assets.onemore,
+//             baseX + cWipeW * 0.2,
+//             baseY + cWipeH * 0.8,
+//             buttonY * (assets.end.width / assets.end.height),
+//             buttonY,
+//           );
+//           ctx.drawImage(
+//             assets.end,
+//             baseX + cWipeW * 0.6,
+//             baseY + cWipeH * 0.8,
+//             buttonY * (assets.end.width / assets.end.height),
+//             buttonY,
+//           );
+export function isInsideOneMoreButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  let img = assets.resultFrameH;
+  if (ratio > 1) {
+    img = assets.resultFrameW;
+  }
+  const wipeRatio = img.height / img.width;
+
+  let cWipeW = W * 1;
+  let cWipeH = cWipeW * wipeRatio;
+  if (cWipeH > H * 1) {
+    cWipeH = H * 1;
+    cWipeW = cWipeH / wipeRatio;
+  }
+  const buttonY = cWipeW * 0.05;
+  const baseX = dx + W / 2 - cWipeW / 2;
+  const baseY = dy + H / 2 - cWipeH / 2;
+
+  const bx = baseX + cWipeW * 0.2;
+  const by = baseY + cWipeH * 0.8;
+  const bw = buttonY * (assets.end.width / assets.end.height);
+  const bh = buttonY;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
+export function isInsideEndButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy } = computeLayout(ratio);
+  let img = assets.resultFrameH;
+  if (ratio > 1) {
+    img = assets.resultFrameW;
+  }
+  const wipeRatio = img.height / img.width;
+
+  let cWipeW = W * 1;
+  let cWipeH = cWipeW * wipeRatio;
+  if (cWipeH > H * 1) {
+    cWipeH = H * 1;
+    cWipeW = cWipeH / wipeRatio;
+  }
+  const buttonY = cWipeW * 0.05;
+  const baseX = dx + W / 2 - cWipeW / 2;
+  const baseY = dy + H / 2 - cWipeH / 2;
+
+  const bx = baseX + cWipeW * 0.6;
+  const by = baseY + cWipeH * 0.8;
+  const bw = buttonY * (assets.end.width / assets.end.height);
+  const bh = buttonY;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}

@@ -303,15 +303,7 @@ export function canPlace(
   }
   // 酸化還元
   if (attr === "sup" && index === 5) {
-    return (
-      Number.isInteger(x) &&
-      Number.isInteger(y) &&
-      x != 0 &&
-      x != 4 &&
-      y != 0 &&
-      y != 4 &&
-      token === 2 - player
-    );
+    return token === 2 - player;
   }
   // 革命
   if (attr === "sup" && index === 6) {

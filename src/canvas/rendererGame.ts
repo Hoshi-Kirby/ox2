@@ -462,7 +462,7 @@ export function renderGame(
         H * 0.26 * (assets.noTurn.height / assets.noTurn.width),
       );
 
-      ctx.font = "40px KiwiMaru-Medium";
+      ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
       ctx.fillStyle = "#ffffff";
       // 左下
       const nfTurnsSet = new Set<number>();
@@ -573,7 +573,7 @@ export function renderGame(
         H * 0.15,
       );
 
-      ctx.font = "40px KiwiMaru-Medium";
+      ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
       ctx.fillStyle = "#ffffff";
       const myDeckNumber = `山札 ${G.deck[Number(playerID)].length}枚`;
       const enemyDeckNumber = `山札 ${G.deck[1 - Number(playerID)].length}枚`;

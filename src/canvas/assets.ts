@@ -128,6 +128,15 @@ export const assets = {
 
   resultFrameW: loadImage("/assets/ui/result_frame_w.png"),
   resultFrameH: loadImage("/assets/ui/result_frame_h.png"),
+  winner: loadImage("/assets/ui/winner.png"),
+  winnerO: loadImage("/assets/ui/winner_o.png"),
+  winnerX: loadImage("/assets/ui/winner_x.png"),
+  hide: loadImage("/assets/ui/hide.png"),
+  show: loadImage("/assets/ui/show.png"),
+  end: loadImage("/assets/button/end.png"),
+  endHover: loadImage("/assets/button/end_hover.png"),
+  onemore: loadImage("/assets/button/onemore.png"),
+  onemoreHover: loadImage("/assets/button/onemore_hover.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

@@ -94,6 +94,8 @@ export type HoverUI = {
   pauseContinue: boolean;
   pauseRestart: boolean;
   pauseEnd: boolean;
+  resultOneMore: boolean;
+  resultEnd: boolean;
 };
 export type PressTimers = {
   startButton: number;

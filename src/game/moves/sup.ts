@@ -20,6 +20,7 @@ export function card2(G: GameState, ctx: any) {
 
     if (canPlace(G, ctx, col, row, f, "sup", 2)) {
       G.phase = "selectTarget2";
+      G.moveCount[ctx.currentPlayer]++;
       return;
     }
     return;
@@ -131,25 +132,53 @@ export function card5(G: GameState, ctx: any) {
     for (let y = 0; y < 5; y++) {
       for (let z = 0; z < 3; z++) {
         const p = G.board[x][y][z];
-        if (p === 1) circles.push({ x, y, z });
-        if (p === 2) crosses.push({ x, y, z });
+        if (p === 1) circles.push({ x, y, z, isMid: false });
+        if (p === 2) crosses.push({ x, y, z, isMid: false });
       }
     }
   }
+  for (let mx = 0; mx < 2; mx++) {
+    for (let my = 0; my < 2; my++) {
+      for (let z = 0; z < 3; z++) {
+        const p = G.midBoard[mx][my][z];
+        if (p === 1) circles.push({ x: mx, y: my, z, isMid: true });
+        if (p === 2) crosses.push({ x: mx, y: my, z, isMid: true });
+      }
+    }
+  }
+
   if (circles.length === 0 || crosses.length === 0) return;
   const c0 = circles[Math.floor(Math.random() * circles.length)];
   const c1 = crosses[Math.floor(Math.random() * crosses.length)];
 
-  const temp = G.board[c0.x][c0.y][c0.z];
-  G.board[c0.x][c0.y][c0.z] = G.board[c1.x][c1.y][c1.z];
-  G.board[c1.x][c1.y][c1.z] = temp;
-  G.animLog.place[c0.x][c0.y][c0.z] = true;
-  G.animLog.place[c1.x][c1.y][c1.z] = true;
-
+  const get = (obj: any) =>
+    obj.isMid ? G.midBoard[obj.x][obj.y][obj.z] : G.board[obj.x][obj.y][obj.z];
+  const set = (obj: any, val: number) => {
+    if (obj.isMid) {
+      G.midBoard[obj.x][obj.y][obj.z] = val;
+    } else {
+      G.board[obj.x][obj.y][obj.z] = val;
+    }
+  };
+  const temp = get(c0);
+  set(c0, get(c1));
+  set(c1, temp);
+  if (c0.isMid) {
+    G.animLog.placeMid[c0.x][c0.y][c0.z] = true;
+  } else {
+    G.animLog.place[c0.x][c0.y][c0.z] = true;
+  }
+  if (c1.isMid) {
+    G.animLog.placeMid[c1.x][c1.y][c1.z] = true;
+  } else {
+    G.animLog.place[c1.x][c1.y][c1.z] = true;
+  }
+  G.moveCount[ctx.currentPlayer]++;
   G.phase = "idle";
   G.targets = [];
   updateWinner(G, ctx);
 }
+
 export function card6(G: GameState, ctx: any) {
   // 革命
   for (let x = 0; x < 5; x++) {
@@ -255,6 +284,7 @@ export function card7(G: GameState, ctx: any) {
       }
     }
   }
+  G.moveCount[ctx.currentPlayer]++;
   updateWinner(G, ctx);
 }
 

@@ -53,6 +53,9 @@ export interface GameState {
     removeMid: number[][][];
     costChange: number[];
   };
+  placeCount: number[];
+  moveCount: number[];
+  removeCount: number[];
   isResult: boolean;
 }
 
@@ -69,6 +72,7 @@ export function createMyGame(settings: Settings) {
       resetAnimLog: basic.resetAnimLog,
       openPause: basic.openPause,
       closePause: basic.closePause,
+      openresult: basic.openresult,
       reset: ({ G, ctx, random }: { G: GameState; ctx: any; random: any }) => {
         const initialState = createInitialState(settings, random);
 
@@ -237,6 +241,9 @@ function createInitialState(settings: Settings, random: any): GameState {
       ),
       costChange: [0, 0],
     },
+    placeCount: [0, 0],
+    moveCount: [0, 0],
+    removeCount: [0, 0],
     isResult: true,
   };
 }

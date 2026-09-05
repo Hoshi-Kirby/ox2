@@ -73,7 +73,7 @@ function countPieces(G: GameState, player: number): number {
 }
 
 function checkWin(G: GameState, player: number): Pos[][] {
-  // 3D 全方向ステップ（正規化済み）
+  // 3D 全方向ステップ
   const directions: Pos[] = [];
   for (let dx = -1; dx <= 1; dx++) {
     for (let dy = -1; dy <= 1; dy++) {
@@ -168,6 +168,7 @@ function sampleCell(G: GameState, pos: Pos): number | null {
 
   const isIntX = Number.isInteger(x);
   const isIntY = Number.isInteger(y);
+  const isIntZ = Number.isInteger(z);
 
   if (isIntX && isIntY) {
     const ix = x | 0;
@@ -179,7 +180,7 @@ function sampleCell(G: GameState, pos: Pos): number | null {
   // midBoard: x,y は 1.5 or 2.5 のみ
   const mx = x - 1.5;
   const my = y - 1.5;
-  if ((mx === 0 || mx === 1) && (my === 0 || my === 1)) {
+  if ((mx === 0 || mx === 1) && (my === 0 || my === 1) && isIntZ) {
     const imx = mx | 0;
     const imy = my | 0;
     if (imx < 0 || imx >= 2 || imy < 0 || imy >= 2) return null;

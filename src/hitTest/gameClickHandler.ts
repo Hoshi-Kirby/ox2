@@ -8,6 +8,9 @@ import {
   isInsideBoardCell,
   isInsideMidBoardCell,
   isInsideFireWall,
+  isInsideHideButton,
+  isInsideOneMoreButton,
+  isInsideEndButton,
 } from "./gameHitTest";
 import type { Screen, CardID } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -177,6 +180,43 @@ export function createGameClickHandler({
                 moves.resetAnimLog();
               }, 300);
             }
+          }
+        }
+      } else {
+        // リザルトタグ
+        if (isInsideHideButton(x, y, ratio)) {
+          moves.openresult();
+          effectTimers.hideResult = 200;
+        }
+        // リザルトのボタン
+        if (G.isResult) {
+          if (isInsideOneMoreButton(x, y, ratio)) {
+            effectTimers.fadeIn = 300;
+            effectTimers.fadeOut = 600;
+            settings.ui.inputLocked = true;
+
+            setTimeout(() => {
+              moves.reset();
+              effectTimers.fadeOut = 300;
+              effectTimers.gameStartAnim = 300;
+              effectTimers.gameStartCount = 4500;
+              settings.ui.inputLocked = false;
+            }, 300);
+          }
+          if (isInsideEndButton(x, y, ratio)) {
+            effectTimers.fadeIn = 300;
+            effectTimers.fadeOut = 600;
+            settings.ui.inputLocked = true;
+
+            setTimeout(() => {
+              setScreen("menuOffline");
+              effectTimers.fadeOut = 300;
+              effectTimers.gameStartAnim = 300;
+              effectTimers.gameStartCount = 4500;
+              setTimeout(() => {
+                settings.ui.inputLocked = false;
+              }, 300);
+            }, 300);
           }
         }
       }

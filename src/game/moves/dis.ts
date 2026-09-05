@@ -117,6 +117,10 @@ export function card4(G: GameState, ctx: any) {
   G.firewall.horizontal[1] = false;
   G.firewall.vertical[0] = false;
   G.firewall.vertical[1] = false;
+  G.firewallTurns = [
+    [0, 0],
+    [0, 0],
+  ];
   for (let x = 0; x < 2; x++) {
     for (let y = 0; y < 2; y++) {
       for (let z = 0; z < 3; z++) {
@@ -136,6 +140,7 @@ export function card4(G: GameState, ctx: any) {
             G.animLog.place[row][col][z] = true;
           }
           G.midBoard[x][y][z] = 0;
+          G.moveCount[ctx.currentPlayer]++;
         }
       }
     }
@@ -244,6 +249,7 @@ export function card6(G: GameState, ctx: any) {
       }
     }
   }
+  G.moveCount[ctx.currentPlayer]++;
   G.phase = "idle";
   G.targets = [];
   updateWinner(G, ctx);

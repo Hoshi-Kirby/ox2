@@ -276,7 +276,9 @@ export function openPause({ G }: { G: GameState }) {
 export function closePause({ G }: { G: GameState }) {
   G.isPaused = false;
 }
-
+export function openresult({ G }: { G: GameState }) {
+  G.isResult = !G.isResult;
+}
 // アニメログの初期化
 export function resetAnimLog({ G }: { G: GameState }) {
   G.animLog.draw = [false, false];

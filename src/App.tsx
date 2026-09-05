@@ -13,6 +13,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("title");
 
   const isGameStarted = screen === "game";
+  const isTouching = useRef(false);
 
   const settingsRef = useRef<Settings>({
     ui: {
@@ -98,6 +99,7 @@ export default function App() {
     Gchange: 0,
     finish: 0,
     result: 0,
+    hideResult: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -125,6 +127,8 @@ export default function App() {
     pauseContinue: false,
     pauseRestart: false,
     pauseEnd: false,
+    resultOneMore: false,
+    resultEnd: false,
   });
 
   const pressTimers = useRef<PressTimers>({
@@ -228,6 +232,7 @@ export default function App() {
       settings={settingsRef.current}
       hoverStates={hoverStates}
       setHoverStates={setHoverStates}
+      isTouching={isTouching}
       pressTimers={pressTimers}
       frameRef={frameRef}
       uiRef={uiRef}

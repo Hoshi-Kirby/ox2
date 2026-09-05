@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type RefObject } from "react";
 import { Client } from "boardgame.io/react";
 import type { Settings, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";
@@ -9,6 +9,7 @@ type GameClientProps = {
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
+  isTouching: React.MutableRefObject<boolean>;
   pressTimers: React.MutableRefObject<PressTimers>;
   frameRef: React.RefObject<HTMLCanvasElement | null>;
   uiRef: React.RefObject<HTMLCanvasElement | null>;
@@ -31,6 +32,7 @@ export default function GameClient({
   settings,
   hoverStates,
   setHoverStates,
+  isTouching,
   pressTimers,
   frameRef,
   uiRef,
@@ -55,6 +57,7 @@ export default function GameClient({
         settings={settings}
         hoverStates={hoverStatesRef.current}
         setHoverStates={setHoverStates}
+        isTouching={isTouching}
         pressTimers={pressTimers}
         setScreen={setScreen}
         frameRef={frameRef}

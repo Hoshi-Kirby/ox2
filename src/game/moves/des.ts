@@ -21,6 +21,7 @@ export function card1(G: GameState, ctx: any) {
         G.animLog.remove[col][row][f] = G.board[col][row][f];
         G.board[col][row][f] = 0;
       }
+      G.removeCount[player]++;
       G.phase = "idle";
       G.targets = [];
       return;
@@ -52,6 +53,9 @@ export function card2(G: GameState, ctx: any) {
         if (nx < 0 || nx > 4 || ny < 0 || ny > 4) continue;
         G.animLog.remove[nx][ny][f] = G.board[nx][ny][f];
         G.board[nx][ny][f] = 0;
+        if (G.animLog.remove[nx][ny][f] != 0) {
+          G.removeCount[ctx.currentPlayer]++;
+        }
       }
       G.phase = "idle";
       G.targets = [];
@@ -89,6 +93,7 @@ export function card3(G: GameState, ctx: any) {
 export function card4(G: GameState, ctx: any) {
   // メテオ
   meteo(G);
+  G.removeCount[ctx.currentPlayer]++;
   G.phase = "idle";
   G.targets = [];
   updateWinner(G, ctx);
@@ -114,6 +119,7 @@ export function card6(G: GameState, ctx: any) {
   // 流星群
   for (let i = 0; i < 3; i++) {
     meteo(G);
+    G.removeCount[ctx.currentPlayer]++;
   }
   G.phase = "idle";
   G.targets = [];
@@ -125,6 +131,7 @@ export function card7(G: GameState, ctx: any) {
   G.animLog.discardHand[enemy] = [...G.hand[enemy]];
   G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
   card4(G, ctx);
+  G.removeCount[ctx.currentPlayer]++;
   card5(G, ctx);
   const hand = G.hand[enemy];
   const faceDown = G.faceDown[enemy];

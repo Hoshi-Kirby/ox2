@@ -509,7 +509,7 @@ export function renderGameEffect(
     }
 
     // リザルト
-    if (effectTimers.finish == 0 && G.winner !== null && G.isResult) {
+    if (effectTimers.finish == 0 && G.winner !== null) {
       let img = assets.resultFrameH;
       if (ratio > 1) {
         img = assets.resultFrameW;
@@ -523,13 +523,116 @@ export function renderGameEffect(
         cWipeW = cWipeH / wipeRatio;
       }
 
-      ctx.drawImage(
-        img,
-        dx + W / 2 - cWipeW / 2,
-        dy + H / 2 - cWipeH / 2,
-        cWipeW,
-        cWipeH,
-      );
+      let scale = 1;
+      if (effectTimers.hideResult > 150) {
+        let t = 0;
+        if (G.isResult) {
+          t = 200 - effectTimers.hideResult;
+        } else {
+          t = effectTimers.hideResult - 150;
+        }
+        scale = t / 50;
+      }
+      if (G.isResult || effectTimers.hideResult > 150) {
+        ctx.drawImage(
+          img,
+          dx + W / 2 - (cWipeW * scale) / 2,
+          dy + H / 2 - (cWipeH * scale) / 2,
+          cWipeW * scale,
+          cWipeH * scale,
+        );
+        const baseX = dx + W / 2 - cWipeW / 2;
+        const baseY = dy + H / 2 - cWipeH / 2;
+        if (effectTimers.result < 600) {
+          let scale = 1;
+          if (effectTimers.result > 500) {
+            const t = 600 - effectTimers.result;
+            scale = t / 100;
+          } else {
+            scale = 1;
+          }
+
+          const h = cWipeW * 0.1 * scale;
+          const w = h / (assets.winner.height / assets.winner.width);
+          const drawX = baseX + cWipeW * 0.4 - w / 2;
+          const drawY = baseY + cWipeH * 0.25 - h / 2;
+          ctx.drawImage(assets.winner, drawX, drawY, w, h);
+        }
+        if (effectTimers.result < 100) {
+          let scale = 1;
+          if (effectTimers.result > 0) {
+            const t = 100 - effectTimers.result;
+            scale = t / 100;
+          } else {
+            scale = 1;
+          }
+
+          const h = cWipeW * 0.1 * scale;
+          const w = h / (assets.winnerO.height / assets.winnerO.width);
+          const drawX = baseX + cWipeW * 0.68 - w / 2;
+          const drawY = baseY + cWipeH * 0.25 - h / 2;
+          if (G.winner == 0) {
+            ctx.drawImage(assets.winnerO, drawX, drawY, w, h);
+          } else if (G.winner == 1) {
+            ctx.drawImage(assets.winnerX, drawX, drawY, w, h);
+          }
+        }
+        if (effectTimers.result == 0) {
+          ctx.font = `${cWipeW * 0.04}px KiwiMaru-Medium`;
+          ctx.fillStyle = "#ffffff";
+          const place = `置いた駒数      〇 ${G.placeCount[0]}個    × ${G.placeCount[1]}個`;
+          ctx.fillText(place, baseX + cWipeW * 0.5, baseY + cWipeH * 0.5);
+          const remove = `破壊した駒数      〇 ${G.removeCount[0]}個    × ${G.removeCount[1]}個`;
+          ctx.fillText(remove, baseX + cWipeW * 0.5, baseY + cWipeH * 0.6);
+          const move = `駒を動かした回数      〇 ${G.moveCount[0]}回    × ${G.moveCount[1]}回`;
+          ctx.fillText(move, baseX + cWipeW * 0.5, baseY + cWipeH * 0.7);
+
+          const buttonY = cWipeW * 0.05;
+          let onemoreImg = assets.onemore;
+          if (hoverStates.resultOneMore) {
+            onemoreImg = assets.onemoreHover;
+          }
+          let endImg = assets.end;
+          if (hoverStates.resultEnd) {
+            endImg = assets.endHover;
+          }
+          ctx.drawImage(
+            onemoreImg,
+            baseX + cWipeW * 0.2,
+            baseY + cWipeH * 0.8,
+            buttonY * (assets.end.width / assets.end.height),
+            buttonY,
+          );
+          ctx.drawImage(
+            endImg,
+            baseX + cWipeW * 0.6,
+            baseY + cWipeH * 0.8,
+            buttonY * (assets.end.width / assets.end.height),
+            buttonY,
+          );
+        }
+      }
+      // タグ
+      const tagW = cWipeW * 0.4;
+      const tagH =
+        tagW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+      const tagEffect = 1 - Math.abs(effectTimers.hideResult - 100) / 100;
+      const drawX = dx + W - tagW / 2 + (tagEffect * tagW) / 2;
+      const drawY = dy + H * 0.3;
+      ctx.drawImage(assets.buttonFrame1, drawX, drawY, tagW, tagH);
+      if (effectTimers.hideResult == 0) {
+        let mess = assets.show;
+        if (G.isResult) {
+          mess = assets.hide;
+        }
+        ctx.drawImage(
+          mess,
+          drawX + tagW * 0.15,
+          drawY + tagW * 0.05,
+          tagH / 2 / (mess.height / mess.width),
+          tagH / 2,
+        );
+      }
     }
 
     if (G.isPaused) {
