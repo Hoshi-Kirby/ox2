@@ -665,7 +665,8 @@ export function renderEffect(
           };
           const folder = folderMap[def.costType] as FolderKey;
 
-          const imgN = assets.costNumber[folder][def.cost];
+          const imgN =
+            assets.costNumber[folder][def.costFlip + def.costDiscard];
           ctx.drawImage(
             imgN,
             x,
@@ -694,7 +695,8 @@ export function renderEffect(
             mix: "rw",
           };
           const folder = folderMap[def.costType] as FolderKey;
-          const imgN = assets.costNumber[folder][def.cost];
+          const imgN =
+            assets.costNumber[folder][def.costFlip + def.costDiscard];
           ctx.drawImage(
             imgN,
             x,
@@ -775,7 +777,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x,
@@ -804,7 +807,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x - cardPoolW * 0.005,
@@ -853,7 +857,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x,
@@ -882,7 +887,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x - cardPoolW * 0.005,
@@ -932,7 +938,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x,
@@ -961,7 +968,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x - cardPoolW * 0.005,
@@ -985,7 +993,8 @@ export function renderEffect(
               mix: "rw",
             };
             const folder = folderMap[def.costType] as FolderKey;
-            const imgN = assets.costNumber[folder][def.cost];
+            const imgN =
+              assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
               x,
@@ -1110,7 +1119,7 @@ export function renderEffect(
           mix: "rw",
         };
         const folder = folderMap[def.costType] as FolderKey;
-        const imgN = assets.costNumber[folder][def.cost];
+        const imgN = assets.costNumber[folder][def.costFlip + def.costDiscard];
         ctx.drawImage(
           imgN,
           drawX + cardBarH * 0.3,

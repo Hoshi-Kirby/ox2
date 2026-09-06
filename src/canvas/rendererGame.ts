@@ -288,33 +288,17 @@ export function renderGame(
 
         let activeY = 0;
         if (bgCtx.currentPlayer == i) {
-          if (G.phase === "payCost" && G.activeCard == j) {
+          if (
+            (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
+            G.activeCard == j
+          ) {
             activeY = -cardH * 0.2;
-          } else if (G.phase === "payCost" && G.costCards.indexOf(j) >= 0) {
+          } else if (
+            (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
+            G.costCards.indexOf(j) >= 0
+          ) {
             if (G.activeCard !== null) {
-              const card = G.hand[i][G.activeCard];
-              const def = cardDefs[card.attr][card.index];
-              if (def.costType === "flip") {
-                activeY = -cardH * 0.1;
-              } else if (def.costType === "discard") {
-                activeY = +cardH * 0.1;
-              } else if (def.costType === "mix") {
-                const total = def.cost;
-                const flipCount = Math.ceil(total / 2);
-                const discardCount = Math.floor(total / 2);
-
-                const flipTargets = G.costCards.slice(0, flipCount);
-                const discardTargets = G.costCards.slice(
-                  flipCount,
-                  flipCount + discardCount,
-                );
-
-                if (flipTargets.indexOf(j) >= 0) {
-                  activeY = -cardH * 0.1;
-                } else if (discardTargets.indexOf(j) >= 0) {
-                  activeY = +cardH * 0.1;
-                }
-              }
+              activeY = -cardH * 0.1;
             }
           }
         }
@@ -344,17 +328,44 @@ export function renderGame(
         ctx.drawImage(img, x, y, cardW, cardH);
         const def = cardDefs[card.attr][card.index];
 
+        const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
+        const discardCost = Math.max(
+          def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+          0,
+        );
         type FolderKey = "w" | "r" | "rw";
-        const folderMap: Record<string, FolderKey> = {
-          flip: "w",
-          discard: "r",
-          mix: "rw",
-        };
-        const folder = folderMap[def.costType] as FolderKey;
-        const imgN =
-          assets.costNumber[folder][
-            Math.max(0, def.cost + G.costChange[i] - dCost)
-          ];
+        let folder: FolderKey;
+        if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
+          if (G.phase === "payCostFlip") {
+            folder = "w"; // flip フェーズ → 白
+          } else if (G.phase === "payCostDiscard") {
+            folder = "r"; // discard フェーズ → 赤
+          } else {
+            if (flipCost === 0 && discardCost > 0) folder = "r";
+            else if (flipCost > 0 && discardCost === 0) folder = "w";
+            else folder = "rw";
+          }
+        } else {
+          if (flipCost === 0 && discardCost > 0) folder = "r";
+          else if (flipCost > 0 && discardCost === 0) folder = "w";
+          else folder = "rw";
+        }
+
+        let costToDisplay;
+        if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
+          if (G.phase === "payCostFlip") {
+            costToDisplay = flipCost;
+          } else if (G.phase === "payCostDiscard") {
+            costToDisplay = discardCost;
+          } else {
+            costToDisplay = flipCost + discardCost; // idle
+          }
+        } else {
+          costToDisplay = flipCost + discardCost; // 常に合計
+        }
+
+        const imgN = assets.costNumber[folder][costToDisplay];
+
         // コスト数字
         if (!G.faceDown[i][j]) {
           ctx.drawImage(
@@ -427,7 +438,7 @@ export function renderGame(
             const folder = folderMap[def.costType] as FolderKey;
             const imgN =
               assets.costNumber[folder][
-                Math.max(0, def.cost + G.costChange[i])
+                Math.max(0, def.costFlip + def.costDiscard + G.costChange[i])
               ];
             // コスト数字
             if (!G.animLog.discardFaceDown[i][j]) {

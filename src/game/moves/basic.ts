@@ -47,15 +47,25 @@ export function useCard(
       const card = G.hand[player][cardIndex];
       const def = cardDefs[card.attr][card.index];
 
-      if (faceUpCount >= def.cost + 1 + G.costChange[player]) {
+      if (
+        faceUpCount >=
+        def.costFlip + def.costDiscard + 1 + G.costChange[player]
+      ) {
         G.activeCard = cardIndex; // 今使うカードをセット
-        G.phase = "payCost"; // 次のフェーズへ
-        if (def.cost + G.costChange[player] < 1) {
+        if (def.costFlip + G.costChange[player] > 0) {
+          G.phase = "payCostFlip";
+        } else if (
+          def.costDiscard + Math.min(0, def.costFlip + G.costChange[player]) >
+          0
+        ) {
+          G.phase = "payCostDiscard";
+        } else {
           // コスト0
           G.activeCardID = { ...G.hand[player][G.activeCard!] };
           G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
             false,
           );
+          G.animLog.discardHand[player] = [...G.hand[player]];
           G.animLog.discardFlags[player][G.activeCard!] = true;
           G.hand[player].splice(G.activeCard!, 1);
           G.faceDown[player].splice(G.activeCard!, 1);
@@ -82,7 +92,7 @@ export function useCard(
     }
   }
   // payCost → コスト選択
-  if (G.phase === "payCost") {
+  if (G.phase === "payCostFlip") {
     if (
       cardIndex !== G.activeCard &&
       !G.faceDown[ctx.currentPlayer][cardIndex]
@@ -97,7 +107,9 @@ export function useCard(
       const player = ctx.currentPlayer;
       const card = G.hand[player][G.activeCard!];
       const def = cardDefs[card.attr][card.index];
-      if (G.costCards.length >= Math.max(0, def.cost + G.costChange[player])) {
+      if (
+        G.costCards.length >= Math.max(0, def.costFlip + G.costChange[player])
+      ) {
         // アクティブカード、アニメログ
         G.activeCardID = { ...G.hand[player][G.activeCard!] };
         G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
@@ -105,78 +117,98 @@ export function useCard(
         );
         G.animLog.discardHand[player] = [...G.hand[player]];
 
-        if (def.costType === "discard") {
-          for (const idx of G.costCards) {
-            G.animLog.discardFlags[player][idx] = true;
-          }
-          G.animLog.discardFlags[player][G.activeCard!] = true;
-
-          const discardCards = G.costCards.map((idx) => G.hand[player][idx]);
-          for (const card of discardCards) {
-            G.deck[player].push(card);
-          }
-          let active = G.activeCard!;
-
-          const sorted = [...G.costCards].sort((a, b) => b - a);
-          for (const idx of sorted) {
-            if (idx < active) {
-              active--;
-            }
-            G.hand[player].splice(idx, 1);
-            G.faceDown[player].splice(idx, 1);
-            G.animLog.flipFlags[player].splice(idx, 1);
-            G.animLog.unflipFlags[player].splice(idx, 1);
-          }
-          G.activeCard = active;
-        } else if (def.costType === "flip") {
-          for (const idx of G.costCards) {
-            G.animLog.flipFlags[player][idx] = true;
-          }
-          G.animLog.discardFlags[player][G.activeCard!] = true;
-
-          for (const idx of G.costCards) {
-            G.faceDown[player][idx] = true;
-          }
-        } else if (def.costType === "mix") {
-          const flipCount = Math.ceil(G.costCards.length / 2);
-          const discardCount = Math.floor(G.costCards.length / 2);
-          const flipTargets = G.costCards.slice(0, flipCount);
-          const discardTargets = G.costCards.slice(
-            flipCount,
-            flipCount + discardCount,
-          );
-
-          for (const idx of flipTargets) {
-            G.animLog.flipFlags[player][idx] = true;
-          }
-          for (const idx of discardTargets) {
-            G.animLog.discardFlags[player][idx] = true;
-          }
-
-          G.animLog.discardFlags[player][G.activeCard!] = true;
-
-          for (const idx of flipTargets) {
-            G.faceDown[player][idx] = true;
-          }
-          const discardCards = discardTargets.map((idx) => G.hand[player][idx]);
-
-          for (const card of discardCards) {
-            G.deck[player].push(card);
-          }
-          let active = G.activeCard!;
-          const sorted = [...discardTargets].sort((a, b) => b - a);
-          for (const idx of sorted) {
-            if (idx < active) {
-              active--;
-            }
-
-            G.hand[player].splice(idx, 1);
-            G.faceDown[player].splice(idx, 1);
-            G.animLog.flipFlags[player].splice(idx, 1);
-            G.animLog.unflipFlags[player].splice(idx, 1);
-          }
-          G.activeCard = active;
+        for (const idx of G.costCards) {
+          G.animLog.flipFlags[player][idx] = true;
         }
+
+        for (const idx of G.costCards) {
+          G.faceDown[player][idx] = true;
+        }
+
+        G.costCards = [];
+
+        if (
+          def.costDiscard + Math.min(0, def.costFlip + G.costChange[player]) >
+          0
+        ) {
+          G.phase = "payCostDiscard";
+        } else {
+          G.phase = "selectTarget";
+          G.animLog.discardFlags[player][G.activeCard!] = true;
+          G.hand[player].splice(G.activeCard!, 1);
+          G.faceDown[player].splice(G.activeCard!, 1);
+          G.deck[player].push(G.activeCardID);
+          G.animLog.flipFlags[player].splice(G.activeCard!, 1);
+          G.animLog.unflipFlags[player].splice(G.activeCard!, 1);
+          if (
+            !canPlaceAnywhere(G, ctx, G.activeCardID.attr, G.activeCardID.index)
+          ) {
+            G.phase = "idle";
+            G.targets = [];
+            return;
+          }
+          if (def.auto) {
+            callCardFunction({ G, ctx });
+            G.phase = "idle";
+            G.targets = [];
+            return;
+          }
+        }
+      }
+    }
+    return;
+  }
+  if (G.phase === "payCostDiscard") {
+    if (
+      cardIndex !== G.activeCard &&
+      !G.faceDown[ctx.currentPlayer][cardIndex]
+    ) {
+      // すでに選択済みなら削除
+      const idx = G.costCards.indexOf(cardIndex);
+      if (idx >= 0) {
+        G.costCards.splice(idx, 1);
+      } else {
+        G.costCards.push(cardIndex);
+      }
+      const player = ctx.currentPlayer;
+      const card = G.hand[player][G.activeCard!];
+      const def = cardDefs[card.attr][card.index];
+      if (
+        G.costCards.length >=
+        Math.max(
+          def.costDiscard + Math.min(0, def.costFlip + G.costChange[player]),
+          0,
+        )
+      ) {
+        // アクティブカード、アニメログ
+        G.activeCardID = { ...G.hand[player][G.activeCard!] };
+        G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
+          false,
+        );
+        G.animLog.discardHand[player] = [...G.hand[player]];
+
+        for (const idx of G.costCards) {
+          G.animLog.discardFlags[player][idx] = true;
+        }
+        G.animLog.discardFlags[player][G.activeCard!] = true;
+
+        const discardCards = G.costCards.map((idx) => G.hand[player][idx]);
+        for (const card of discardCards) {
+          G.deck[player].push(card);
+        }
+        let active = G.activeCard!;
+
+        const sorted = [...G.costCards].sort((a, b) => b - a);
+        for (const idx of sorted) {
+          if (idx < active) {
+            active--;
+          }
+          G.hand[player].splice(idx, 1);
+          G.faceDown[player].splice(idx, 1);
+          G.animLog.flipFlags[player].splice(idx, 1);
+          G.animLog.unflipFlags[player].splice(idx, 1);
+        }
+        G.activeCard = active;
 
         G.hand[player].splice(G.activeCard!, 1);
         G.faceDown[player].splice(G.activeCard!, 1);
@@ -202,6 +234,7 @@ export function useCard(
     }
     return;
   }
+
   return;
 }
 // 盤面又はカード

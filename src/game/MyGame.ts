@@ -8,7 +8,13 @@ type Pos = {
   z: number; // 0〜2
 };
 export interface GameState {
-  phase: "idle" | "selectCard" | "payCost" | "selectTarget" | "selectTarget2";
+  phase:
+    | "idle"
+    | "selectCard"
+    | "payCostFlip"
+    | "payCostDiscard"
+    | "selectTarget"
+    | "selectTarget2";
   isPaused: boolean;
   firstPlayer: number;
   board: number[][][];
