@@ -1,7 +1,7 @@
 // src/canvas/rendererEffect.ts
 import { assets } from "./assets";
 import { cardDefs } from "../data";
-import type { Screen, Settings, HoverUI, CardID } from "../types";
+import type { Screen, Settings, Help, HoverUI, CardID } from "../types";
 
 let t = 0;
 let cursorBlinkTimer = 0;
@@ -19,6 +19,7 @@ export function renderEffect(
   dt: number,
   hoverStates: HoverUI,
   settingsRef: Settings,
+  helpRef: Help,
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
@@ -413,6 +414,73 @@ export function renderEffect(
             menu2W * 0.3 * (assets.btnOrg.height / assets.btnOrg.width),
           );
         }
+      } else if (screen === "menuHelp") {
+        ctx.drawImage(
+          assets.helpText[settingsRef.ui.helpPage],
+          menu2X,
+          menu2Y,
+          menu2W,
+          menu2H,
+        );
+        let arrow = assets.arrow[2];
+        const arrowW = menu2W * 0.1;
+        const arrowH = arrowW * (arrow.height / arrow.width);
+        if (hoverStates.helpLeft && !helpRef.isOpen) {
+          arrow = assets.arrow[3];
+        }
+        const y = menu2Y + menu2H * 0.92;
+        ctx.save();
+        ctx.translate(menu2X + menu2W * 0.45 - arrowW, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(arrow, 0, 0, arrowW, arrowH);
+        ctx.restore();
+
+        arrow = assets.arrow[2];
+        if (hoverStates.helpRight && !helpRef.isOpen) {
+          arrow = assets.arrow[3];
+        }
+
+        ctx.drawImage(arrow, menu2X + menu2W * 0.65, y, arrowW, arrowH);
+
+        ctx.font = `${menu2H * 0.08}px Komorebi`;
+        ctx.fillText(
+          `${settingsRef.ui.helpPage}/5`,
+          menu2X + menu2W * 0.5,
+          y + arrowH * 0.7,
+        );
+
+        // ヘルプアイコン
+        let helpIcondy = -menu2H * 0.05;
+        let helpIcondx = 0;
+        if (layoutIsWide) {
+          helpIcondy = 0;
+          helpIcondx = menu2W * 0.1;
+        }
+        if (hoverStates.detailHelp && !helpRef.isOpen) {
+          ctx.drawImage(
+            assets.detailHelpIcon,
+            menu2X + menu2W * 0.89 + helpIcondx,
+            menu2Y +
+              helpIcondy -
+              menu2W *
+                0.01 *
+                (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+            menu2W * 0.12,
+            menu2W *
+              0.12 *
+              (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+          );
+        } else {
+          ctx.drawImage(
+            assets.detailHelpIcon,
+            menu2X + menu2W * 0.9 + helpIcondx,
+            menu2Y + helpIcondy,
+            menu2W * 0.1,
+            menu2W *
+              0.1 *
+              (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+          );
+        }
       } else if (screen === "menuSetting") {
         ctx.drawImage(assets.settingText, menu2X, menu2Y, menu2W, menu2H);
         if (settingsRef.ui.bgmEnabled) {
@@ -548,7 +616,7 @@ export function renderEffect(
     const selectedIndex = menu2IndexMap[screen] ?? null;
 
     for (let i = 0; i < 5; i++) {
-      if (hoverStates.menu[i] || i == selectedIndex) {
+      if ((hoverStates.menu[i] || i == selectedIndex) && !helpRef.isOpen) {
         menuOffsets[i] = Math.min(btnW * 0.1, menuOffsets[i] + dt * 0.4);
       } else {
         menuOffsets[i] = Math.max(0, menuOffsets[i] - dt * 0.6);
@@ -815,7 +883,7 @@ export function renderEffect(
               y - cardPoolH * 0.005,
               cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
               cardW * 0.3 * (imgN.height / imgN.width) +
-                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+                cardPoolH * 0.01 * ((cardW * 0.3) / cardW),
             );
           }
           // const img = assets.cardAssets[attrs[a]][i];
@@ -891,11 +959,11 @@ export function renderEffect(
               assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
-              x - cardPoolW * 0.005,
-              y - cardPoolH * 0.005,
-              cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              cardW * 0.3 + cardW * 0.04 * ((cardW * 0.3) / cardW),
               cardW * 0.3 * (imgN.height / imgN.width) +
-                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+                cardH * 0.04 * ((cardW * 0.3) / cardW),
             );
           }
           // const img = assets.cardAssets[attrs[a]][i];
@@ -972,11 +1040,11 @@ export function renderEffect(
               assets.costNumber[folder][def.costFlip + def.costDiscard];
             ctx.drawImage(
               imgN,
-              x - cardPoolW * 0.005,
-              y - cardPoolH * 0.005,
-              cardW * 0.3 + cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+              x - cardW * 0.02,
+              y - cardH * 0.02,
+              cardW * 0.3 + cardW * 0.04 * ((cardW * 0.3) / cardW),
               cardW * 0.3 * (imgN.height / imgN.width) +
-                cardPoolW * 0.01 * ((cardW * 0.3) / cardW),
+                cardH * 0.04 * ((cardW * 0.3) / cardW),
             );
           } else if (shiftCard == 2) {
             ctx.filter = "none";
@@ -1241,6 +1309,30 @@ export function renderEffect(
                 deckListW * 0.6,
                 deckListW * 0.6 * (img.height / img.width),
               );
+              const def = cardDefs[attrs[a]][i + shiftCard];
+              const imgN1 = assets.costNumber.w[def.costFlip];
+              const imgN2 = assets.costNumber.r[def.costDiscard];
+              ctx.drawImage(
+                imgN1,
+                dx + W - H * 0.052,
+                dy + H * 0.28,
+                H * 0.04,
+                H * 0.04 * (imgN1.height / imgN1.width),
+              );
+              ctx.drawImage(
+                imgN2,
+                dx + W - H * 0.037,
+                dy + H * 0.3,
+                H * 0.04,
+                H * 0.04 * (imgN1.height / imgN1.width),
+              );
+              ctx.drawImage(
+                assets.plus,
+                dx + W - H * 0.04,
+                dy + H * 0.293,
+                H * 0.035,
+                H * 0.035 * (imgN1.height / imgN1.width),
+              );
             }
           }
         }
@@ -1259,6 +1351,30 @@ export function renderEffect(
           dy + deckListW * 0.4,
           deckListW * 0.6,
           deckListW * 0.6 * (img.height / img.width),
+        );
+        const def = cardDefs[card.attr][card.index];
+        const imgN1 = assets.costNumber.w[def.costFlip];
+        const imgN2 = assets.costNumber.r[def.costDiscard];
+        ctx.drawImage(
+          imgN1,
+          dx + W - H * 0.052,
+          dy + H * 0.28,
+          H * 0.04,
+          H * 0.04 * (imgN1.height / imgN1.width),
+        );
+        ctx.drawImage(
+          imgN2,
+          dx + W - H * 0.037,
+          dy + H * 0.3,
+          H * 0.04,
+          H * 0.04 * (imgN1.height / imgN1.width),
+        );
+        ctx.drawImage(
+          assets.plus,
+          dx + W - H * 0.04,
+          dy + H * 0.293,
+          H * 0.035,
+          H * 0.035 * (imgN1.height / imgN1.width),
         );
       }
     }
@@ -1338,11 +1454,176 @@ export function renderEffect(
         teW,
         teH,
       );
-
       ctx.restore();
     }
   }
+  if (screen === "menuHelp" || screen === "game") {
+    if (helpRef.isOpen) {
+      ctx.fillStyle = `rgba(0, 0, 0, 0.69)`;
+      ctx.fillRect(0, 0, 1280, 720);
+      let helpW = W;
+      let helpH = W;
+      if (W > H) {
+        helpW = H;
+        helpH = H;
+      }
+      const helpX = dx + W * 0.5 - helpW * 0.5;
+      const helpY = dy + H * 0.5 - helpH * 0.5;
 
+      if (helpRef.index === null) {
+        // 8つのボタン
+        const btnImg = assets.blueButton;
+        const hbtnW = helpW * 0.3;
+        const hbtnH = hbtnW * (btnImg.height / btnImg.width);
+        const helpPageButtons = {
+          0: 3,
+          1: 7,
+          2: 7,
+          3: 7,
+          4: 7,
+        };
+        const count =
+          helpPageButtons[helpRef.page as keyof typeof helpPageButtons];
+        const positions = calcHelpButtonsLayout(
+          helpX,
+          helpY + helpH * 0.1,
+          helpW,
+          helpH * 0.7,
+          count,
+        );
+        const helpTexts: string[][] = [
+          ["カードの使用方法", "コストについて", "勝利条件"],
+          [
+            "deleteキー",
+            "超新星爆発",
+            "狙撃",
+            "メテオ",
+            "ダーツ",
+            "流星群",
+            "世界恐慌",
+          ],
+          [
+            "シュレ猫",
+            "外れ値",
+            "囲碁",
+            "append",
+            "ジャンプ",
+            "prepend",
+            "積み将棋",
+          ],
+          [
+            "ハイパーインフレ",
+            "ファイアウォール",
+            "NOT FOUND",
+            "落石注意",
+            "再結晶",
+            "ゲシュタルト崩壊",
+            "オールイン",
+          ],
+          [
+            "デフレスパイラル",
+            "倒置法",
+            "北抜き",
+            "一石返し",
+            "酸化還元",
+            "革命",
+            "スライド",
+          ],
+        ];
+
+        positions.forEach((pos, i) => {
+          if (i == hoverStates.detailHelpButton) {
+            ctx.drawImage(
+              assets.pauseLight,
+              pos.x - hbtnW / 2,
+              pos.y - hbtnH / 2,
+              hbtnW,
+              hbtnH,
+            );
+          }
+          ctx.drawImage(
+            btnImg,
+            pos.x - hbtnW / 2,
+            pos.y - hbtnH / 2,
+            hbtnW,
+            hbtnH,
+          );
+          const text = helpTexts[helpRef.page][i];
+          ctx.font = `${hbtnH * 0.35}px KiwiMaru-Medium`;
+          ctx.fillStyle = "white";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(text, pos.x, pos.y);
+        });
+
+        // 矢印
+
+        let arrow = assets.arrow[2];
+        const arrowW = helpW * 0.1;
+        const arrowH = arrowW * (arrow.height / arrow.width);
+        if (hoverStates.detailHelpLeft && helpRef.isOpen) {
+          arrow = assets.arrow[3];
+        }
+        let y = helpY + helpH * 0.85;
+        let x = helpW * 0.05;
+        if (layoutIsWide) {
+          y = helpY + helpH * 0.5 - arrowH;
+          x = helpW * 0.4;
+        }
+        ctx.save();
+        ctx.translate(helpX + helpW * 0.5 - x - arrowW, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(arrow, 0, 0, arrowW, arrowH);
+        ctx.restore();
+
+        arrow = assets.arrow[2];
+        if (hoverStates.detailHelpRight && helpRef.isOpen) {
+          arrow = assets.arrow[3];
+        }
+
+        ctx.drawImage(arrow, helpX + helpW * 0.6 + x, y, arrowW, arrowH);
+      } else {
+      }
+      // 戻る
+      let baseX = dx + W * 0.01;
+      let baseY = dy + H * 0.1;
+      let btnW = H * 0.45;
+      const btnH =
+        btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+      if (!layoutIsWide) {
+        btnW = H * 0.4;
+        baseX = dx + W * 0.5 - btnW / 2;
+        baseY = dy + H * 0.2;
+      }
+      if (screen === "game") {
+        if (hoverStates.back) {
+          backOffset = Math.min(btnW * 0.1, backOffset + dt * 0.4);
+        } else {
+          backOffset = Math.max(0, backOffset - dt * 0.6);
+        }
+      }
+      let backX = baseX - H * 0.2;
+      let backY = baseY + H * 0.72;
+      if (!layoutIsWide) {
+        backX = dx - btnW * 0.55;
+        backY = baseY = dy + H * 0.05;
+      }
+      ctx.drawImage(assets.buttonFrame1, backX + backOffset, backY, btnW, btnH);
+      const backImg = assets.backText;
+      if (backImg) {
+        const textH = btnH * 0.8;
+        const textW = textH / (backImg.height / backImg.width);
+        let textX = backX + btnW * 0.5;
+        const textY = backY + btnH * 0.1;
+        if (!layoutIsWide) {
+          textX = backX + btnW * 0.55;
+        }
+
+        ctx.drawImage(backImg, textX, textY, textW, textH);
+      }
+    }
+  }
   if (effectTimers.fadeIn > 0) {
     ctx.fillStyle = `rgba(0,0,0,${(300 - effectTimers.fadeIn) / 300})`;
     ctx.fillRect(0, 0, 1280, 720);
@@ -1350,4 +1631,39 @@ export function renderEffect(
     ctx.fillStyle = `rgba(0,0,0,${effectTimers.fadeOut / 300})`;
     ctx.fillRect(0, 0, 1280, 720);
   }
+}
+
+interface Pos {
+  x: number;
+  y: number;
+}
+
+export function calcHelpButtonsLayout(
+  x: number, // 枠の左上
+  y: number, // 枠の左上
+  W: number, // 枠の幅
+  H: number, // 枠の高さ
+  count: number,
+): Pos[] {
+  const leftMax = 4;
+  const leftCount = Math.min(count, leftMax);
+  const rightCount = Math.max(0, count - leftMax);
+  const colW = W / 2;
+  const rowH = H / 4;
+  const positions: Pos[] = [];
+
+  for (let i = 0; i < leftCount; i++) {
+    positions.push({
+      x: x + colW * 0 + colW / 2, // 左列の中心
+      y: y + rowH * i + rowH / 2, // i段目の中心
+    });
+  }
+  for (let j = 0; j < rightCount; j++) {
+    positions.push({
+      x: x + colW * 1 + colW / 2, // 右列の中心
+      y: y + rowH * j + rowH / 2, // j段目の中心
+    });
+  }
+
+  return positions;
 }

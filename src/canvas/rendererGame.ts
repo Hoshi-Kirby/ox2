@@ -328,10 +328,16 @@ export function renderGame(
         ctx.drawImage(img, x, y, cardW, cardH);
         const def = cardDefs[card.attr][card.index];
 
-        const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
-        const discardCost = Math.max(
-          def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
-          0,
+        const flipCost = Math.min(
+          9,
+          Math.max(0, def.costFlip + G.costChange[i]),
+        );
+        const discardCost = Math.min(
+          9,
+          Math.max(
+            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+            0,
+          ),
         );
         type FolderKey = "w" | "r" | "rw";
         let folder: FolderKey;

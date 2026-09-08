@@ -602,3 +602,185 @@ export function isInsideGameSTartButton(x: number, y: number, ratio: number) {
   const by = menu2Y + menu2H * 0.75;
   return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
 }
+
+// ヘルプ矢印
+export function isInsideHelpRightButton(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  let arrow = assets.arrow[0];
+
+  const btnX = menu2X + menu2W * 0.65;
+  const btnY = menu2Y + menu2H * 0.92;
+  const btnW = menu2W * 0.1;
+  const btnH = btnW * (arrow.height / arrow.width);
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+export function isInsideHelpLeftButton(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  let arrow = assets.arrow[0];
+
+  const btnY = menu2Y + menu2H * 0.92;
+  const btnW = menu2W * 0.1;
+  const btnH = btnW * (arrow.height / arrow.width);
+  const btnX = menu2X + menu2W * 0.45 - 2 * btnW;
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+
+// 詳しいヘルプ矢印
+export function isInsideDetailHelpRightButton(
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+
+  let helpW = W;
+  let helpH = W;
+  if (W > H) {
+    helpW = H;
+    helpH = H;
+  }
+  const helpX = dx + W * 0.5 - helpW * 0.5;
+  const helpY = dy + H * 0.5 - helpH * 0.5;
+  let arrow = assets.arrow[0];
+  const arrowW = helpW * 0.1;
+  const arrowH = arrowW * (arrow.height / arrow.width);
+  let hy = helpY + helpH * 0.85;
+  let hx = helpW * 0.05;
+  if (layoutIsWide) {
+    hy = helpY + helpH * 0.5 - arrowH;
+    hx = helpW * 0.4;
+  }
+
+  const btnX = helpX + helpW * 0.6 + hx;
+  const btnY = hy;
+  const btnW = arrowW;
+  const btnH = arrowH;
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+export function isInsideDetailHelpLeftButton(
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+  let helpW = W;
+  let helpH = W;
+  if (W > H) {
+    helpW = H;
+    helpH = H;
+  }
+  const helpX = dx + W * 0.5 - helpW * 0.5;
+  const helpY = dy + H * 0.5 - helpH * 0.5;
+  let arrow = assets.arrow[0];
+  const arrowW = helpW * 0.1;
+  const arrowH = arrowW * (arrow.height / arrow.width);
+  let hy = helpY + helpH * 0.85;
+  let hx = helpW * 0.05;
+  if (layoutIsWide) {
+    hy = helpY + helpH * 0.5 - arrowH;
+    hx = helpW * 0.4;
+  }
+  const btnX = helpX + helpW * 0.5 - hx - 2 * arrowW;
+  const btnY = hy;
+  const btnW = arrowW;
+  const btnH = arrowH;
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+
+// 詳しいヘルプボタン
+export function isInsideDetailHelpButton(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  let helpIcondy = -menu2H * 0.05;
+  let helpIcondx = 0;
+  if (ratio > 1.2) {
+    helpIcondy = 0;
+    helpIcondx = menu2W * 0.1;
+  }
+
+  const btnX = menu2X + menu2W * 0.9 + helpIcondx;
+  const btnY = menu2Y + helpIcondy;
+  const btnW = menu2W * 0.1;
+  const btnH =
+    menu2W * 0.1 * (assets.detailHelpIcon.height / assets.detailHelpIcon.width);
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+export function detectHelpButtonHover(
+  x: number,
+  y: number,
+  ratio: number,
+): number | null {
+  const { W, H, dx, dy } = computeLayout(ratio);
+
+  let helpW = W;
+  let helpH = W;
+  if (W > H) {
+    helpW = H;
+    helpH = H;
+  }
+  const helpX = dx + W * 0.5 - helpW * 0.5;
+  const helpY = dy + H * 0.5 - helpH * 0.5;
+
+  // ボタン画像サイズ（描画と同じ計算）
+  const btnImg = assets.blueButton;
+  const hbtnW = helpW * 0.3;
+  const hbtnH = hbtnW * (btnImg.height / btnImg.width);
+
+  // ボタン中心座標を計算
+  const positions = calcHelpButtonsLayout(
+    helpX,
+    helpY + helpH * 0.1,
+    helpW,
+    helpH * 0.7,
+    8,
+  );
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i];
+
+    const left = pos.x - hbtnW / 2;
+    const right = pos.x + hbtnW / 2;
+    const top = pos.y - hbtnH / 2;
+    const bottom = pos.y + hbtnH / 2;
+
+    if (x >= left && x <= right && y >= top && y <= bottom) {
+      return i;
+    }
+  }
+
+  return null;
+}
+
+interface Pos {
+  x: number;
+  y: number;
+}
+
+export function calcHelpButtonsLayout(
+  x: number, // 枠の左上
+  y: number, // 枠の左上
+  W: number, // 枠の幅
+  H: number, // 枠の高さ
+  count: number,
+): Pos[] {
+  const leftMax = 4;
+  const leftCount = Math.min(count, leftMax);
+  const rightCount = Math.max(0, count - leftMax);
+  const colW = W / 2;
+  const rowH = H / 4;
+  const positions: Pos[] = [];
+
+  for (let i = 0; i < leftCount; i++) {
+    positions.push({
+      x: x + colW * 0 + colW / 2, // 左列の中心
+      y: y + rowH * i + rowH / 2, // i段目の中心
+    });
+  }
+  for (let j = 0; j < rightCount; j++) {
+    positions.push({
+      x: x + colW * 1 + colW / 2, // 右列の中心
+      y: y + rowH * j + rowH / 2, // j段目の中心
+    });
+  }
+
+  return positions;
+}

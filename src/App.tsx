@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type {
   Screen,
+  Help,
   Settings,
   DeckColor,
   HoverUI,
@@ -14,6 +15,11 @@ export default function App() {
 
   const isGameStarted = screen === "game";
   const isTouching = useRef(false);
+  const helpRef = useRef<Help>({
+    isOpen: false,
+    page: 0,
+    index: null,
+  });
 
   const settingsRef = useRef<Settings>({
     ui: {
@@ -30,6 +36,7 @@ export default function App() {
       changingDeck: [false, false],
       isInputActive: false,
       inputCursorPosition: 0,
+      helpPage: 1,
     },
     game: {
       gameMode: "pvc",
@@ -129,6 +136,12 @@ export default function App() {
     pauseEnd: false,
     resultOneMore: false,
     resultEnd: false,
+    helpRight: false,
+    helpLeft: false,
+    detailHelpRight: false,
+    detailHelpLeft: false,
+    detailHelp: false,
+    detailHelpButton: null,
   });
 
   const pressTimers = useRef<PressTimers>({
@@ -208,6 +221,7 @@ export default function App() {
       <MenuScreen
         screen={screen}
         setScreen={setScreen}
+        helpRef={helpRef}
         settingsRef={settingsRef}
         hoverStates={hoverStates}
         setHoverStates={setHoverStates}
@@ -229,6 +243,7 @@ export default function App() {
   return (
     <GameClient
       setScreen={setScreen}
+      helpRef={helpRef}
       settings={settingsRef.current}
       hoverStates={hoverStates}
       setHoverStates={setHoverStates}

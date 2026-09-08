@@ -112,7 +112,8 @@ export function renderUI(
             mix: "rw",
           };
           const folder = folderMap[def.costType] as FolderKey;
-          const imgN = assets.costNumber[folder][def.cost];
+          const imgN =
+            assets.costNumber[folder][def.costFlip + def.costDiscard];
           ctx.drawImage(
             imgN,
             x,

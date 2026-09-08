@@ -11,6 +11,7 @@ import { createHoverHandler } from "./hitTest/hoverHandler";
 import { createScrollHandler } from "./hitTest/scrollHandler";
 import type {
   Screen,
+  Help,
   Settings,
   HoverUI,
   PressTimers,
@@ -22,6 +23,7 @@ import "./MenuScreen.css";
 export default function MenuScreen({
   screen,
   setScreen,
+  helpRef,
   settingsRef,
   hoverStates,
   setHoverStates,
@@ -39,6 +41,7 @@ export default function MenuScreen({
 }: {
   screen: Screen;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
+  helpRef: React.MutableRefObject<Help>;
   settingsRef: React.MutableRefObject<Settings>;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
@@ -123,6 +126,7 @@ export default function MenuScreen({
         dt,
         hoverStatesRef.current,
         settingsRef.current,
+        helpRef.current,
       );
       if (!ready) {
         const canvas = frameRef.current;
@@ -162,6 +166,7 @@ export default function MenuScreen({
       setScreen,
       effectTimers: effectTimers.current,
       settingsRef,
+      helpRef,
       setBgmEnabled,
       setDeckName,
       setOpenDeckList,

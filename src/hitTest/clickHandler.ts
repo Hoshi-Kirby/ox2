@@ -24,6 +24,12 @@ import {
   isInsideShiftFalse,
   isInsideGameSTartButton,
   isInsideDeckIconButton,
+  isInsideHelpRightButton,
+  isInsideHelpLeftButton,
+  isInsideDetailHelpRightButton,
+  isInsideDetailHelpLeftButton,
+  isInsideDetailHelpButton,
+  detectHelpButtonHover,
 } from "./hitTest";
 import type { Screen, CardID, DeckColor } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -35,6 +41,7 @@ type ClickHandlerParams = {
   setScreen: (s: Screen) => void;
   effectTimers: Record<string, number>;
   settingsRef: any;
+  helpRef: any;
   setBgmEnabled: (v: boolean) => void;
   setDeckName: (v: string) => void;
   setOpenDeckList: (v: boolean) => void;
@@ -46,6 +53,7 @@ export function createClickHandler({
   setScreen,
   effectTimers,
   settingsRef,
+  helpRef,
   setBgmEnabled,
   setDeckName,
   setOpenDeckList,
@@ -151,10 +159,11 @@ export function createClickHandler({
     // MENU 2 (Offline / Help / Deck / Setting)
     // ------------------------------
     if (
-      screen === "menuOffline" ||
-      screen === "menuHelp" ||
-      screen === "menuDeck" ||
-      screen === "menuSetting"
+      (screen === "menuOffline" ||
+        screen === "menuHelp" ||
+        screen === "menuDeck" ||
+        screen === "menuSetting") &&
+      !helpRef.current.isOpen
     ) {
       for (let i = 0; i < 5; i++) {
         const inside =
@@ -387,18 +396,24 @@ export function createClickHandler({
         }
       }
       // デッキ色
-      if (isInsideDeckIconButton(x, y, ratio)) {
-        const colors: DeckColor[] = [
-          "red",
-          "green",
-          "yellow",
-          "blue",
-          "rainbow",
-        ];
-        const cur = settingsRef.current.game.editDeckColor;
-        const idx = colors.indexOf(cur);
-        const next = colors[(idx + 1) % colors.length];
-        settingsRef.current.game.editDeckColor = next;
+      if (
+        (settingsRef.current.ui.openDeckList &&
+          effectTimers.deckListOpen == 0) ||
+        ratio > 1.2
+      ) {
+        if (isInsideDeckIconButton(x, y, ratio)) {
+          const colors: DeckColor[] = [
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "rainbow",
+          ];
+          const cur = settingsRef.current.game.editDeckColor;
+          const idx = colors.indexOf(cur);
+          const next = colors[(idx + 1) % colors.length];
+          settingsRef.current.game.editDeckColor = next;
+        }
       }
       // シフトボタン
       if (isInsideShiftButton(x, y, ratio)) {
@@ -530,6 +545,44 @@ export function createClickHandler({
                 settingsRef.current.ui.changingDeck[i] = false;
               }
             }
+          }
+        }
+      }
+    }
+    if (screen === "menuHelp") {
+      if (!helpRef.current.isOpen) {
+        if (isInsideHelpRightButton(x, y, ratio)) {
+          if (settingsRef.current.ui.helpPage < 5)
+            settingsRef.current.ui.helpPage++;
+        }
+        if (isInsideHelpLeftButton(x, y, ratio)) {
+          if (settingsRef.current.ui.helpPage > 1)
+            settingsRef.current.ui.helpPage--;
+        }
+        if (isInsideDetailHelpButton(x, y, ratio)) {
+          helpRef.current.isOpen = true;
+        }
+      } else {
+        if (helpRef.current.index === null) {
+          if (isInsideDetailHelpRightButton(x, y, ratio)) {
+            if (helpRef.current.page < 4) helpRef.current.page++;
+          }
+          if (isInsideDetailHelpLeftButton(x, y, ratio)) {
+            if (helpRef.current.page > 0) helpRef.current.page--;
+          }
+
+          const hoverIndex = detectHelpButtonHover(x, y, ratio);
+          if (hoverIndex !== null) {
+            helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
+          }
+
+          if (isInsideBackButton(x, y, ratio)) {
+            helpRef.current.index = null;
+            helpRef.current.isOpen = false;
+          }
+        } else {
+          if (isInsideBackButton(x, y, ratio)) {
+            helpRef.current.index = null;
           }
         }
       }

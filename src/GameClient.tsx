@@ -1,11 +1,12 @@
 import { useMemo, useRef, type RefObject } from "react";
 import { Client } from "boardgame.io/react";
-import type { Settings, Screen, HoverUI, PressTimers } from "./types";
+import type { Settings, Help, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";
 import { createMyGame } from "./game/MyGame";
 
 type GameClientProps = {
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
+  helpRef: React.MutableRefObject<Help>;
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
@@ -29,6 +30,7 @@ type GameClientProps = {
 
 export default function GameClient({
   setScreen,
+  helpRef,
   settings,
   hoverStates,
   setHoverStates,
@@ -54,6 +56,7 @@ export default function GameClient({
     const Board = (boardProps: any) => (
       <GameCanvas
         {...boardProps}
+        helpRef={helpRef}
         settings={settings}
         hoverStates={hoverStatesRef.current}
         setHoverStates={setHoverStates}
@@ -77,7 +80,7 @@ export default function GameClient({
       game: createMyGame(settings),
       board: Board,
       numPlayers: 2,
-      debug: true,
+      debug: false,
     });
   }, [settings]);
 

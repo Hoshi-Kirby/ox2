@@ -10,7 +10,7 @@ import { audioAssets } from "./audio/assets";
 import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createGameClickHandler } from "./hitTest/gameClickHandler";
 import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
-import type { Settings, HoverUI, PressTimers, Screen } from "./types";
+import type { Help, Settings, HoverUI, PressTimers, Screen } from "./types";
 import type { GameState } from "./game/MyGame";
 
 import "./MenuScreen.css";
@@ -20,6 +20,7 @@ export default function GameCanvas({
   ctx,
   moves,
   playerID,
+  helpRef,
   settings,
   hoverStates,
   setHoverStates,
@@ -41,6 +42,7 @@ export default function GameCanvas({
   ctx: any;
   moves: any;
   playerID: string;
+  helpRef: React.MutableRefObject<Help>;
   settings: Settings;
   hoverStates: HoverUI;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
@@ -165,6 +167,7 @@ export default function GameCanvas({
         dt,
         hoverStatesRef.current,
         settings,
+        helpRef.current,
       );
       renderGameEffect(
         gameEffectCtx,
@@ -177,6 +180,7 @@ export default function GameCanvas({
         G,
         ctx,
         playerID,
+        helpRef.current,
       );
       if (!ready) {
         const canvas = frameRef.current;
@@ -216,6 +220,7 @@ export default function GameCanvas({
       setScreen,
       effectTimers: effectTimers.current,
       settings,
+      helpRef,
       G,
       ctx,
       moves,

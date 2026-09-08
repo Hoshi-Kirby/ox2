@@ -1,7 +1,7 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
 import { cardDefs, canPlace } from "../data";
-import type { Screen, Settings, HoverUI, CardID } from "../types";
+import type { Screen, Settings, Help, HoverUI, CardID } from "../types";
 
 let t = 0;
 let winBlinkTimer = 0;
@@ -16,6 +16,7 @@ export function renderGameEffect(
   G: GameState,
   bgCtx: any,
   playerID: string,
+  helpRef: Help,
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
@@ -425,6 +426,35 @@ export function renderGameEffect(
             H * 0.38,
             H * 0.38 * (img.height / img.width),
           );
+          const def = cardDefs[card.attr][card.index];
+          const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
+          const discardCost = Math.max(
+            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+            0,
+          );
+          const imgN1 = assets.costNumber.w[flipCost];
+          const imgN2 = assets.costNumber.r[discardCost];
+          ctx.drawImage(
+            imgN1,
+            dx + H * 0.31,
+            dy + H * 0.28,
+            H * 0.04,
+            H * 0.04 * (imgN1.height / imgN1.width),
+          );
+          ctx.drawImage(
+            imgN2,
+            dx + H * 0.34,
+            dy + H * 0.3,
+            H * 0.04,
+            H * 0.04 * (imgN1.height / imgN1.width),
+          );
+          ctx.drawImage(
+            assets.plus,
+            dx + H * 0.32,
+            dy + H * 0.288,
+            H * 0.05,
+            H * 0.05 * (imgN1.height / imgN1.width),
+          );
         }
       } else if (hoverStates.hoverHands[i] >= 0) {
         const hoverIndex = hoverStates.hoverHands[i];
@@ -451,6 +481,35 @@ export function renderGameEffect(
             dy + H / 2 - cWipeH * 0.47,
             cWipeW * 0.98,
             cWipeH * 0.98,
+          );
+          const def = cardDefs[card.attr][card.index];
+          const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
+          const discardCost = Math.max(
+            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+            0,
+          );
+          const imgN1 = assets.costNumber.w[flipCost];
+          const imgN2 = assets.costNumber.r[discardCost];
+          ctx.drawImage(
+            imgN1,
+            dx + W / 2 + cWipeW * 0.34,
+            dy + H / 2 - cWipeH * 0.42,
+            cWipeW * 0.07,
+            cWipeW * 0.07 * (imgN1.height / imgN1.width),
+          );
+          ctx.drawImage(
+            imgN2,
+            dx + W / 2 + cWipeW * 0.39,
+            dy + H / 2 - cWipeH * 0.39,
+            cWipeW * 0.07,
+            cWipeW * 0.07 * (imgN1.height / imgN1.width),
+          );
+          ctx.drawImage(
+            assets.plus,
+            dx + W / 2 + cWipeW * 0.3575,
+            dy + H / 2 - cWipeH * 0.41,
+            cWipeW * 0.09,
+            cWipeW * 0.09 * (imgN1.height / imgN1.width),
           );
         }
       }
@@ -672,14 +731,45 @@ export function renderGameEffect(
       ctx.drawImage(assets.pauseContinue, btnX, dy + H * 0.4, btnW, btnH);
       ctx.drawImage(assets.pauseRestart, btnX, dy + H * 0.5, btnW, btnH);
       ctx.drawImage(assets.pauseEnd, btnX, dy + H * 0.6, btnW, btnH);
-      if (hoverStates.pauseContinue) {
+      if (hoverStates.pauseContinue && !helpRef.isOpen) {
         ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.4, btnW, btnH);
       }
-      if (hoverStates.pauseRestart) {
+      if (hoverStates.pauseRestart && !helpRef.isOpen) {
         ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.5, btnW, btnH);
       }
-      if (hoverStates.pauseEnd) {
+      if (hoverStates.pauseEnd && !helpRef.isOpen) {
         ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.6, btnW, btnH);
+      }
+      let helpW = W * 1.5;
+      let helpH = W * 1.5;
+      if (ratio > 0.8) {
+        helpW = H;
+        helpH = H;
+      }
+      if (hoverStates.detailHelp && !helpRef.isOpen) {
+        ctx.drawImage(
+          assets.detailHelpIcon,
+          dx + W - helpW * 0.21,
+          dy +
+            helpW * 0.05 -
+            helpW *
+              0.01 *
+              (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+          helpW * 0.12,
+          helpW *
+            0.12 *
+            (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+        );
+      } else {
+        ctx.drawImage(
+          assets.detailHelpIcon,
+          dx + W - helpW * 0.2,
+          dy + helpW * 0.05,
+          helpW * 0.1,
+          helpW *
+            0.1 *
+            (assets.detailHelpIcon.height / assets.detailHelpIcon.width),
+        );
       }
     }
   }

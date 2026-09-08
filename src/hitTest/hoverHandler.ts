@@ -12,6 +12,12 @@ import {
   isInsideGameSettingDeckButton,
   isInsideGameSTartButton,
   isInsideDeckIconButton,
+  isInsideHelpRightButton,
+  isInsideHelpLeftButton,
+  isInsideDetailHelpRightButton,
+  isInsideDetailHelpLeftButton,
+  isInsideDetailHelpButton,
+  detectHelpButtonHover,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
 let lastCardPoolTarget: string | null = null;
@@ -381,6 +387,40 @@ export function createHoverHandler({
 
       if (hoverStatesRef.current.gameStart !== insideGameStart) {
         setHoverStates((prev) => ({ ...prev, gameStart: insideGameStart }));
+      }
+    }
+    if (screen === "menuHelp") {
+      const insideHelpRight = isInsideHelpRightButton(x, y, ratio);
+      const insideHelpLeft = isInsideHelpLeftButton(x, y, ratio);
+      if (hoverStatesRef.current.helpRight !== insideHelpRight) {
+        setHoverStates((prev) => ({ ...prev, helpRight: insideHelpRight }));
+      }
+      if (hoverStatesRef.current.helpLeft !== insideHelpLeft) {
+        setHoverStates((prev) => ({ ...prev, helpLeft: insideHelpLeft }));
+      }
+      const insideDetailHelpRight = isInsideDetailHelpRightButton(x, y, ratio);
+      const insideDetailHelpLeft = isInsideDetailHelpLeftButton(x, y, ratio);
+      if (hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight) {
+        setHoverStates((prev) => ({
+          ...prev,
+          detailHelpRight: insideDetailHelpRight,
+        }));
+      }
+      if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
+        setHoverStates((prev) => ({
+          ...prev,
+          detailHelpLeft: insideDetailHelpLeft,
+        }));
+      }
+
+      const insideDetailHelp = isInsideDetailHelpButton(x, y, ratio);
+      if (hoverStatesRef.current.detailHelp !== insideDetailHelp) {
+        setHoverStates((prev) => ({ ...prev, detailHelp: insideDetailHelp }));
+      }
+
+      const hoverIndex = detectHelpButtonHover(x, y, ratio);
+      if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
+        setHoverStates((prev) => ({ ...prev, detailHelpButton: hoverIndex }));
       }
     }
 

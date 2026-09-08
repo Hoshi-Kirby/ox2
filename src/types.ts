@@ -26,6 +26,12 @@ export type CardNum = CardID["index"];
 export type CardKey = `card${CardNum}`;
 export type CheckKey = `check${CardNum}`;
 
+export type Help = {
+  isOpen: boolean;
+  page: number;
+  index: number | null;
+};
+
 export type Settings = {
   ui: {
     bgmEnabled: boolean;
@@ -41,6 +47,7 @@ export type Settings = {
     changingDeck: boolean[];
     isInputActive: boolean;
     inputCursorPosition: number;
+    helpPage: number;
   };
 
   game: {
@@ -96,6 +103,12 @@ export type HoverUI = {
   pauseEnd: boolean;
   resultOneMore: boolean;
   resultEnd: boolean;
+  helpRight: boolean;
+  helpLeft: boolean;
+  detailHelpRight: boolean;
+  detailHelpLeft: boolean;
+  detailHelp: boolean;
+  detailHelpButton: number | null;
 };
 export type PressTimers = {
   startButton: number;

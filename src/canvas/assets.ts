@@ -112,6 +112,7 @@ export const assets = {
   noTurn: loadImage("/assets/ui/no_turn.png"),
   floor: loadImage("/assets/ui/floor.png"),
   floorMini: loadImage("/assets/cards_token/token/floor.png"),
+  plus: loadImage("/assets/ui/plus.png"),
   backCard: loadImages(
     "/assets/cards_token/backr.png",
     "/assets/cards_token/backg.png",
@@ -137,6 +138,10 @@ export const assets = {
   endHover: loadImage("/assets/button/end_hover.png"),
   onemore: loadImage("/assets/button/onemore.png"),
   onemoreHover: loadImage("/assets/button/onemore_hover.png"),
+
+  helpText: loadNumberedImages("/assets/ui/text_help", 6),
+  detailHelpIcon: loadImage("/assets/button/detail_help.png"),
+  blueButton: loadImage("/assets/button/blue_button.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),

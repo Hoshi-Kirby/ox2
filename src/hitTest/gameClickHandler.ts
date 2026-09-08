@@ -11,8 +11,13 @@ import {
   isInsideHideButton,
   isInsideOneMoreButton,
   isInsideEndButton,
+  isInsideDetailHelpRightButton,
+  isInsideDetailHelpLeftButton,
+  isInsideDetailHelpButton,
+  isInsideBackButton,
+  detectHelpButtonHover,
 } from "./gameHitTest";
-import type { Screen, CardID } from "../types";
+import type { Screen } from "../types";
 import { playSe } from "../audio/audioManager";
 import { assets } from "../canvas/assets";
 type MoveFn = (...args: any[]) => void;
@@ -25,6 +30,7 @@ type ClickHandlerParams = {
   setScreen: (s: Screen) => void;
   effectTimers: Record<string, number>;
   settings: any;
+  helpRef: any;
   G: any;
   ctx: any;
   moves: Moves;
@@ -37,6 +43,7 @@ export function createGameClickHandler({
   setScreen,
   effectTimers,
   settings,
+  helpRef,
   G,
   ctx,
   moves,
@@ -226,36 +233,65 @@ export function createGameClickHandler({
       }
     } else {
       // ポーズ中
-      if (isInsidePauseContinueButton(x, y, ratio)) {
-        moves.closePause();
-      }
-      if (isInsidePauseRestartButton(x, y, ratio)) {
-        effectTimers.fadeIn = 300;
-        effectTimers.fadeOut = 600;
-        settings.ui.inputLocked = true;
 
-        setTimeout(() => {
-          moves.reset();
-          effectTimers.fadeOut = 300;
-          effectTimers.gameStartAnim = 300;
-          effectTimers.gameStartCount = 4500;
-          settings.ui.inputLocked = false;
-        }, 300);
-      }
-      if (isInsidePauseEndButton(x, y, ratio)) {
-        effectTimers.fadeIn = 300;
-        effectTimers.fadeOut = 600;
-        settings.ui.inputLocked = true;
+      if (!helpRef.current.isOpen) {
+        if (isInsidePauseContinueButton(x, y, ratio)) {
+          moves.closePause();
+        }
+        if (isInsidePauseRestartButton(x, y, ratio)) {
+          effectTimers.fadeIn = 300;
+          effectTimers.fadeOut = 600;
+          settings.ui.inputLocked = true;
 
-        setTimeout(() => {
-          setScreen("menuOffline");
-          effectTimers.fadeOut = 300;
-          effectTimers.gameStartAnim = 300;
-          effectTimers.gameStartCount = 4500;
           setTimeout(() => {
+            moves.reset();
+            effectTimers.fadeOut = 300;
+            effectTimers.gameStartAnim = 300;
+            effectTimers.gameStartCount = 4500;
             settings.ui.inputLocked = false;
           }, 300);
-        }, 300);
+        }
+        if (isInsidePauseEndButton(x, y, ratio)) {
+          effectTimers.fadeIn = 300;
+          effectTimers.fadeOut = 600;
+          settings.ui.inputLocked = true;
+
+          setTimeout(() => {
+            setScreen("menuOffline");
+            effectTimers.fadeOut = 300;
+            effectTimers.gameStartAnim = 300;
+            effectTimers.gameStartCount = 4500;
+            setTimeout(() => {
+              settings.ui.inputLocked = false;
+            }, 300);
+          }, 300);
+        }
+        if (isInsideDetailHelpButton(x, y, ratio)) {
+          helpRef.current.isOpen = true;
+        }
+      } else {
+        if (helpRef.current.index === null) {
+          if (isInsideDetailHelpRightButton(x, y, ratio)) {
+            if (helpRef.current.page < 4) helpRef.current.page++;
+          }
+          if (isInsideDetailHelpLeftButton(x, y, ratio)) {
+            if (helpRef.current.page > 0) helpRef.current.page--;
+          }
+
+          const hoverIndex = detectHelpButtonHover(x, y, ratio);
+          if (hoverIndex !== null) {
+            helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
+          }
+
+          if (isInsideBackButton(x, y, ratio)) {
+            helpRef.current.index = null;
+            helpRef.current.isOpen = false;
+          }
+        } else {
+          if (isInsideBackButton(x, y, ratio)) {
+            helpRef.current.index = null;
+          }
+        }
       }
     }
     // ポーズの影響を受けない------------------------------------------

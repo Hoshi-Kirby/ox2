@@ -6,6 +6,11 @@ import {
   isInsidePauseEndButton,
   isInsideOneMoreButton,
   isInsideEndButton,
+  isInsideDetailHelpRightButton,
+  isInsideDetailHelpLeftButton,
+  isInsideDetailHelpButton,
+  detectHelpButtonHover,
+  isInsideBackButton,
 } from "./gameHitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
 
@@ -170,6 +175,37 @@ export function createGameHoverHandler({
       const insideEnd = isInsidePauseEndButton(x, y, ratio);
       if (hoverStatesRef.current.pauseEnd !== insideEnd) {
         setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
+      }
+
+      const insideDetailHelpRight = isInsideDetailHelpRightButton(x, y, ratio);
+      const insideDetailHelpLeft = isInsideDetailHelpLeftButton(x, y, ratio);
+      if (hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight) {
+        setHoverStates((prev) => ({
+          ...prev,
+          detailHelpRight: insideDetailHelpRight,
+        }));
+      }
+      if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
+        setHoverStates((prev) => ({
+          ...prev,
+          detailHelpLeft: insideDetailHelpLeft,
+        }));
+      }
+
+      const insideDetailHelp = isInsideDetailHelpButton(x, y, ratio);
+      if (hoverStatesRef.current.detailHelp !== insideDetailHelp) {
+        setHoverStates((prev) => ({ ...prev, detailHelp: insideDetailHelp }));
+      }
+
+      const hoverIndex = detectHelpButtonHover(x, y, ratio);
+      if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
+        setHoverStates((prev) => ({ ...prev, detailHelpButton: hoverIndex }));
+      }
+      // 戻る
+      const insideBack = isInsideBackButton(x, y, ratio);
+
+      if (hoverStatesRef.current.back !== insideBack) {
+        setHoverStates((prev) => ({ ...prev, back: insideBack }));
       }
     }
     // ポーズの影響を受けない------------------------------------------
