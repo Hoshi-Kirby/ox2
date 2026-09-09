@@ -1459,7 +1459,7 @@ export function renderEffect(
   }
   if (screen === "menuHelp" || screen === "game") {
     if (helpRef.isOpen) {
-      ctx.fillStyle = `rgba(0, 0, 0, 0.69)`;
+      ctx.fillStyle = `rgba(0, 0, 0, 0.84)`;
       ctx.fillRect(0, 0, 1280, 720);
       let helpW = W;
       let helpH = W;
@@ -1471,12 +1471,22 @@ export function renderEffect(
       const helpY = dy + H * 0.5 - helpH * 0.5;
 
       if (helpRef.index === null) {
+        const detailHelpTextW = helpW * 0.8;
+        const detailHelpTextImg = assets.detailHelp;
+        ctx.drawImage(
+          detailHelpTextImg,
+          helpX + helpW / 2 - detailHelpTextW / 2,
+          helpY + helpH * 0.05,
+          detailHelpTextW,
+          detailHelpTextW *
+            (detailHelpTextImg.height / detailHelpTextImg.width),
+        );
         // 8つのボタン
         const btnImg = assets.blueButton;
         const hbtnW = helpW * 0.3;
         const hbtnH = hbtnW * (btnImg.height / btnImg.width);
         const helpPageButtons = {
-          0: 3,
+          0: 5,
           1: 7,
           2: 7,
           3: 7,
@@ -1492,7 +1502,13 @@ export function renderEffect(
           count,
         );
         const helpTexts: string[][] = [
-          ["カードの使用方法", "コストについて", "勝利条件"],
+          [
+            "カードの使用方法",
+            "コストについて",
+            "勝利条件",
+            "シフトカードとは",
+            "重なるについて",
+          ],
           [
             "deleteキー",
             "超新星爆発",
@@ -1583,6 +1599,13 @@ export function renderEffect(
 
         ctx.drawImage(arrow, helpX + helpW * 0.6 + x, y, arrowW, arrowH);
       } else {
+        ctx.drawImage(
+          assets.detailHelpText[helpRef.index],
+          helpX,
+          helpY,
+          helpW,
+          helpH,
+        );
       }
       // 戻る
       let baseX = dx + W * 0.01;

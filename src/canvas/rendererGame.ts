@@ -329,11 +329,11 @@ export function renderGame(
         const def = cardDefs[card.attr][card.index];
 
         const flipCost = Math.min(
-          9,
+          10,
           Math.max(0, def.costFlip + G.costChange[i]),
         );
         const discardCost = Math.min(
-          9,
+          10,
           Math.max(
             def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
             0,
@@ -364,10 +364,10 @@ export function renderGame(
           } else if (G.phase === "payCostDiscard") {
             costToDisplay = discardCost;
           } else {
-            costToDisplay = flipCost + discardCost; // idle
+            costToDisplay = Math.min(10, flipCost + discardCost); // idle
           }
         } else {
-          costToDisplay = flipCost + discardCost; // 常に合計
+          costToDisplay = Math.min(10, flipCost + discardCost); // 常に合計
         }
 
         const imgN = assets.costNumber[folder][costToDisplay];
@@ -444,7 +444,10 @@ export function renderGame(
             const folder = folderMap[def.costType] as FolderKey;
             const imgN =
               assets.costNumber[folder][
-                Math.max(0, def.costFlip + def.costDiscard + G.costChange[i])
+                Math.min(
+                  10,
+                  Math.max(0, def.costFlip + def.costDiscard + G.costChange[i]),
+                )
               ];
             // コスト数字
             if (!G.animLog.discardFaceDown[i][j]) {

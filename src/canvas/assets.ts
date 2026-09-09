@@ -19,6 +19,19 @@ function loadNumberedImages(
   );
 }
 
+function loadImagesUpTo(path: string, maxNumber: number, suffix = "") {
+  const result: Record<number, HTMLImageElement> = {};
+  for (let i = 0; i <= maxNumber; i++) {
+    const img = new Image();
+    img.src = `${path}/${i}${suffix}.png`;
+    img.onload = () => {
+      result[i] = img;
+    };
+    img.onerror = () => {};
+  }
+  return result;
+}
+
 export const assets = {
   titleBg: loadImage("/assets/backgrounds/city_scene.png"),
   title: loadImage("/assets/ui/title.png"),
@@ -120,6 +133,13 @@ export const assets = {
     "/assets/cards_token/backb.png",
     "/assets/cards_token/backn.png",
   ),
+  phaseText: loadImages(
+    "/assets/ui/phase1.png",
+    "/assets/ui/phase2.png",
+    "/assets/ui/phase3.png",
+    "/assets/ui/phase4.png",
+    "/assets/ui/phase5.png",
+  ),
   pauseBtn: loadImage("/assets/button/pause.png"),
   pause: loadImage("/assets/ui/pause.png"),
   pauseContinue: loadImage("/assets/button/pause_continue.png"),
@@ -142,6 +162,8 @@ export const assets = {
   helpText: loadNumberedImages("/assets/ui/text_help", 6),
   detailHelpIcon: loadImage("/assets/button/detail_help.png"),
   blueButton: loadImage("/assets/button/blue_button.png"),
+  detailHelp: loadImage("/assets/ui/detail_help_text.png"),
+  detailHelpText: loadImagesUpTo("/assets/ui/text_help", 40, "d"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8),
@@ -162,8 +184,8 @@ export const assets = {
     sup: loadNumberedImages("/assets/ui/sup", 8),
   },
   costNumber: {
-    w: loadNumberedImages("/assets/cards_token/number", 10),
-    r: loadNumberedImages("/assets/cards_token/number", 10, "_r"),
-    rw: loadNumberedImages("/assets/cards_token/number", 10, "_rw"),
+    w: loadNumberedImages("/assets/cards_token/number", 11),
+    r: loadNumberedImages("/assets/cards_token/number", 11, "_r"),
+    rw: loadNumberedImages("/assets/cards_token/number", 11, "_rw"),
   },
 };

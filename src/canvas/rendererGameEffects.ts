@@ -361,9 +361,15 @@ export function renderGameEffect(
             );
             const def = cardDefs[card.attr][card.index];
 
-            const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
+            const flipCost = Math.min(
+              10,
+              Math.max(0, def.costFlip + G.costChange[i]),
+            );
             const discardCost = Math.max(
-              def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+              Math.min(
+                10,
+                def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+              ),
               0,
             );
             type FolderKey = "w" | "r" | "rw";
@@ -391,10 +397,10 @@ export function renderGameEffect(
               } else if (G.phase === "payCostDiscard") {
                 costToDisplay = discardCost;
               } else {
-                costToDisplay = flipCost + discardCost; // idle
+                costToDisplay = Math.min(10, flipCost + discardCost); // idle
               }
             } else {
-              costToDisplay = flipCost + discardCost; // 常に合計
+              costToDisplay = Math.min(10, flipCost + discardCost); // 常に合計
             }
 
             const imgN = assets.costNumber[folder][costToDisplay];
@@ -427,10 +433,16 @@ export function renderGameEffect(
             H * 0.38 * (img.height / img.width),
           );
           const def = cardDefs[card.attr][card.index];
-          const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
-          const discardCost = Math.max(
-            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
-            0,
+          const flipCost = Math.min(
+            10,
+            Math.max(0, def.costFlip + G.costChange[i]),
+          );
+          const discardCost = Math.min(
+            10,
+            Math.max(
+              def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+              0,
+            ),
           );
           const imgN1 = assets.costNumber.w[flipCost];
           const imgN2 = assets.costNumber.r[discardCost];
@@ -483,10 +495,16 @@ export function renderGameEffect(
             cWipeH * 0.98,
           );
           const def = cardDefs[card.attr][card.index];
-          const flipCost = Math.max(0, def.costFlip + G.costChange[i]);
-          const discardCost = Math.max(
-            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
-            0,
+          const flipCost = Math.min(
+            10,
+            Math.max(0, def.costFlip + G.costChange[i]),
+          );
+          const discardCost = Math.min(
+            10,
+            Math.max(
+              def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+              0,
+            ),
           );
           const imgN1 = assets.costNumber.w[flipCost];
           const imgN2 = assets.costNumber.r[discardCost];
@@ -512,6 +530,39 @@ export function renderGameEffect(
             cWipeW * 0.09 * (imgN1.height / imgN1.width),
           );
         }
+      }
+    }
+    if (
+      hoverStates.hoverHands[0] == -1 &&
+      hoverStates.hoverHands[1] == -1 &&
+      layoutIsWide
+    ) {
+      let img = null;
+      const activeCardID = G.activeCardID;
+      if (G.phase === "payCostFlip") {
+        img = assets.phaseText[0];
+      } else if (G.phase === "payCostDiscard") {
+        img = assets.phaseText[1];
+      } else if (
+        (G.phase === "selectTarget" || G.phase === "selectTarget2") &&
+        activeCardID
+      ) {
+        if (activeCardID.attr === "des" && activeCardID.index === 3) {
+          img = assets.phaseText[4];
+        } else if (activeCardID.attr === "dis" && activeCardID.index === 2) {
+          img = assets.phaseText[3];
+        } else {
+          img = assets.phaseText[2];
+        }
+      }
+      if (img !== null) {
+        ctx.drawImage(
+          img,
+          dx - H * 0.005,
+          dy + H * 0.267,
+          H * 0.38,
+          H * 0.38 * (img.height / img.width),
+        );
       }
     }
     // ターン

@@ -39,7 +39,6 @@ export function card2(G: GameState, ctx: any) {
     if (row === undefined || col === undefined) return;
     const f = G.floor;
     if (canPlace(G, ctx, col, row, f, "des", 2)) {
-      console.log("うぇ");
       const dirs = [
         [0, 0],
         [-1, 0],

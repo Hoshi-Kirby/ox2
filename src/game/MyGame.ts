@@ -10,7 +10,6 @@ type Pos = {
 export interface GameState {
   phase:
     | "idle"
-    | "selectCard"
     | "payCostFlip"
     | "payCostDiscard"
     | "selectTarget"

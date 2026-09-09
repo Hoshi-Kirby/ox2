@@ -314,7 +314,7 @@ function combinePiece(bottom: number, top: number): number {
   // 0（空）は何でも上書きされる
   if (top === 0) return bottom;
   if (bottom === 0) return top;
-  // NOTFOUND が駒に負ける（駒が優先）
+  // NOTFOUND
   if (bottom === 6 || bottom === 7) {
     // bottom が NOTFOUND、top が駒
     // ○側NOTFOUND + ○系 → ○
@@ -325,7 +325,6 @@ function combinePiece(bottom: number, top: number): number {
     return bottom;
   }
   if (top === 6 || top === 7) {
-    // NOTFOUND は駒に負ける
     return bottom;
   }
   // ○と ○スキップ → ○スキップ
