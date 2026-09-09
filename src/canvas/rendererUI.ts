@@ -7,7 +7,7 @@ export function renderUI(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: Screen,
-  effectTimers: Record<string, number>,
+  _effectTimers: Record<string, number>,
   hoverStates: HoverUI,
 ) {
   ctx.imageSmoothingEnabled = true;

@@ -1,4 +1,4 @@
-import { useMemo, useRef, type RefObject } from "react";
+import { useMemo, useRef } from "react";
 import { Client } from "boardgame.io/react";
 import type { Settings, Help, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";

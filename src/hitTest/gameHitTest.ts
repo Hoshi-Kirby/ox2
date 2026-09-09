@@ -408,10 +408,8 @@ export function isInsideDetailHelpLeftButton(
 export function isInsideDetailHelpButton(x: number, y: number, ratio: number) {
   const { W, H, dx, dy } = computeLayout(ratio);
   let helpW = W * 1.5;
-  let helpH = W * 1.5;
   if (ratio > 0.8) {
     helpW = H;
-    helpH = H;
   }
   const btnX = dx + W - helpW * 0.2;
   const btnY = dy + helpW * 0.05;

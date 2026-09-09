@@ -1,5 +1,5 @@
 // src/GameCanvas.tsx
-import { useRef, useEffect, useState, type RefObject } from "react";
+import { useRef, useEffect, useState } from "react";
 import { renderFrame } from "./canvas/rendererFrame";
 import { renderEffect } from "./canvas/rendererEffects";
 import { renderEmpha } from "./canvas/rendererEmpha";
@@ -263,7 +263,6 @@ export default function GameCanvas({
       pressTimers: pressTimers.current,
       effectTimers: effectTimers.current,
       G,
-      ctx,
       playerID,
     });
 
