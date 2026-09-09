@@ -143,7 +143,7 @@ export function card6(G: GameState, ctx: any) {
     return;
   }
 }
-export function card7(G: GameState, ctx: any) {
+export function card7(G: GameState, _ctx: any) {
   //  積み将棋
   G.floor++;
   G.phase = "idle";

@@ -6,9 +6,9 @@ export function renderEmpha(
   ratio: number,
   screen: Screen,
   effectTimers: Record<string, number>,
-  dt: number,
+  _dt: number,
   hoverStates: HoverUI,
-  settingsRef: Settings,
+  _settingsRef: Settings,
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);

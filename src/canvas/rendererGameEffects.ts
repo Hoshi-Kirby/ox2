@@ -1,7 +1,7 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
 import { cardDefs, canPlace } from "../data";
-import type { Screen, Settings, Help, HoverUI, CardID } from "../types";
+import type { Screen, Settings, Help, HoverUI } from "../types";
 
 let t = 0;
 let winBlinkTimer = 0;
@@ -12,7 +12,7 @@ export function renderGameEffect(
   effectTimers: Record<string, number>,
   dt: number,
   hoverStates: HoverUI,
-  settingsRef: Settings,
+  _settingsRef: Settings,
   G: GameState,
   bgCtx: any,
   playerID: string,
@@ -792,10 +792,8 @@ export function renderGameEffect(
         ctx.drawImage(assets.pauseLight, btnX, dy + H * 0.6, btnW, btnH);
       }
       let helpW = W * 1.5;
-      let helpH = W * 1.5;
       if (ratio > 0.8) {
         helpW = H;
-        helpH = H;
       }
       if (hoverStates.detailHelp && !helpRef.isOpen) {
         ctx.drawImage(

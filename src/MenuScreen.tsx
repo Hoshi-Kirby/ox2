@@ -9,14 +9,7 @@ import { playBgm, startBgm, stopBgm } from "./audio/audioManager";
 import { createClickHandler } from "./hitTest/clickHandler";
 import { createHoverHandler } from "./hitTest/hoverHandler";
 import { createScrollHandler } from "./hitTest/scrollHandler";
-import type {
-  Screen,
-  Help,
-  Settings,
-  HoverUI,
-  PressTimers,
-  DeckColor,
-} from "./types";
+import type { Screen, Help, Settings, HoverUI, PressTimers } from "./types";
 
 import "./MenuScreen.css";
 

@@ -179,7 +179,7 @@ export function card5(G: GameState, ctx: any) {
   updateWinner(G, ctx);
 }
 
-export function card6(G: GameState, ctx: any) {
+export function card6(G: GameState, _ctx: any) {
   // 革命
   for (let x = 0; x < 5; x++) {
     for (let y = 0; y < 5; y++) {

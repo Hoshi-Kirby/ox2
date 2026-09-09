@@ -1,15 +1,15 @@
 import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
 import { cardDefs } from "../data";
-import type { Screen, Settings, HoverUI, CardID } from "../types";
+import type { Screen, Settings, HoverUI } from "../types";
 
 export function renderGame(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: Screen,
   effectTimers: Record<string, number>,
-  dt: number,
-  hoverStates: HoverUI,
+  _dt: number,
+  _hoverStates: HoverUI,
   settingsRef: Settings,
   G: GameState,
   bgCtx: any,
@@ -242,7 +242,6 @@ export function renderGame(
         const afterX = getHandCardX(handSize, j, baseX, cardPool, cardW);
         const beforeXadd = getHandCardXad(
           handSize - G.animLog.drawCount[i],
-          G.animLog.drawCount[i],
           j,
           baseX,
           cardPool,
@@ -273,11 +272,9 @@ export function renderGame(
           }
         }
         // コスト変動時のアニメ
-        let dCost = 0;
         if (G.animLog.costChange[i] !== 0) {
           if (effectTimers.Gchange > 300) {
             moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
-            dCost = G.animLog.costChange[i];
           } else if (effectTimers.Gchange > 200) {
             moveY = (cardH * (effectTimers.Gchange - 200)) / 100;
           }
@@ -641,7 +638,6 @@ function getHandCardX(
 }
 function getHandCardXad(
   handSize: number,
-  cardCount: number,
   index: number,
   baseX: number,
   cardPool: number,
