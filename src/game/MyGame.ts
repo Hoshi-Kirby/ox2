@@ -1,5 +1,7 @@
 import * as basic from "./moves/basic";
 import type { CardID, Settings } from "../types";
+import { getCPUActions } from "./ai/cpu";
+import { Stage } from "boardgame.io/core";
 
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 type Pos = {
@@ -62,6 +64,9 @@ export interface GameState {
   moveCount: number[];
   removeCount: number[];
   isResult: boolean;
+
+  cpuMove: boolean;
+  cpuGameStart: boolean;
 }
 
 export function createMyGame(settings: Settings) {
@@ -78,11 +83,17 @@ export function createMyGame(settings: Settings) {
       openPause: basic.openPause,
       closePause: basic.closePause,
       openresult: basic.openresult,
+      cpuCanMove: basic.cpuCanMove,
       reset: ({ G, ctx, random }: { G: GameState; ctx: any; random: any }) => {
         const initialState = createInitialState(settings, random);
 
         Object.assign(G, initialState);
         ctx.turn = 1;
+      },
+    },
+    ai: {
+      enumerate: (G: GameState, ctx: any, _playerID: string) => {
+        return getCPUActions(G, ctx);
       },
     },
 
@@ -93,7 +104,9 @@ export function createMyGame(settings: Settings) {
           return (Number(ctx.currentPlayer) + 1) % 2;
         },
       },
-
+      activePlayers: {
+        all: Stage.NULL,
+      },
       onBegin: ({
         G,
         ctx,
@@ -250,6 +263,9 @@ function createInitialState(settings: Settings, random: any): GameState {
     moveCount: [0, 0],
     removeCount: [0, 0],
     isResult: true,
+
+    cpuMove: true,
+    cpuGameStart: true,
   };
 }
 

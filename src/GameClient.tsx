@@ -3,6 +3,8 @@ import { Client } from "boardgame.io/react";
 import type { Settings, Help, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";
 import { createMyGame } from "./game/MyGame";
+import { MyBot } from "./game/ai/bot";
+import { Local } from "boardgame.io/multiplayer";
 
 type GameClientProps = {
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
@@ -81,8 +83,15 @@ export default function GameClient({
       board: Board,
       numPlayers: 2,
       debug: false,
+      multiplayer: settings.game.isCPU
+        ? Local({
+            bots: {
+              1: MyBot,
+            },
+          })
+        : Local(),
     });
   }, [settings]);
 
-  return <ClientComponent />;
+  return <ClientComponent playerID="0" />;
 }

@@ -8,7 +8,6 @@ import type { CardAttr, CardKey } from "../../types";
 
 type CardFunction = (G: GameState, ctx: any) => void;
 type CardModule = Record<CardKey, CardFunction>;
-
 // ターンエンド
 export function endTurn({
   events,
@@ -30,6 +29,7 @@ export function endTurn({
   G.faceDown[player].fill(false);
   G.animLog.costChange[player] = -G.costChange[player];
   G.costChange[player] = 0;
+  G.cpuMove = true;
   decreaseTurnEffects({ G });
 
   events.endTurn();
@@ -52,6 +52,7 @@ export function useCard(
         def.costFlip + def.costDiscard + 1 + G.costChange[player]
       ) {
         G.activeCard = cardIndex; // 今使うカードをセット
+        G.cpuMove = true;
         if (def.costFlip + G.costChange[player] > 0) {
           G.phase = "payCostFlip";
         } else if (
@@ -98,6 +99,7 @@ export function useCard(
       !G.faceDown[ctx.currentPlayer][cardIndex]
     ) {
       // すでに選択済みなら削除
+      G.cpuMove = true;
       const idx = G.costCards.indexOf(cardIndex);
       if (idx >= 0) {
         G.costCards.splice(idx, 1);
@@ -164,6 +166,7 @@ export function useCard(
       !G.faceDown[ctx.currentPlayer][cardIndex]
     ) {
       // すでに選択済みなら削除
+      G.cpuMove = true;
       const idx = G.costCards.indexOf(cardIndex);
       if (idx >= 0) {
         G.costCards.splice(idx, 1);
@@ -274,6 +277,7 @@ export function callCardFunction({ G, ctx }: { G: GameState; ctx: any }) {
 
   const fn = table[attr][`card${index}`];
   if (fn) fn(G, ctx);
+  G.cpuMove = true;
 }
 export function canPlaceAnywhere(
   G: GameState,
@@ -311,6 +315,34 @@ export function closePause({ G }: { G: GameState }) {
 }
 export function openresult({ G }: { G: GameState }) {
   G.isResult = !G.isResult;
+}
+// cpu動けるよ
+export function cpuCanMove({ G }: { G: GameState }) {
+  G.cpuMove = false;
+  G.cpuGameStart = false;
+  G.animLog.draw = [false, false];
+  G.animLog.drawCount = [1, 1];
+  G.animLog.discardFlags = [[], []];
+  G.animLog.flipFlags = [[], []];
+  G.animLog.unflipFlags = [[], []];
+  G.animLog.costChange = [0, 0];
+
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 5; c++) {
+      for (let h = 0; h < 3; h++) {
+        G.animLog.place[r][c][h] = false;
+        G.animLog.remove[r][c][h] = 0;
+      }
+    }
+  }
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 2; c++) {
+      for (let h = 0; h < 3; h++) {
+        G.animLog.placeMid[r][c][h] = false;
+        G.animLog.removeMid[r][c][h] = 0;
+      }
+    }
+  }
 }
 // アニメログの初期化
 export function resetAnimLog({ G }: { G: GameState }) {

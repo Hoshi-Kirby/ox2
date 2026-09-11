@@ -81,6 +81,8 @@ export const assets = {
   btnDeck: loadImage("/assets/button/deck.png"),
   btnShift: loadImage("/assets/button/shift.png"),
   btnSave: loadImage("/assets/button/save.png"),
+  vsCPU: loadImage("/assets/button/vsCPU.png"),
+  vs2P: loadImage("/assets/button/vs2P.png"),
   arrow: loadImages(
     "/assets/button/right_arrow.png",
     "/assets/button/right_arrow_hover.png",

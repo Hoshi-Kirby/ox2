@@ -176,6 +176,11 @@ export function renderEffect(
       // menu2表示
       if (screen === "menuOffline") {
         ctx.drawImage(assets.gameSettingUI, menu2X, menu2Y, menu2W, menu2H);
+        if (settingsRef.game.isCPU) {
+          ctx.drawImage(assets.vsCPU, menu2X, menu2Y, menu2W, menu2H);
+        } else {
+          ctx.drawImage(assets.vs2P, menu2X, menu2Y, menu2W, menu2H);
+        }
         let arrow = assets.arrow[0];
         const arrowW = menu2W * 0.05;
         const arrowH = arrowW * (arrow.height / arrow.width);

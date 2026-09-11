@@ -56,6 +56,7 @@ export type Settings = {
     firstPlayer: number;
     eventEnabled: boolean;
     shiftCardEnabled: boolean;
+    isCPU: boolean;
 
     deck0: CardID[];
     deck1: CardID[];

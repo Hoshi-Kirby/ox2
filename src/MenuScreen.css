@@ -6,7 +6,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  touch-action: none;
+  touch-action: manipulation;
 }
 .canvas-container {
   width: 100vw;
@@ -16,6 +16,7 @@ body {
   -webkit-user-select: none; /* テキスト選択無効（iOS） */
   user-select: none; /* テキスト選択無効（全般） */
   -webkit-user-drag: none; /* 画像のドラッグ無効 */
+  touch-action: none;
 }
 
 .layer {
@@ -27,12 +28,12 @@ body {
 .game-text-input {
   position: absolute;
   box-sizing: border-box;
-
   color: rgba(255, 255, 255, 0);
-  border: 3px solid rgba(255, 0, 0, 0);
+  border: 3px solid rgba(229, 16, 16, 0);
   background: rgba(255, 255, 255, 0);
-
   z-index: 100;
+  font-size: 16px; /* Safari対策 */
+  transform-origin: left top; /* 座標補正の基準点 */
 }
 .game-text-input:focus {
   outline: none;
@@ -41,27 +42,30 @@ body {
   color: transparent;
   background: rgba(255, 255, 255, 0.3);
 }
-
-/* 横長：高さ基準 */
 @media (min-aspect-ratio: 1007/1552) {
   .game-text-input {
+    width: calc(20vh / (3vh / 16px));
+    height: calc(5vh / (3vh / 16px));
+
+    /* 見た目の文字サイズを戻す */
+    transform: scale(calc(3vh / 16px));
+
+    /* 座標補正 */
     left: calc(100vw - 20vh);
     top: 17vh;
-    width: 20vh;
-    height: 5vh;
-    font-size: 3vh;
   }
 }
-
-/* 縦長：幅基準 */
 @media (max-aspect-ratio: 1007/1552) {
   .game-text-input {
+    width: cale(30.8vw / (4.6vw / 16px));
+    height: calc(18.5vw / (4.6vw / 16px));
+
+    /* 見た目の文字サイズを戻す */
+    transform: scale(calc(4.6vw / 16px));
+
+    /* 座標補正 */
     left: 69.2vw;
     top: 21.2vw;
-    width: 30.8vw;
-    height: 18.5vw;
-
-    font-size: 4.6vw;
   }
 }
 

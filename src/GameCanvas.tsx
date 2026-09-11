@@ -71,6 +71,20 @@ export default function GameCanvas({
   useEffect(() => {
     hoverStatesRef.current = hoverStates;
   }, [hoverStates]);
+  useEffect(() => {
+    if (!settings.game.isCPU) return;
+    if (!G.cpuMove) return;
+    if (G.cpuGameStart) return;
+
+    effectTimers.current.Gchange = 400;
+    const timer = setTimeout(() => {
+      moves.cpuCanMove();
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [G.cpuMove]);
+
   // 勝利
   useEffect(() => {
     if (G.winner !== null) {
@@ -145,6 +159,15 @@ export default function GameCanvas({
         ) {
           gameAnim.active = false;
         }
+      }
+
+      // 開始時CPU動かないよ
+      if (
+        G.cpuMove &&
+        G.cpuGameStart &&
+        effectTimers.current.gameStartCount == 0
+      ) {
+        moves.cpuCanMove();
       }
 
       // empha レイヤーの描画

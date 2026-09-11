@@ -242,8 +242,8 @@ export function isInsideOrgButton(x: number, y: number, ratio: number) {
   const btnX = menu2X + menu2W * 0.35;
   const btnY = menu2Y + menu2H * 0.8;
 
-  const btnW = menu2W * 0.25;
-  const btnH = menu2W * 0.2 * (assets.btnOrg.height / assets.btnOrg.width);
+  const btnW = menu2W * 0.3;
+  const btnH = menu2W * 0.25 * (assets.btnOrg.height / assets.btnOrg.width);
 
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
 }
@@ -479,6 +479,15 @@ export function isInsideSaveButton(x: number, y: number, ratio: number) {
 }
 
 // Menu2 オフライン
+// cpu
+export function isInsideCPUTrue(x: number, y: number, ratio: number) {
+  const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
+  const bh = menu2H * 0.2;
+  const bw = bh;
+  const bx = menu2X + menu2W - bw;
+  const by = menu2Y;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}
 //矢印
 export function isInsideArrowButton(
   x: number,

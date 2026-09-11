@@ -16,6 +16,7 @@ import {
   isInsideDeckButton,
   isInsideShiftButton,
   isInsideSaveButton,
+  isInsideCPUTrue,
   isInsideArrowButton,
   isInsideGameSettingDeckButton,
   isInsideChangingDeckFrame,
@@ -464,6 +465,10 @@ export function createClickHandler({
         !settingsRef.current.ui.changingDeck[0] &&
         !settingsRef.current.ui.changingDeck[1]
       ) {
+        // cpu
+        if (isInsideCPUTrue(x, y, ratio)) {
+          settingsRef.current.game.isCPU = !settingsRef.current.game.isCPU;
+        }
         // 上２
         if (isInsideArrowButton(x, y, ratio, 0, 0)) {
           settingsRef.current.ui.initialHandId += 1;

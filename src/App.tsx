@@ -44,6 +44,7 @@ export default function App() {
       firstPlayer: 2,
       eventEnabled: true,
       shiftCardEnabled: false,
+      isCPU: true,
 
       deck0: [
         { attr: "des", index: 1 },
