@@ -127,7 +127,7 @@ export const assets = {
   centerWipe: loadImage("/assets/ui/center_wipe.png"),
   turnEnd: loadImage("/assets/button/turnend.png"),
   turnEndHover: loadImage("/assets/button/turnend_hover.png"),
-  turnEndUI: loadImage("/assets/UI/turnend.png"),
+  turnEndUI: loadImage("/assets/ui/turnend.png"),
   neonLine: loadImage("/assets/ui/neon_line.png"),
   token: loadImages(
     "/assets/cards_token/token/o.png",
