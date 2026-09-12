@@ -83,7 +83,10 @@ export const assets = {
     "/assets/cards_token/decky.png",
     "/assets/cards_token/decky_g.png",
   ),
-  deckw: loadImages("/assets/cards_token/deckw.png"),
+  deckw: loadImages(
+    "/assets/cards_token/deckw.png",
+    "/assets/cards_token/deckw_g.png",
+  ),
   deckn: loadImages(
     "/assets/cards_token/deckn.png",
     "/assets/cards_token/deckn_g.png",
