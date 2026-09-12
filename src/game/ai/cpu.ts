@@ -15,27 +15,6 @@ function randomItem<T>(array: T[]): T | null {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-// idleでランダムに使用するカードを選ぶ
-function getRandomHandCard(G: GameState): number | null {
-  const candidates: number[] = [];
-  for (let i = 0; i < G.hand[CPU_PLAYER].length; i++) {
-    if (G.faceDown[CPU_PLAYER][i]) {
-      continue;
-    }
-    const player = CPU_PLAYER;
-    const faceUpCount = G.faceDown[player].filter((v) => v === false).length;
-    const card = G.hand[player][i];
-    const def = cardDefs[card.attr][card.index];
-    const costFlip = def.costFlip + G.costChange[player];
-    const costDiscard = def.costDiscard + Math.min(0, costFlip);
-    const totalCost = costFlip + costDiscard + 1;
-    if (faceUpCount >= totalCost) {
-      candidates.push(i);
-    }
-  }
-  return randomItem(candidates);
-}
-
 // コスト選択
 function getRandomCostCard(G: GameState): number | null {
   const candidates: number[] = [];

@@ -3,7 +3,7 @@ import { countPieces, findReach, checkWin } from "../moves/check.ts";
 
 export function evaluateState(
   G: GameState,
-  ctx: any,
+  _ctx: any,
   playerID: string,
 ): number {
   const me = Number(playerID);
