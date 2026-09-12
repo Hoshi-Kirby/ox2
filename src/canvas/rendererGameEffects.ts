@@ -97,8 +97,8 @@ export function renderGameEffect(
     if (winBlinkTimer >= 1000) {
       winBlinkTimer -= 1000;
     }
-    const blinkAlpha =
-      (Math.sin((winBlinkTimer / 1000) * Math.PI * 2) + 1) / 4 + 0.5;
+    const blinkAlpha = (Math.sin((winBlinkTimer / 1000) * Math.PI * 2) + 1) / 4;
+    const blinkAlpha2 = blinkAlpha + 0.5;
     const winPosSet = new Set<string>();
     if (G.winner !== null) {
       for (const line of G.winnerLines) {
@@ -241,7 +241,7 @@ export function renderGameEffect(
       }
     }
     if (G.winner !== null) {
-      ctx.globalAlpha = blinkAlpha;
+      ctx.globalAlpha = blinkAlpha2;
       ctx.strokeStyle = "white";
       ctx.lineWidth = boardW * 0.03;
 

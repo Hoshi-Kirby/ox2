@@ -229,7 +229,8 @@ export function isInsideMenu2DeckButton(
   const btnX = menu2X + menu2W * (0.2 + index * 0.25);
   const btnY = menu2Y + menu2H * 0.4;
 
-  const btnW = (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width);
+  const btnW =
+    (menu2H * 0.1) / (assets.deckw[0].height / assets.deckw[0].width);
   const btnH = menu2H * 0.1;
 
   return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
@@ -433,7 +434,7 @@ export function isInsideDeckIconButton(x: number, y: number, ratio: number) {
   }
 
   let deckW = deckListW * 0.24;
-  const deckH = deckW * (assets.deckr.height / assets.deckr.width);
+  const deckH = deckW * (assets.deckr[0].height / assets.deckr[0].width);
   const deckX = dx + W - deckListW * 0.4;
   const deckY = dy + deckListH * 0.05;
 
@@ -546,7 +547,7 @@ export function isInsideGameSettingDeckButton(
   ratio: number,
 ) {
   const { menu2X, menu2Y, menu2W, menu2H } = calcMenu2Layout(ratio);
-  const deckImg = assets.deckw;
+  const deckImg = assets.deckw[0];
 
   const btnX = menu2X + menu2W * 0.55 + index * menu2W * 0.22;
   const btnY = menu2Y + menu2H * 0.47;
@@ -582,7 +583,7 @@ export function isInsideChangingDeckDeck(
     menu2X + menu2W * 0.38 + index * menu2W * 0.22 + index2 * menu2W * 0.11;
   const by = menu2Y + menu2H * 0.59;
   const bw = menu2W * 0.1;
-  const bh = bw * (assets.deckw.height / assets.deckw.width);
+  const bh = bw * (assets.deckw[0].height / assets.deckw[0].width);
   return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
 }
 // シフトカード

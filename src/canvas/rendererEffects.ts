@@ -258,7 +258,7 @@ export function renderEffect(
           }
           const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
           const deckImg =
-            deckImageMap[colors[settingsRef.game.selectedDeckP[i]]];
+            deckImageMap[colors[settingsRef.game.selectedDeckP[i]]][0];
           ctx.drawImage(
             deckImg,
             menu2X + menu2W * 0.55 + i * menu2W * 0.22 + shake,
@@ -330,10 +330,11 @@ export function renderEffect(
               menu2W * 0.5 * (assets.uiframe1.height / assets.uiframe1.width),
             );
             for (let j = 0; j < 4; j++) {
-              const Img = deckImageMap[colors[j]];
+              let isg = 0;
               if (decks[j].length < 20) {
-                ctx.filter = "grayscale(100%)";
+                isg = 1;
               }
+              const Img = deckImageMap[colors[j]][isg];
 
               ctx.drawImage(
                 Img,
@@ -342,7 +343,6 @@ export function renderEffect(
                 menu2W * 0.1,
                 menu2W * 0.1 * (Img.height / Img.width),
               );
-              ctx.filter = "none";
               ctx.font = `${menu2H * 0.02}px Komorebi`;
               ctx.fillText(
                 names[j],
@@ -377,7 +377,7 @@ export function renderEffect(
 
         for (let i = 0; i < 3; i++) {
           const color = colors[i];
-          const img = deckImageMap[color];
+          const img = deckImageMap[color][0];
 
           if (hoverStates.menuDeck[i]) {
             deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
@@ -392,7 +392,7 @@ export function renderEffect(
             img,
             menu2X + menu2W * (0.2 + i * 0.25) + shake,
             menu2Y + menu2H * 0.4 + lift,
-            (menu2H * 0.1) / (assets.deckw.height / assets.deckw.width),
+            (menu2H * 0.1) / (assets.deckw[0].height / assets.deckw[0].width),
             menu2H * 0.1,
           );
           ctx.font = `${menu2H * 0.05}px Komorebi`;
@@ -836,7 +836,6 @@ export function renderEffect(
 
           const isFull = count >= 4;
           if (isFull) {
-            ctx.filter = "grayscale(100%)";
             const img = assets.cardAssets[attrs[a]][i];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
@@ -859,8 +858,20 @@ export function renderEffect(
               cardW * 0.3,
               cardW * 0.3 * (imgN.height / imgN.width),
             );
+            const imageData = ctx.getImageData(x, y, cardW, cardH);
+            const data = imageData.data;
+            for (let p = 0; p < data.length; p += 4) {
+              const r = data[p];
+              const g = data[p + 1];
+              const b = data[p + 2];
+              const gray = (r + g + b) / 3;
+
+              data[p] = gray;
+              data[p + 1] = gray;
+              data[p + 2] = gray;
+            }
+            ctx.putImageData(imageData, x, y);
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
-            ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
@@ -916,7 +927,6 @@ export function renderEffect(
 
           const isFull = count >= 4;
           if (isFull) {
-            ctx.filter = "grayscale(100%)";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 4) * carddx;
@@ -939,8 +949,19 @@ export function renderEffect(
               cardW * 0.3,
               cardW * 0.3 * (imgN.height / imgN.width),
             );
+            const imageData = ctx.getImageData(x, y, cardW, cardH);
+            const data = imageData.data;
+            for (let p = 0; p < data.length; p += 4) {
+              const r = data[p];
+              const g = data[p + 1];
+              const b = data[p + 2];
+              const gray = (r + g + b) / 3;
+              data[p] = gray;
+              data[p + 1] = gray;
+              data[p + 2] = gray;
+            }
+            ctx.putImageData(imageData, x, y);
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
-            ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 4) * carddx;
@@ -997,7 +1018,6 @@ export function renderEffect(
 
           const isFull = count >= 4;
           if (isFull) {
-            ctx.filter = "grayscale(100%)";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
@@ -1020,8 +1040,20 @@ export function renderEffect(
               cardW * 0.3,
               cardW * 0.3 * (imgN.height / imgN.width),
             );
+            const imageData = ctx.getImageData(x, y, cardW, cardH);
+            const data = imageData.data;
+            for (let p = 0; p < data.length; p += 4) {
+              const r = data[p];
+              const g = data[p + 1];
+              const b = data[p + 2];
+              const gray = (r + g + b) / 3;
+              data[p] = gray;
+              data[p + 1] = gray;
+              data[p + 2] = gray;
+            }
+
+            ctx.putImageData(imageData, x, y);
           } else if (hoverStates.hoverCards[attrs[a]][i - 1]) {
-            ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
@@ -1052,7 +1084,6 @@ export function renderEffect(
                 cardH * 0.04 * ((cardW * 0.3) / cardW),
             );
           } else if (shiftCard == 2) {
-            ctx.filter = "none";
             const img = assets.cardAssets[attrs[a]][i + shiftCard];
             if (!img || !img.complete) continue;
             const x = baseX + (i - 1) * carddx;
@@ -1079,7 +1110,6 @@ export function renderEffect(
         }
       }
     }
-    ctx.filter = "none";
 
     // 戻る
     baseX = dx + W * 0.01;
@@ -1240,7 +1270,7 @@ export function renderEffect(
         deckOffset[0] = 0;
       }
       const shake = Math.sin(deckOffset[0]) * (deckListW * 0.01);
-      const deckImg = deckImageMap[settingsRef.game.editDeckColor];
+      const deckImg = deckImageMap[settingsRef.game.editDeckColor][0];
 
       if (effectTimers.deckListClose == 0) {
         ctx.drawImage(

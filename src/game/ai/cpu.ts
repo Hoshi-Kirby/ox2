@@ -1,6 +1,6 @@
 import type { GameState } from "../MyGame";
 
-import { canPlace } from "../../data";
+import { canPlace, cardDefs } from "../../data";
 
 type CPUAction = {
   move: string;
@@ -22,7 +22,16 @@ function getRandomHandCard(G: GameState): number | null {
     if (G.faceDown[CPU_PLAYER][i]) {
       continue;
     }
-    candidates.push(i);
+    const player = CPU_PLAYER;
+    const faceUpCount = G.faceDown[player].filter((v) => v === false).length;
+    const card = G.hand[player][i];
+    const def = cardDefs[card.attr][card.index];
+    const costFlip = def.costFlip + G.costChange[player];
+    const costDiscard = def.costDiscard + Math.min(0, costFlip);
+    const totalCost = costFlip + costDiscard + 1;
+    if (faceUpCount >= totalCost) {
+      candidates.push(i);
+    }
   }
   return randomItem(candidates);
 }
@@ -43,6 +52,34 @@ function getRandomCostCard(G: GameState): number | null {
     candidates.push(i);
   }
   return randomItem(candidates);
+}
+// すべて版
+function getHandCards(G: GameState): number[] {
+  const candidates: number[] = [];
+
+  for (let i = 0; i < G.hand[CPU_PLAYER].length; i++) {
+    if (G.faceDown[CPU_PLAYER][i]) {
+      continue;
+    }
+
+    const player = CPU_PLAYER;
+    const faceUpCount = G.faceDown[player].filter((v) => v === false).length;
+
+    const card = G.hand[player][i];
+    const def = cardDefs[card.attr][card.index];
+
+    const costFlip = def.costFlip + G.costChange[player];
+
+    const costDiscard = def.costDiscard + Math.min(0, costFlip);
+
+    const totalCost = costFlip + costDiscard + 1;
+
+    if (faceUpCount >= totalCost) {
+      candidates.push(i);
+    }
+  }
+
+  return candidates;
 }
 // 通常の盤面から canPlace() が true の場所を取得
 function getBoardTargets(G: GameState, ctx: any): any[] {
@@ -95,7 +132,7 @@ function getBoardTargets(G: GameState, ctx: any): any[] {
   return targets;
 }
 // selectTarget
-function getSelectTargetAction(G: GameState, ctx: any): CPUAction[] {
+export function getSelectTargetAction(G: GameState, ctx: any): CPUAction[] {
   const card = G.activeCardID;
   if (!card) {
     return [];
@@ -110,25 +147,18 @@ function getSelectTargetAction(G: GameState, ctx: any): CPUAction[] {
       candidates.push(i);
     }
 
-    const index = randomItem(candidates);
-
-    if (index === null) {
-      return [];
-    }
-    return [
-      {
-        move: "registerTarget",
-        args: [
-          {
-            row: null,
-            col: null,
-            index,
-            indexH: null,
-            indexV: null,
-          },
-        ],
-      },
-    ];
+    return candidates.map((index) => ({
+      move: "registerTarget",
+      args: [
+        {
+          row: null,
+          col: null,
+          index,
+          indexH: null,
+          indexV: null,
+        },
+      ],
+    }));
   }
   // dis2
   if (card.attr === "dis" && card.index === 2) {
@@ -156,33 +186,22 @@ function getSelectTargetAction(G: GameState, ctx: any): CPUAction[] {
         });
       }
     }
-    const target = randomItem(targets);
-    if (!target) {
-      return [];
-    }
-    return [
-      {
-        move: "registerTarget",
-        args: [target],
-      },
-    ];
+    return targets.map((target) => ({
+      move: "registerTarget",
+      args: [target],
+    }));
   }
   // その他
   const targets = getBoardTargets(G, ctx);
-  const target = randomItem(targets);
-  if (!target) {
-    return [];
-  }
-  return [
-    {
-      move: "registerTarget",
-      args: [target],
-    },
-  ];
+
+  return targets.map((target) => ({
+    move: "registerTarget",
+    args: [target],
+  }));
 }
 
 // selectTarget2
-function getSelectTarget2Action(G: GameState, ctx: any): CPUAction[] {
+export function getSelectTarget2Action(G: GameState, ctx: any): CPUAction[] {
   const card = G.activeCardID;
 
   if (!card) {
@@ -346,14 +365,10 @@ function getSelectTarget2Action(G: GameState, ctx: any): CPUAction[] {
 }
 
 // CPU
+// CPU
 export function getCPUActions(G: GameState, ctx: any): CPUAction[] {
   const actions: CPUAction[] = [];
-
   if (Number(ctx.currentPlayer) !== CPU_PLAYER || G.cpuMove) {
-    // actions.push({
-    //   move: "wait",
-    //   args: [],
-    // });
     return [];
   }
 
@@ -378,15 +393,15 @@ export function getCPUActions(G: GameState, ctx: any): CPUAction[] {
     return actions;
   }
 
-  // CPUターンでは、まず常にターンエンドを候補に入れる
   actions.push({
     move: "endTurn",
     args: [],
   });
-  if (G.phase === "idle") {
-    const cardIndex = getRandomHandCard(G);
 
-    if (cardIndex !== null) {
+  if (G.phase === "idle") {
+    const cardIndexes = getHandCards(G);
+
+    for (const cardIndex of cardIndexes) {
       actions.push({
         move: "useCard",
         args: [cardIndex],
@@ -395,6 +410,5 @@ export function getCPUActions(G: GameState, ctx: any): CPUAction[] {
 
     return actions;
   }
-
   return actions;
 }

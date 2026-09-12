@@ -67,12 +67,27 @@ export const assets = {
   tapPassive: loadImage("/assets/button/tap_passive.png"),
   tapActive: loadImage("/assets/button/tap_active.png"),
   editText: loadImage("/assets/ui/edit_text.png"),
-  deckr: loadImage("/assets/cards_token/deckr.png"),
-  deckg: loadImage("/assets/cards_token/deckg.png"),
-  deckb: loadImage("/assets/cards_token/deckb.png"),
-  decky: loadImage("/assets/cards_token/decky.png"),
-  deckw: loadImage("/assets/cards_token/deckw.png"),
-  deckn: loadImage("/assets/cards_token/deckn.png"),
+  deckr: loadImages(
+    "/assets/cards_token/deckr.png",
+    "/assets/cards_token/deckr_g.png",
+  ),
+  deckg: loadImages(
+    "/assets/cards_token/deckg.png",
+    "/assets/cards_token/deckg_g.png",
+  ),
+  deckb: loadImages(
+    "/assets/cards_token/deckb.png",
+    "/assets/cards_token/deckb_g.png",
+  ),
+  decky: loadImages(
+    "/assets/cards_token/decky.png",
+    "/assets/cards_token/decky_g.png",
+  ),
+  deckw: loadImages("/assets/cards_token/deckw.png"),
+  deckn: loadImages(
+    "/assets/cards_token/deckn.png",
+    "/assets/cards_token/deckn_g.png",
+  ),
   btnOrg: loadImage("/assets/button/organize.png"),
   btnOrgHover: loadImage("/assets/button/organize_hover.png"),
   makeBg: loadImage("/assets/backgrounds/restaurant.png"),

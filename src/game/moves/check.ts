@@ -46,7 +46,7 @@ export function updateWinner(G: GameState, ctx: any) {
   G.winner = current;
   G.winnerLines = current === 0 ? oLines : xLines;
 }
-function countPieces(G: GameState, player: number): number {
+export function countPieces(G: GameState, player: number): number {
   let count = 0;
 
   // board の駒
@@ -71,8 +71,8 @@ function countPieces(G: GameState, player: number): number {
 
   return count;
 }
-
-function checkWin(G: GameState, player: number): Pos[][] {
+// ラインの個数
+export function checkWin(G: GameState, player: number): Pos[][] {
   // 3D 全方向ステップ
   const directions: Pos[] = [];
   for (let dx = -1; dx <= 1; dx++) {
@@ -132,6 +132,89 @@ function checkWin(G: GameState, player: number): Pos[][] {
 
   return results;
 }
+type ReachInfo = {
+  target: Pos;
+  passedValue: number | null;
+};
+// リーチ
+export function findReach(G: GameState, player: number): ReachInfo[] {
+  const directions: Pos[] = [];
+
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dz = -1; dz <= 1; dz++) {
+        if (dx === 0 && dy === 0 && dz === 0) continue;
+
+        if (
+          dx > 0 ||
+          (dx === 0 && dy > 0) ||
+          (dx === 0 && dy === 0 && dz > 0)
+        ) {
+          directions.push({
+            x: dx,
+            y: dy,
+            z: dz,
+          });
+        }
+      }
+    }
+  }
+
+  const starts: Pos[] = [];
+
+  // board
+  for (let x = 0; x < 5; x++) {
+    for (let y = 0; y < 5; y++) {
+      for (let z = 0; z < 3; z++) {
+        const v = G.board[x][y][z];
+
+        if (isMyPieceBoard(v, player)) {
+          starts.push({ x, y, z });
+        }
+      }
+    }
+  }
+
+  // midBoard
+  for (let mx = 0; mx < 2; mx++) {
+    for (let my = 0; my < 2; my++) {
+      for (let z = 0; z < 3; z++) {
+        const v = G.midBoard[mx][my][z];
+
+        if (isMyPieceMid(v, player)) {
+          starts.push({
+            x: 1.5 + mx,
+            y: 1.5 + my,
+            z,
+          });
+        }
+      }
+    }
+  }
+
+  const results: ReachInfo[] = [];
+  for (const A of starts) {
+    for (const dir of directions) {
+      const line1 = checkReachLine(G, player, A, dir, false);
+      if (line1) {
+        results.push(...line1);
+      }
+      if (shouldUseHalfStep(dir)) {
+        const halfDir = {
+          x: dir.x / 2,
+          y: dir.y / 2,
+          z: dir.z,
+        };
+        const line2 = checkReachLine(G, player, A, halfDir, true);
+        if (line2) {
+          results.push(...line2);
+        }
+      }
+    }
+  }
+
+  return results;
+}
 
 function isMyPieceBoard(v: number, player: number): boolean {
   // board: 0 空, 1◯,2×,3両方,4◯ジャンプ,5×ジャンプ,6×不可,7◯不可
@@ -169,8 +252,11 @@ function sampleCell(G: GameState, pos: Pos): number | null {
   const isIntX = Number.isInteger(x);
   const isIntY = Number.isInteger(y);
   const isIntZ = Number.isInteger(z);
+  if (!isIntZ) {
+    return null;
+  }
 
-  if (isIntX && isIntY) {
+  if (isIntX && isIntY && isIntZ) {
     const ix = x | 0;
     const iy = y | 0;
     if (ix < 0 || ix >= 5 || iy < 0 || iy >= 5) return null;
@@ -216,6 +302,7 @@ function hasFirewallBetween(G: GameState, pos: Pos, next: Pos): boolean {
   return false;
 }
 
+// ラインがあるか
 function checkLine(
   G: GameState,
   player: number,
@@ -290,7 +377,18 @@ function checkLine(
           }
         }
       } else {
-        break;
+        // ★ midBoard の通常探索（縦方向だけ許可）
+        const isVertical = step.x === 0 && step.y === 0 && step.z === 1;
+
+        if (isVertical) {
+          if (isMyPieceMid(v, player)) {
+            countMy++;
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
       }
     }
 
@@ -306,4 +404,200 @@ function checkLine(
   }
 
   return null;
+}
+// リーチがあるか
+function checkReachLine(
+  G: GameState,
+  player: number,
+  A: Pos,
+  step: Pos,
+  useHalf: boolean,
+): ReachInfo[] {
+  const results: ReachInfo[] = [];
+  let countMy = 0;
+  let firstMy: Pos | null = null;
+  let passed: Pos | null = null;
+  let passedValue: number | null = null;
+  let pos: Pos = { ...A };
+
+  for (let k = 0; k < 6; k++) {
+    const v = sampleCell(G, pos);
+    if (v === null) break;
+    const isIntX = Number.isInteger(pos.x);
+    const isIntY = Number.isInteger(pos.y);
+    let isMyPiece = false;
+    let isPassable = false;
+
+    if (useHalf) {
+      // ★ midBoard 探索モード
+      if (!isIntX || !isIntY) {
+        if (isMyPieceMid(v, player)) {
+          isMyPiece = true;
+        } else {
+          isPassable = true;
+        }
+      } else {
+        if (isMyPieceBoard(v, player)) {
+          isMyPiece = true;
+        } else {
+          isPassable = true;
+        }
+      }
+    } else {
+      // ★ 通常 board 探索モード
+      if (isIntX && isIntY) {
+        if (isMyPieceBoard(v, player)) {
+          isMyPiece = true;
+        } else if (isOppPieceBoard(v, player)) {
+          if (isJumpForPlayerBoard(v, player)) {
+          } else {
+            isPassable = true;
+          }
+        } else {
+          isPassable = true;
+        }
+
+        // ここで「途中の midBoard（step/2）」をチェック
+        const midPos: Pos = {
+          x: pos.x + step.x / 2,
+          y: pos.y + step.y / 2,
+          z: pos.z + step.z / 2,
+        };
+        const mv = sampleCell(G, midPos);
+        if (mv !== null) {
+          const midIntX = Number.isInteger(midPos.x);
+          const midIntY = Number.isInteger(midPos.y);
+          if (!midIntX || !midIntY) {
+            if (mv === 0) {
+            } else {
+              break;
+            }
+          }
+        }
+      } else {
+        const isVertical = step.x === 0 && step.y === 0 && step.z === 1;
+
+        if (isVertical) {
+          if (isMyPieceMid(v, player)) {
+            isMyPiece = true;
+          } else {
+            isPassable = true;
+          }
+        } else {
+          break;
+        }
+      }
+    }
+
+    // 自分
+    if (isMyPiece) {
+      countMy++;
+      if (firstMy === null) {
+        firstMy = { ...pos };
+      } else if (countMy === 2) {
+        if (passed !== null) {
+          results.push({
+            target: { ...passed },
+            passedValue,
+          });
+        } else {
+          const before = checkReachTarget(G, player, firstMy, {
+            x: -step.x,
+            y: -step.y,
+            z: -step.z,
+          });
+
+          if (before !== null) {
+            results.push(before);
+          }
+
+          const after = checkReachTarget(G, player, pos, step);
+
+          if (after !== null) {
+            results.push(after);
+          }
+        }
+
+        break;
+      }
+
+      pos = {
+        x: pos.x + step.x,
+        y: pos.y + step.y,
+        z: pos.z + step.z,
+      };
+
+      continue;
+    }
+    // 自分以外
+    if (isPassable) {
+      if (passed !== null) {
+        break;
+      }
+
+      passed = { ...pos };
+      passedValue = v;
+
+      pos = {
+        x: pos.x + step.x,
+        y: pos.y + step.y,
+        z: pos.z + step.z,
+      };
+
+      continue;
+    }
+
+    break;
+  }
+
+  return results;
+}
+
+function checkReachTarget(
+  G: GameState,
+  player: number,
+  base: Pos,
+  step: Pos,
+): ReachInfo | null {
+  const target: Pos = {
+    x: base.x + step.x,
+    y: base.y + step.y,
+    z: base.z + step.z,
+  };
+  const v = sampleCell(G, target);
+
+  if (v === null) {
+    return null;
+  }
+
+  const isDiagonal = Math.abs(step.x) === 1 && Math.abs(step.y) === 1;
+  if (isDiagonal) {
+    const midPos: Pos = {
+      x: base.x + step.x / 2,
+      y: base.y + step.y / 2,
+      z: base.z + step.z / 2,
+    };
+
+    const mv = sampleCell(G, midPos);
+    if (mv !== null) {
+      const midIntX = Number.isInteger(midPos.x);
+      const midIntY = Number.isInteger(midPos.y);
+      if (!midIntX || !midIntY) {
+        if (mv === 0) {
+        } else {
+          return null;
+        }
+      }
+    }
+  }
+
+  if (isMyPieceBoard(v, player) || isMyPieceMid(v, player)) {
+    return null;
+  }
+
+  // 自分の駒以外ならリーチ
+  return {
+    target,
+    passedValue: v,
+  };
 }
