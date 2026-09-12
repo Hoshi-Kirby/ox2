@@ -13,10 +13,14 @@ function loadNumberedImages(
   path: string,
   count: number,
   suffix = "",
+  skipZero = false,
 ): HTMLImageElement[] {
-  return Array.from({ length: count }, (_, i) =>
-    loadImage(`${path}/${i}${suffix}.png`),
-  );
+  return Array.from({ length: count + 1 }, (_, i) => {
+    if (skipZero && i === 0) {
+      return new Image();
+    }
+    return loadImage(`${path}/${i}${suffix}.png`);
+  });
 }
 
 function loadImagesUpTo(path: string, maxNumber: number, suffix = "") {

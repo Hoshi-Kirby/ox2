@@ -82,8 +82,6 @@ export function virtualStep(state: VirtualState): void {
 
       const score = evaluateState(nextState.G, nextState.ctx, "1");
 
-      console.log("仮想ターゲット:", action.args[0], `評価=${score}`);
-
       if (score > bestScore) {
         bestScore = score;
         bestState = nextState;
@@ -115,8 +113,6 @@ export function virtualStep(state: VirtualState): void {
 
       const score = evaluateState(nextState.G, nextState.ctx, "1");
 
-      console.log("仮想ターゲット2:", action.args[0], `評価=${score}`);
-
       if (score > bestScore) {
         bestScore = score;
         bestState = nextState;
@@ -132,8 +128,10 @@ export function virtualStep(state: VirtualState): void {
   }
 }
 
-export function virtualRunAction(state: VirtualState, cardIndex: number): void {
-  // idleからカードを使う
+export function virtualRunAction(
+  state: VirtualState,
+  cardIndex: number,
+): boolean {
   virtualUseCard(state, cardIndex);
 
   let safety = 0;
@@ -143,13 +141,19 @@ export function virtualRunAction(state: VirtualState, cardIndex: number): void {
 
     safety++;
 
-    // 無限ループ防止
     if (safety >= 20) {
-      console.warn(
-        "virtualRunAction: 20ステップ以内にidleへ戻りませんでした",
-        state.G.phase,
-      );
-      break;
+      console.warn("virtualRunAction: 20ステップ以内にidleへ戻りませんでした", {
+        phase: state.G.phase,
+        cardIndex,
+        activeCard: state.G.activeCard,
+        activeCardID: state.G.activeCardID,
+        costCards: state.G.costCards,
+        targets: state.G.targets,
+      });
+
+      return false;
     }
   }
+
+  return true;
 }

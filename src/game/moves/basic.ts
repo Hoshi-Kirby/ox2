@@ -51,6 +51,16 @@ export function useCard(
         faceUpCount >=
         def.costFlip + def.costDiscard + 1 + G.costChange[player]
       ) {
+        console.log("カード使用判定", {
+          player,
+          cardIndex,
+          faceUpCount,
+          costFlip: def.costFlip,
+          costDiscard: def.costDiscard,
+          costChange: G.costChange[player],
+          required: def.costFlip + def.costDiscard + 1 + G.costChange[player],
+          faceDown: [...G.faceDown[player]],
+        });
         G.activeCard = cardIndex; // 今使うカードをセット
         G.cpuMove = true;
         if (def.costFlip + G.costChange[player] > 0) {

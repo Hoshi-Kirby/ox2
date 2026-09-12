@@ -46,12 +46,7 @@ function getHandCards(G: GameState): number[] {
 
     const card = G.hand[player][i];
     const def = cardDefs[card.attr][card.index];
-
-    const costFlip = def.costFlip + G.costChange[player];
-
-    const costDiscard = def.costDiscard + Math.min(0, costFlip);
-
-    const totalCost = costFlip + costDiscard + 1;
+    const totalCost = def.costFlip + def.costDiscard + 1 + G.costChange[player];
 
     if (faceUpCount >= totalCost) {
       candidates.push(i);

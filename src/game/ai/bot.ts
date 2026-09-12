@@ -9,7 +9,15 @@ import { evaluateState } from "./evaluate";
 
 export class MyBot extends Bot {
   play({ G, ctx }: { G: any; ctx: any }, playerID: string) {
+    console.log("CPU PLAY", {
+      phase: G.phase,
+      currentPlayer: ctx.currentPlayer,
+      cpuMove: G.cpuMove,
+    });
+
     const actions = getCPUActions(G, ctx);
+
+    console.log("CPU ACTIONS", actions);
 
     if (actions.length === 0) {
       return new Promise<{
@@ -26,8 +34,6 @@ export class MyBot extends Bot {
       move: "endTurn",
       args: [],
     };
-
-    console.log("仮想:", `TurnEnd`, `評価=${baseScore}`);
     let bestScore = baseScore;
     for (const cpuAction of actions) {
       if (cpuAction.move === "endTurn") {
@@ -37,14 +43,11 @@ export class MyBot extends Bot {
       if (cpuAction.move === "useCard") {
         const cardIndex = cpuAction.args[0];
         const state = createVirtualState(G, ctx);
-        virtualRunAction(state, cardIndex);
+        const success = virtualRunAction(state, cardIndex);
+        if (!success) {
+          continue;
+        }
         const score = evaluateState(state.G, state.ctx, playerID);
-        console.log(
-          "仮想:",
-          `card=${cardIndex}`,
-          `評価=${score}`,
-          state.G.phase,
-        );
         if (score > bestScore) {
           bestScore = score;
           bestAction = cpuAction;
@@ -58,16 +61,12 @@ export class MyBot extends Bot {
 
         const score = evaluateState(state.G, state.ctx, playerID);
 
-        console.log("仮想:", "target=", target, `評価=${score}`, state.G.phase);
-
         if (score > bestScore) {
           bestScore = score;
           bestAction = cpuAction;
         }
       }
     }
-
-    console.log("実:", G.phase);
 
     if (bestAction !== null) {
       const action = this.enumerate(G, ctx, playerID).find(
