@@ -247,7 +247,7 @@ export function createClickHandler({
 
       if (isInsideOrgButton(x, y, ratio)) {
         if (settingsRef.current.ui.seEnabled) {
-          playSe("seStart");
+          playSe("seClick");
         }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;

@@ -80,6 +80,10 @@ export default function GameCanvas({
     const timer = setTimeout(() => {
       moves.cpuCanMove();
     }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
     return () => {
       clearTimeout(timer);
     };

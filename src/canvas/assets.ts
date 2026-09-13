@@ -15,7 +15,7 @@ function loadNumberedImages(
   suffix = "",
   skipZero = false,
 ): HTMLImageElement[] {
-  return Array.from({ length: count + 1 }, (_, i) => {
+  return Array.from({ length: count }, (_, i) => {
     if (skipZero && i === 0) {
       return new Image();
     }
@@ -23,16 +23,17 @@ function loadNumberedImages(
   });
 }
 
-function loadImagesUpTo(path: string, maxNumber: number, suffix = "") {
+function loadImagesUpTo(
+  path: string,
+  indices: number[],
+  suffix = "",
+): Record<number, HTMLImageElement> {
   const result: Record<number, HTMLImageElement> = {};
-  for (let i = 0; i <= maxNumber; i++) {
-    const img = new Image();
-    img.src = `${path}/${i}${suffix}.png`;
-    img.onload = () => {
-      result[i] = img;
-    };
-    img.onerror = () => {};
+
+  for (const i of indices) {
+    result[i] = loadImage(`${path}/${i}${suffix}.png`);
   }
+
   return result;
 }
 
@@ -183,29 +184,36 @@ export const assets = {
   onemore: loadImage("/assets/button/onemore.png"),
   onemoreHover: loadImage("/assets/button/onemore_hover.png"),
 
-  helpText: loadNumberedImages("/assets/ui/text_help", 6),
+  helpText: loadNumberedImages("/assets/ui/text_help", 6, "", true),
   detailHelpIcon: loadImage("/assets/button/detail_help.png"),
   blueButton: loadImage("/assets/button/blue_button.png"),
   detailHelp: loadImage("/assets/ui/detail_help_text.png"),
-  detailHelpText: loadImagesUpTo("/assets/ui/text_help", 40, "d"),
+  detailHelpText: loadImagesUpTo(
+    "/assets/ui/text_help",
+    [
+      0, 1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 24,
+      25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38,
+    ],
+    "d",
+  ),
 
   cardAssets: {
-    des: loadNumberedImages("/assets/cards_token/des", 8),
-    gen: loadNumberedImages("/assets/cards_token/gen", 8),
-    dis: loadNumberedImages("/assets/cards_token/dis", 8),
-    sup: loadNumberedImages("/assets/cards_token/sup", 8),
+    des: loadNumberedImages("/assets/cards_token/des", 8, "", true),
+    gen: loadNumberedImages("/assets/cards_token/gen", 8, "", true),
+    dis: loadNumberedImages("/assets/cards_token/dis", 8, "", true),
+    sup: loadNumberedImages("/assets/cards_token/sup", 8, "", true),
   },
   cardBarAssets: {
-    des: loadNumberedImages("/assets/cards_token/des", 8, "b"),
-    gen: loadNumberedImages("/assets/cards_token/gen", 8, "b"),
-    dis: loadNumberedImages("/assets/cards_token/dis", 8, "b"),
-    sup: loadNumberedImages("/assets/cards_token/sup", 8, "b"),
+    des: loadNumberedImages("/assets/cards_token/des", 8, "b", true),
+    gen: loadNumberedImages("/assets/cards_token/gen", 8, "b", true),
+    dis: loadNumberedImages("/assets/cards_token/dis", 8, "b", true),
+    sup: loadNumberedImages("/assets/cards_token/sup", 8, "b", true),
   },
   cardDescriptionAssets: {
-    des: loadNumberedImages("/assets/ui/des", 8),
-    gen: loadNumberedImages("/assets/ui/gen", 8),
-    dis: loadNumberedImages("/assets/ui/dis", 8),
-    sup: loadNumberedImages("/assets/ui/sup", 8),
+    des: loadNumberedImages("/assets/ui/des", 8, "", true),
+    gen: loadNumberedImages("/assets/ui/gen", 8, "", true),
+    dis: loadNumberedImages("/assets/ui/dis", 8, "", true),
+    sup: loadNumberedImages("/assets/ui/sup", 8, "", true),
   },
   costNumber: {
     w: loadNumberedImages("/assets/cards_token/number", 11),

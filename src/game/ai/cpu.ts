@@ -339,7 +339,6 @@ export function getSelectTarget2Action(G: GameState, ctx: any): CPUAction[] {
 }
 
 // CPU
-// CPU
 export function getCPUActions(G: GameState, ctx: any): CPUAction[] {
   const actions: CPUAction[] = [];
   if (Number(ctx.currentPlayer) !== CPU_PLAYER || G.cpuMove) {

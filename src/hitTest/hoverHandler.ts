@@ -20,6 +20,7 @@ import {
   detectHelpButtonHover,
 } from "./hitTest";
 import type { Screen, HoverUI, PressTimers } from "../types";
+import { playSe } from "../audio/audioManager";
 let lastCardPoolTarget: string | null = null;
 let lastDeckBarTarget = -1;
 
@@ -93,6 +94,15 @@ export function createHoverHandler({
       );
       const changed = nextMenu.some((value, i) => value !== currentMenu[i]);
       if (changed) {
+        const prevMenu = hoverStatesRef.current.menu;
+        for (let i = 0; i < nextMenu.length; i++) {
+          if (!prevMenu[i] && nextMenu[i]) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seHover");
+            }
+            break;
+          }
+        }
         setHoverStates((prev) => ({
           ...prev,
           menu: nextMenu,
@@ -112,6 +122,15 @@ export function createHoverHandler({
       );
       const changed = nextMenu.some((value, i) => value !== currentMenu[i]);
       if (changed) {
+        for (let i = 0; i < nextMenu.length; i++) {
+          const prevMenu = hoverStatesRef.current.menu;
+          if (!prevMenu[i] && nextMenu[i]) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seHover");
+            }
+            break;
+          }
+        }
         setHoverStates((prev) => ({
           ...prev,
           menu: nextMenu,
@@ -133,6 +152,11 @@ export function createHoverHandler({
       const insideBack = isInsideBackButton(x, y, ratio);
 
       if (hoverStatesRef.current.back !== insideBack) {
+        if (insideBack) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, back: insideBack }));
       }
     }
@@ -145,6 +169,11 @@ export function createHoverHandler({
         const insideDeck = isInsideMenu2DeckButton(i, x, y, ratio);
 
         if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {
+          if (insideDeck) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({
             ...prev,
             menuDeck: prev.menuDeck.map((v, idx) =>
@@ -160,6 +189,11 @@ export function createHoverHandler({
       const insideOrg = isInsideOrgButton(x, y, ratio);
 
       if (hoverStatesRef.current.org !== insideOrg) {
+        if (insideOrg) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, org: insideOrg }));
       }
     }
@@ -304,6 +338,11 @@ export function createHoverHandler({
           }
         }
         if (hoverStatesRef.current.hoverDeckIndex !== newHoverIndex) {
+          if (newHoverIndex >= 0) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({
             ...prev,
             hoverDeckIndex: newHoverIndex,
@@ -314,18 +353,33 @@ export function createHoverHandler({
       const insideDeckIcon = isInsideDeckIconButton(x, y, ratio);
 
       if (hoverStatesRef.current.deckIcon !== insideDeckIcon) {
+        if (insideDeckIcon) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, deckIcon: insideDeckIcon }));
       }
       // シフト
       const insideShift = isInsideShiftButton(x, y, ratio);
 
       if (hoverStatesRef.current.shift !== insideShift) {
+        if (insideShift) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, shift: insideShift }));
       }
       // 保存
       const insideSave = isInsideSaveButton(x, y, ratio);
 
       if (hoverStatesRef.current.save !== insideSave) {
+        if (insideSave) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, save: insideSave }));
       }
     }
@@ -363,6 +417,16 @@ export function createHoverHandler({
       }
 
       if (changed) {
+        if (
+          newHover[0][0] ||
+          newHover[1][0] ||
+          newHover[0][1] ||
+          newHover[1][1]
+        ) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({
           ...prev,
           gameSettingArrow: newHover,
@@ -374,6 +438,11 @@ export function createHoverHandler({
         const insideDeck = isInsideGameSettingDeckButton(i, x, y, ratio);
 
         if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {
+          if (insideDeck) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({
             ...prev,
             menuDeck: prev.menuDeck.map((v, idx) =>
@@ -386,6 +455,11 @@ export function createHoverHandler({
       const insideGameStart = isInsideGameSTartButton(x, y, ratio);
 
       if (hoverStatesRef.current.gameStart !== insideGameStart) {
+        if (insideGameStart) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, gameStart: insideGameStart }));
       }
     }
@@ -393,20 +467,41 @@ export function createHoverHandler({
       const insideHelpRight = isInsideHelpRightButton(x, y, ratio);
       const insideHelpLeft = isInsideHelpLeftButton(x, y, ratio);
       if (hoverStatesRef.current.helpRight !== insideHelpRight) {
+        if (insideHelpRight) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, helpRight: insideHelpRight }));
       }
       if (hoverStatesRef.current.helpLeft !== insideHelpLeft) {
+        if (insideHelpLeft) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, helpLeft: insideHelpLeft }));
       }
       const insideDetailHelpRight = isInsideDetailHelpRightButton(x, y, ratio);
       const insideDetailHelpLeft = isInsideDetailHelpLeftButton(x, y, ratio);
       if (hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight) {
+        if (insideDetailHelpRight) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
+
         setHoverStates((prev) => ({
           ...prev,
           detailHelpRight: insideDetailHelpRight,
         }));
       }
       if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
+        if (insideDetailHelpLeft) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({
           ...prev,
           detailHelpLeft: insideDetailHelpLeft,
@@ -420,6 +515,11 @@ export function createHoverHandler({
 
       const hoverIndex = detectHelpButtonHover(x, y, ratio);
       if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
+        if (hoverIndex) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seHover");
+          }
+        }
         setHoverStates((prev) => ({ ...prev, detailHelpButton: hoverIndex }));
       }
     }

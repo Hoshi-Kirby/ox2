@@ -1449,7 +1449,7 @@ export function renderEffect(
       const textW = textH / (btnShiftImg.height / btnShiftImg.width);
       let textX = rightX + btnW * 0.12;
       const textY = rightY + btnH * 0.1;
-      ctx.drawImage(btnShiftImg, textX - shiftOffset, textY, textW, textH);
+      ctx.drawImage(btnShiftImg, textX, textY, textW, textH);
     }
     // 保存
     if (hoverStates.save) {
@@ -1470,7 +1470,7 @@ export function renderEffect(
       const textW = textH / (btnSaveImg.height / btnSaveImg.width);
       let textX = rightX + btnW * 0.14;
       const textY = rightY + btnH * 1.05 + btnH * 0.1;
-      ctx.drawImage(btnSaveImg, textX - saveOffset, textY, textW, textH);
+      ctx.drawImage(btnSaveImg, textX, textY, textW, textH);
     }
   } else if (screen === "game") {
     if (effectTimers.turnStart > 0) {

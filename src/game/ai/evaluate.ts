@@ -47,15 +47,18 @@ export function evaluateCard(
   card: GameState["hand"][0][0],
   player: number,
   data: EvaluationData,
+  playerID: number,
 ): number {
   const opponent = player === 0 ? 1 : 0;
   const def = cardDefs[card.attr][card.index];
-
+  const me = Number(playerID);
+  const myReach = player === me ? data.myReach : data.opponentReach;
+  const opponentReach = player === me ? data.opponentReach : data.myReach;
   let value = 0;
 
   if (card.attr === "des") {
     if (card.index === 1) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -70,9 +73,9 @@ export function evaluateCard(
           value = 2;
         }
       }
-      value += data.opponentReach.length * 5;
+      value += opponentReach.length * 5;
     } else if (card.index === 2) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -83,7 +86,7 @@ export function evaluateCard(
           value = 2;
         }
       }
-      value += data.opponentReach.length * 5;
+      value += opponentReach.length * 5;
     } else if (card.index === 3) {
       value = 3 - G.hand[opponent].length / 5;
     } else if (card.index === 4) {
@@ -101,27 +104,27 @@ export function evaluateCard(
     }
   } else if (card.attr === "gen") {
     if (card.index === 1) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (target.z === G.floor && reach.passedValue === opponent + 1) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
     } else if (card.index === 2) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           (target.x == 0 || target.x == 4 || target.y == 0 || target.y == 4) &&
           target.z === G.floor &&
           reach.passedValue === 0
         ) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
     } else if (card.index === 3) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           !Number.isInteger(target.x) &&
@@ -129,12 +132,12 @@ export function evaluateCard(
           target.z === G.floor &&
           reach.passedValue === 0
         ) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
     } else if (card.index === 4) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -142,14 +145,14 @@ export function evaluateCard(
           target.z === G.floor &&
           (reach.passedValue === 0 || reach.passedValue === player + 6)
         ) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
     } else if (card.index === 5) {
       value = 1 + data.myPieces / 5;
     } else if (card.index === 6) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -157,7 +160,7 @@ export function evaluateCard(
           target.z === 0 &&
           (reach.passedValue === 0 || reach.passedValue === player + 6)
         ) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
@@ -168,7 +171,7 @@ export function evaluateCard(
     if (card.index === 1) {
       value = 2;
     } else if (card.index === 2) {
-      for (const reach of data.opponentReach) {
+      for (const reach of opponentReach) {
         const { target } = reach;
         if (Number.isInteger(target.x) && Number.isInteger(target.y)) {
           value = 5;
@@ -176,7 +179,7 @@ export function evaluateCard(
       }
       value += 1;
     } else if (card.index === 3) {
-      for (const reach of data.opponentReach) {
+      for (const reach of opponentReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -193,7 +196,7 @@ export function evaluateCard(
     } else if (card.index === 5) {
       value = 2;
     } else if (card.index === 6) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (target.z === 2) {
           value += 2;
@@ -208,10 +211,10 @@ export function evaluateCard(
       value = 2;
     } else if (card.index === 2) {
       if (data.myPieces > 2) {
-        for (const reach of data.myReach) {
+        for (const reach of myReach) {
           const { target } = reach;
           if (target.z === G.floor && reach.passedValue !== opponent + 6) {
-            value += 10;
+            value += 30;
           }
         }
       }
@@ -219,7 +222,7 @@ export function evaluateCard(
     } else if (card.index === 3) {
       value = 2;
     } else if (card.index === 4) {
-      for (const reach of data.myReach) {
+      for (const reach of myReach) {
         const { target } = reach;
         if (
           Number.isInteger(target.x) &&
@@ -227,13 +230,13 @@ export function evaluateCard(
           target.z === G.floor &&
           (reach.passedValue === opponent || reach.passedValue === opponent + 4)
         ) {
-          value += 10;
+          value += 30;
         }
       }
       value += 1;
     } else if (card.index === 5) {
       if (data.myPieces > 2) {
-        for (const reach of data.myReach) {
+        for (const reach of myReach) {
           const { target } = reach;
           if (target.z === G.floor && reach.passedValue !== opponent + 6) {
             value += 4;
@@ -243,9 +246,7 @@ export function evaluateCard(
       value += 1;
     } else if (card.index === 6) {
       value =
-        (data.opponentReach.length /
-          (data.opponentReach.length + data.myReach.length)) *
-          10 +
+        (opponentReach.length / (opponentReach.length + myReach.length)) * 10 +
         1;
     } else if (card.index === 7) {
       value = 2;
@@ -257,7 +258,7 @@ export function evaluateCard(
     G.hand[player].length + 2 >=
     def.costFlip + def.costDiscard + 1 + G.costChange[player]
   ) {
-    value *= 1.2;
+    value *= 1.4;
   }
 
   return value;
@@ -268,14 +269,17 @@ export function evaluateHand(
   G: GameState,
   player: number,
   data: EvaluationData,
+  playerID: number,
 ): number {
   let value = 0;
 
   for (const card of G.hand[player]) {
-    value += evaluateCard(G, card, player, data);
+    value += evaluateCard(G, card, player, data, playerID);
   }
 
-  if (G.hand[player].length >= 10) {
+  if (G.hand[player].length < 5) {
+    value *= 0.1;
+  } else if (G.hand[player].length >= 10) {
     value *= 0.5;
   } else if (G.hand[player].length === 9) {
     value *= 0.75;
@@ -294,14 +298,14 @@ export function evaluateState(
   const opponent = me === 0 ? 1 : 0;
   const data = analyzeState(G, playerID);
 
-  const myHandValue = evaluateHand(G, me, data) * 0.5;
-  const opponentHandValue = evaluateHand(G, opponent, data);
+  const myHandValue = evaluateHand(G, me, data, Number(playerID)) * 0.5;
+  const opponentHandValue = evaluateHand(G, opponent, data, Number(playerID));
 
   const boardValue =
     data.myPieces * 3 -
     data.opponentPieces * 2 +
-    (data.myReach.length - data.opponentReach.length * 2) * 10 +
-    (data.myLines - data.opponentLines) * 100 +
+    (data.myReach.length * 1.2 - data.opponentReach.length) * 10 +
+    (data.myLines - data.opponentLines) * 300 +
     myHandValue -
     opponentHandValue;
   return boardValue;

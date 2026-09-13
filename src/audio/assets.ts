@@ -19,4 +19,6 @@ export const audioAssets = {
   bgmGame: loadBgm("/assets/bgm/game.mp3", 0.03),
 
   seStart: loadSe("/assets/se/decision_tururun.wav", 0.2),
+  seHover: loadSe("/assets/se/cursor_kasha.wav", 0.2),
+  seClick: loadSe("/assets/se/decision_ka.wav", 0.2),
 };

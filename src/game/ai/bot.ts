@@ -9,15 +9,7 @@ import { evaluateState } from "./evaluate";
 
 export class MyBot extends Bot {
   play({ G, ctx }: { G: any; ctx: any }, playerID: string) {
-    console.log("CPU PLAY", {
-      phase: G.phase,
-      currentPlayer: ctx.currentPlayer,
-      cpuMove: G.cpuMove,
-    });
-
     const actions = getCPUActions(G, ctx);
-
-    console.log("CPU ACTIONS", actions);
 
     if (actions.length === 0) {
       return new Promise<{
@@ -28,6 +20,7 @@ export class MyBot extends Bot {
 
     const baseState = createVirtualState(G, ctx);
     const baseScore = evaluateState(baseState.G, baseState.ctx, playerID);
+    console.log("ターンエンド", baseScore);
 
     // 何もしない = endTurn を暫定の最善手にする
     let bestAction: any = {
@@ -52,6 +45,7 @@ export class MyBot extends Bot {
           bestScore = score;
           bestAction = cpuAction;
         }
+        console.log("カード", score);
       }
 
       if (cpuAction.move === "registerTarget") {
@@ -60,6 +54,7 @@ export class MyBot extends Bot {
         virtualRegisterTarget(state, target);
 
         const score = evaluateState(state.G, state.ctx, playerID);
+        console.log("ターゲット", score);
 
         if (score > bestScore) {
           bestScore = score;
