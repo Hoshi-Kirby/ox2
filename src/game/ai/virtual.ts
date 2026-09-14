@@ -25,6 +25,7 @@ export function virtualUseCard(state: VirtualState, cardIndex: number): void {
       ctx: state.ctx,
     },
     cardIndex,
+    true,
   );
 }
 
@@ -44,6 +45,7 @@ export function virtualRegisterTarget(
       ctx: state.ctx,
     },
     target,
+    true,
   );
 }
 

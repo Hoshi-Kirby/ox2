@@ -1305,11 +1305,11 @@ export function renderEffect(
       ctx.textAlign = "left";
       const text = settingsRef.game.editDeckName;
       let textX = dx + W - H * 0.195;
-      let textY = dy + H * 0.205;
+      let textY = dy + H * 0.195;
       if (ratio <= 1007 / 1552) {
         ctx.font = `${H * 0.022}px Komorebi`;
         textX = dx + W * 0.7;
-        textY = dy + H * 0.15;
+        textY = dy + H * 0.14;
       }
       ctx.fillText(text, textX, textY);
       const cursorPosition = settingsRef.ui.inputCursorPosition;
@@ -1319,9 +1319,9 @@ export function renderEffect(
       if (settingsRef.ui.isInputActive && cursorBlinkTimer < 500) {
         ctx.fillStyle = "#ffffff";
         if (ratio > 1007 / 1552) {
-          ctx.fillRect(cursorX, textY - H * 0.03, H * 0.003, H * 0.04);
+          ctx.fillRect(cursorX, textY - H * 0.02, H * 0.003, H * 0.04);
         } else {
-          ctx.fillRect(cursorX, textY - W * 0.05, W * 0.004, W * 0.06);
+          ctx.fillRect(cursorX, textY - W * 0.04, W * 0.004, W * 0.06);
         }
       }
 

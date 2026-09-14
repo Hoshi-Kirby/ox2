@@ -12,7 +12,8 @@ import {
   detectHelpButtonHover,
   isInsideBackButton,
 } from "./gameHitTest";
-import type { Screen, HoverUI, PressTimers } from "../types";
+import type { Screen, HoverUI, PressTimers, Help } from "../types";
+import { playSe } from "../audio/audioManager";
 
 type HoverParams = {
   ratio: number;
@@ -21,6 +22,7 @@ type HoverParams = {
   hoverStatesRef: React.MutableRefObject<HoverUI>;
   setHoverStates: React.Dispatch<React.SetStateAction<HoverUI>>;
   settings: any;
+  helpRef: Help;
   isTouching: React.MutableRefObject<boolean>;
   pressTimers: PressTimers;
   effectTimers: Record<string, number>;
@@ -35,6 +37,7 @@ export function createGameHoverHandler({
   hoverStatesRef,
   setHoverStates,
   settings,
+  helpRef,
   isTouching,
   pressTimers,
   effectTimers,
@@ -60,6 +63,11 @@ export function createGameHoverHandler({
           const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
           if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
+            if (insideTurnEnd) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
             setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
           }
 
@@ -140,6 +148,11 @@ export function createGameHoverHandler({
               nextHover[1] !== hoverStatesRef.current.hoverHands[1]
             ) {
               hoverStatesRef.current.hoverHands = nextHover;
+              if (nextHover[0] >= 0 || nextHover[1] >= 0) {
+                if (settings.ui.seEnabled) {
+                  playSe("seHover");
+                }
+              }
 
               setHoverStates((prev) => ({
                 ...prev,
@@ -162,20 +175,40 @@ export function createGameHoverHandler({
         }
       } else {
         // ポーズ中----------------------------------------------------
-        const insideContinue = isInsidePauseContinueButton(x, y, ratio);
-        if (hoverStatesRef.current.pauseContinue !== insideContinue) {
-          setHoverStates((prev) => ({
-            ...prev,
-            pauseContinue: insideContinue,
-          }));
-        }
-        const insideRestart = isInsidePauseRestartButton(x, y, ratio);
-        if (hoverStatesRef.current.pauseRestart !== insideRestart) {
-          setHoverStates((prev) => ({ ...prev, pauseRestart: insideRestart }));
-        }
-        const insideEnd = isInsidePauseEndButton(x, y, ratio);
-        if (hoverStatesRef.current.pauseEnd !== insideEnd) {
-          setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
+        if (!helpRef.isOpen) {
+          const insideContinue = isInsidePauseContinueButton(x, y, ratio);
+          if (hoverStatesRef.current.pauseContinue !== insideContinue) {
+            if (insideContinue) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({
+              ...prev,
+              pauseContinue: insideContinue,
+            }));
+          }
+          const insideRestart = isInsidePauseRestartButton(x, y, ratio);
+          if (hoverStatesRef.current.pauseRestart !== insideRestart) {
+            if (insideRestart) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({
+              ...prev,
+              pauseRestart: insideRestart,
+            }));
+          }
+          const insideEnd = isInsidePauseEndButton(x, y, ratio);
+          if (hoverStatesRef.current.pauseEnd !== insideEnd) {
+            if (insideEnd) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
+          }
         }
 
         const insideDetailHelpRight = isInsideDetailHelpRightButton(
@@ -185,12 +218,22 @@ export function createGameHoverHandler({
         );
         const insideDetailHelpLeft = isInsideDetailHelpLeftButton(x, y, ratio);
         if (hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight) {
+          if (insideDetailHelpRight) {
+            if (settings.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({
             ...prev,
             detailHelpRight: insideDetailHelpRight,
           }));
         }
         if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
+          if (insideDetailHelpLeft) {
+            if (settings.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({
             ...prev,
             detailHelpLeft: insideDetailHelpLeft,
@@ -204,12 +247,22 @@ export function createGameHoverHandler({
 
         const hoverIndex = detectHelpButtonHover(x, y, ratio);
         if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
+          if (hoverIndex) {
+            if (settings.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({ ...prev, detailHelpButton: hoverIndex }));
         }
         // 戻る
         const insideBack = isInsideBackButton(x, y, ratio);
 
         if (hoverStatesRef.current.back !== insideBack) {
+          if (insideBack) {
+            if (settings.ui.seEnabled) {
+              playSe("seHover");
+            }
+          }
           setHoverStates((prev) => ({ ...prev, back: insideBack }));
         }
       }

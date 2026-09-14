@@ -40,7 +40,8 @@ export class MyBot extends Bot {
         if (!success) {
           continue;
         }
-        const score = evaluateState(state.G, state.ctx, playerID);
+        let score = evaluateState(state.G, state.ctx, playerID);
+        score += Math.random() * 0.02 - 0.01;
         if (score > bestScore) {
           bestScore = score;
           bestAction = cpuAction;
@@ -53,7 +54,9 @@ export class MyBot extends Bot {
         const state = createVirtualState(G, ctx);
         virtualRegisterTarget(state, target);
 
-        const score = evaluateState(state.G, state.ctx, playerID);
+        let score = evaluateState(state.G, state.ctx, playerID);
+
+        score += Math.random() * 0.02 - 0.01;
         console.log("ターゲット", score);
 
         if (score > bestScore) {

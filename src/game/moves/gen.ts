@@ -1,8 +1,9 @@
 import type { GameState } from "../MyGame";
 import { canPlace } from "../../data";
 import { updateWinner } from "./check";
+import { playSe } from "../../audio/audioManager";
 
-export function card1(G: GameState, ctx: any) {
+export function card1(G: GameState, ctx: any, isV: boolean) {
   // シュレ猫
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -13,6 +14,9 @@ export function card1(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "gen", 1)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       if (Number.isInteger(col) && Number.isInteger(row)) {
         G.board[col][row][f] = 3;
         G.animLog.place[col][row][f] = true;
@@ -31,7 +35,7 @@ export function card1(G: GameState, ctx: any) {
     return;
   }
 }
-export function card2(G: GameState, ctx: any) {
+export function card2(G: GameState, ctx: any, isV: boolean) {
   // 外れ値
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -42,6 +46,9 @@ export function card2(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "gen", 2)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       G.board[col][row][f] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
       G.targets = [];
@@ -53,7 +60,7 @@ export function card2(G: GameState, ctx: any) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any) {
+export function card3(G: GameState, ctx: any, isV: boolean) {
   // 囲碁
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -64,6 +71,9 @@ export function card3(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "gen", 3)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       const mx = col - 1.5;
       const my = row - 1.5;
       G.midBoard[mx][my][f] = Number(ctx.currentPlayer) + 1;
@@ -77,7 +87,7 @@ export function card3(G: GameState, ctx: any) {
     return;
   }
 }
-export function card4(G: GameState, ctx: any) {
+export function card4(G: GameState, ctx: any, isV: boolean) {
   // append
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -88,6 +98,9 @@ export function card4(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "gen", 4)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       G.board[col][row][f] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
       G.targets = [];
@@ -100,7 +113,7 @@ export function card4(G: GameState, ctx: any) {
     return;
   }
 }
-export function card5(G: GameState, ctx: any) {
+export function card5(G: GameState, ctx: any, isV: boolean) {
   // ジャンプ
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -111,6 +124,9 @@ export function card5(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "gen", 5)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       G.board[col][row][f] = 5 - Number(ctx.currentPlayer);
       G.phase = "idle";
       G.targets = [];
@@ -121,7 +137,7 @@ export function card5(G: GameState, ctx: any) {
     return;
   }
 }
-export function card6(G: GameState, ctx: any) {
+export function card6(G: GameState, ctx: any, isV: boolean) {
   // prepend
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -131,6 +147,9 @@ export function card6(G: GameState, ctx: any) {
     if (row === undefined || col === undefined) return;
 
     if (canPlace(G, ctx, col, row, 0, "gen", 6)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       G.board[col][row][0] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
       G.targets = [];
@@ -143,8 +162,11 @@ export function card6(G: GameState, ctx: any) {
     return;
   }
 }
-export function card7(G: GameState, _ctx: any) {
+export function card7(G: GameState, _ctx: any, isV: boolean) {
   //  積み将棋
   G.floor++;
   G.phase = "idle";
+  if (!isV) {
+    playSe("seTokenPut");
+  }
 }

@@ -108,6 +108,7 @@ export default function App() {
     finish: 0,
     result: 0,
     hideResult: 0,
+    cpuG: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({

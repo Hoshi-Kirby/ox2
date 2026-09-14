@@ -2,7 +2,9 @@ import { assets } from "./assets";
 import type { GameState } from "../game/MyGame";
 import { cardDefs } from "../data";
 import type { Screen, Settings, HoverUI } from "../types";
+import { playSe } from "../audio/audioManager";
 
+let previousHandSize = [0, 0];
 export function renderGame(
   ctx: CanvasRenderingContext2D,
   ratio: number,
@@ -194,12 +196,23 @@ export function renderGame(
       }
 
       // //最初の手札アニメーション
-      const handSize = Math.min(
-        G.hand[i].length,
-        Math.floor(
-          (1 - (effectTimers.gameStartCount - 1000) / 3500) * G.hand[i].length,
+      const handSize = Math.max(
+        0,
+        Math.min(
+          G.hand[i].length,
+          Math.floor(
+            (1 - (effectTimers.gameStartCount - 1000) / 3500) *
+              G.hand[i].length,
+          ),
         ),
       );
+      if (handSize > previousHandSize[i]) {
+        if (settingsRef.ui.seEnabled) {
+          playSe("seCardDraw");
+        }
+      }
+
+      previousHandSize[i] = handSize;
       const animationDuration: number = 100;
       const elapsed: number = 4500 - effectTimers.gameStartCount;
       const animationStartTime: number = (3500 * handSize) / G.hand[i].length;

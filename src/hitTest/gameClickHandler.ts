@@ -18,6 +18,7 @@ import {
   detectHelpButtonHover,
 } from "./gameHitTest";
 import type { Screen } from "../types";
+import { playSe } from "../audio/audioManager";
 type MoveFn = (...args: any[]) => void;
 
 type Moves = Record<string, MoveFn>;
@@ -196,10 +197,23 @@ export function createGameClickHandler({
                 }
               }
             }
+          } else {
+            if (
+              effectTimers.cpuG == 0 &&
+              effectTimers.Gchange == 0 &&
+              effectTimers.gameStartCount == 0
+            ) {
+              if (isInsideTurnEndButton(x, y, ratio)) {
+                moves.cpuCanMove();
+              }
+            }
           }
         } else {
           // リザルトタグ
           if (isInsideHideButton(x, y, ratio)) {
+            if (settings.ui.seEnabled) {
+              playSe("seClick");
+            }
             moves.openresult();
             effectTimers.hideResult = 200;
           }
@@ -209,6 +223,9 @@ export function createGameClickHandler({
               effectTimers.fadeIn = 300;
               effectTimers.fadeOut = 600;
               settings.ui.inputLocked = true;
+              if (settings.ui.seEnabled) {
+                playSe("seStart");
+              }
 
               setTimeout(() => {
                 moves.reset();
@@ -222,6 +239,9 @@ export function createGameClickHandler({
               effectTimers.fadeIn = 300;
               effectTimers.fadeOut = 600;
               settings.ui.inputLocked = true;
+              if (settings.ui.seEnabled) {
+                playSe("seBack");
+              }
 
               setTimeout(() => {
                 setScreen("menuOffline");
@@ -238,18 +258,27 @@ export function createGameClickHandler({
         // ポーズ
         if (isInsidePauseButton(x, y, ratio)) {
           moves.openPause();
+          if (settings.ui.seEnabled) {
+            playSe("sePause");
+          }
         }
       } else {
         // ポーズ中
 
         if (!helpRef.current.isOpen) {
           if (isInsidePauseContinueButton(x, y, ratio)) {
+            if (settings.ui.seEnabled) {
+              playSe("seClick");
+            }
             moves.closePause();
           }
           if (isInsidePauseRestartButton(x, y, ratio)) {
             effectTimers.fadeIn = 300;
             effectTimers.fadeOut = 600;
             settings.ui.inputLocked = true;
+            if (settings.ui.seEnabled) {
+              playSe("seStart");
+            }
 
             setTimeout(() => {
               moves.reset();
@@ -260,6 +289,9 @@ export function createGameClickHandler({
             }, 300);
           }
           if (isInsidePauseEndButton(x, y, ratio)) {
+            if (settings.ui.seEnabled) {
+              playSe("seBack");
+            }
             effectTimers.fadeIn = 300;
             effectTimers.fadeOut = 600;
             settings.ui.inputLocked = true;
@@ -276,27 +308,45 @@ export function createGameClickHandler({
           }
           if (isInsideDetailHelpButton(x, y, ratio)) {
             helpRef.current.isOpen = true;
+            if (settings.ui.seEnabled) {
+              playSe("seClick");
+            }
           }
         } else {
           if (helpRef.current.index === null) {
             if (isInsideDetailHelpRightButton(x, y, ratio)) {
+              if (settings.ui.seEnabled) {
+                playSe("seClick");
+              }
               if (helpRef.current.page < 4) helpRef.current.page++;
             }
             if (isInsideDetailHelpLeftButton(x, y, ratio)) {
+              if (settings.ui.seEnabled) {
+                playSe("seClick");
+              }
               if (helpRef.current.page > 0) helpRef.current.page--;
             }
 
             const hoverIndex = detectHelpButtonHover(x, y, ratio);
             if (hoverIndex !== null) {
               helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
+              if (settings.ui.seEnabled) {
+                playSe("sePageFlip");
+              }
             }
 
             if (isInsideBackButton(x, y, ratio)) {
+              if (settings.ui.seEnabled) {
+                playSe("seBack");
+              }
               helpRef.current.index = null;
               helpRef.current.isOpen = false;
             }
           } else {
             if (isInsideBackButton(x, y, ratio)) {
+              if (settings.ui.seEnabled) {
+                playSe("seBack");
+              }
               helpRef.current.index = null;
             }
           }

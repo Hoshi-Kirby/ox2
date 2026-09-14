@@ -12,6 +12,7 @@ import { createGameClickHandler } from "./hitTest/gameClickHandler";
 import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
 import type { Help, Settings, HoverUI, PressTimers, Screen } from "./types";
 import type { GameState } from "./game/MyGame";
+import { playSe } from "./audio/audioManager";
 
 import "./MenuScreen.css";
 
@@ -78,12 +79,10 @@ export default function GameCanvas({
 
     effectTimers.current.Gchange = 400;
     const timer = setTimeout(() => {
+      effectTimers.current.cpuG = 500;
       moves.cpuCanMove();
     }, 300);
 
-    return () => {
-      clearTimeout(timer);
-    };
     return () => {
       clearTimeout(timer);
     };
@@ -94,6 +93,21 @@ export default function GameCanvas({
     if (G.winner !== null) {
       effectTimers.current.finish = 1000;
       effectTimers.current.result = 2000;
+      if (settings.ui.seEnabled) {
+        playSe("seKO");
+        const timer1 = setTimeout(() => {
+          playSe("seDon");
+        }, 1400);
+
+        const timer2 = setTimeout(() => {
+          playSe("seDon");
+        }, 1900);
+
+        return () => {
+          clearTimeout(timer1);
+          clearTimeout(timer2);
+        };
+      }
     }
   }, [G.winner]);
 
@@ -286,6 +300,7 @@ export default function GameCanvas({
       hoverStatesRef,
       setHoverStates,
       settings,
+      helpRef: helpRef.current,
       isTouching,
       pressTimers: pressTimers.current,
       effectTimers: effectTimers.current,

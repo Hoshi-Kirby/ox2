@@ -2,13 +2,17 @@ import type { GameState } from "../MyGame";
 import { drawRandom } from "../MyGame";
 import { canPlace } from "../../data";
 import { updateWinner } from "./check";
+import { playSe } from "../../audio/audioManager";
 
-export function card1(G: GameState, ctx: any) {
+export function card1(G: GameState, ctx: any, isV: boolean) {
   // ハイパーインフレ
   G.costChange[1 - ctx.currentPlayer]++;
   G.animLog.costChange[1 - ctx.currentPlayer] = 1;
+  if (!isV) {
+    playSe("seCostDown");
+  }
 }
-export function card2(G: GameState, ctx: any) {
+export function card2(G: GameState, ctx: any, isV: boolean) {
   // ファイアウォール
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -28,6 +32,9 @@ export function card2(G: GameState, ctx: any) {
     }
 
     if (canPlace(G, ctx, head, index, f, "dis", 2)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       if (head == 0) {
         G.firewall.horizontal[index] = true;
       } else {
@@ -66,6 +73,9 @@ export function card2(G: GameState, ctx: any) {
     }
 
     if (canPlace(G, ctx, head, index, f, "dis", 2)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       if (head == 0) {
         G.firewall.horizontal[index] = true;
       } else {
@@ -80,7 +90,7 @@ export function card2(G: GameState, ctx: any) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any) {
+export function card3(G: GameState, ctx: any, isV: boolean) {
   // NOT FOUND
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -91,6 +101,9 @@ export function card3(G: GameState, ctx: any) {
     const f = G.floor;
 
     if (canPlace(G, ctx, col, row, f, "dis", 3)) {
+      if (!isV) {
+        playSe("seTokenPut");
+      }
       G.board[col][row][f] = Number(ctx.currentPlayer) + 6;
       G.phase = "idle";
       G.targets = [];
@@ -101,7 +114,7 @@ export function card3(G: GameState, ctx: any) {
     return;
   }
 }
-export function card4(G: GameState, ctx: any) {
+export function card4(G: GameState, ctx: any, isV: boolean) {
   // 落石注意
   for (let x = 0; x < 5; x++) {
     for (let y = 0; y < 5; y++) {
@@ -147,9 +160,12 @@ export function card4(G: GameState, ctx: any) {
   }
   G.phase = "idle";
   G.targets = [];
+  if (!isV) {
+    playSe("seTokenRemove");
+  }
   updateWinner(G, ctx);
 }
-export function card5(G: GameState, ctx: any) {
+export function card5(G: GameState, ctx: any, isV: boolean) {
   // 再結晶
   const player = ctx.currentPlayer;
   let handlength = 0;
@@ -194,10 +210,13 @@ export function card5(G: GameState, ctx: any) {
       ctx.random,
     );
   }
+  if (!isV) {
+    playSe("seCardRefresh");
+  }
   G.phase = "idle";
   G.targets = [];
 }
-export function card6(G: GameState, ctx: any) {
+export function card6(G: GameState, ctx: any, isV: boolean) {
   // ゲシュタルト崩壊
   G.floor = 0;
   for (let x = 0; x < 5; x++) {
@@ -249,12 +268,15 @@ export function card6(G: GameState, ctx: any) {
       }
     }
   }
+  if (!isV) {
+    playSe("seTokenRemove");
+  }
   G.moveCount[ctx.currentPlayer]++;
   G.phase = "idle";
   G.targets = [];
   updateWinner(G, ctx);
 }
-export function card7(G: GameState, ctx: any) {
+export function card7(G: GameState, ctx: any, isV: boolean) {
   // オールイン
   const player = ctx.currentPlayer;
   G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(true);
@@ -277,6 +299,9 @@ export function card7(G: GameState, ctx: any) {
     }
   }
   G.faceDown[player] = Array(10).fill(true);
+  if (!isV) {
+    playSe("seCardRefresh");
+  }
   G.phase = "idle";
   G.targets = [];
 }

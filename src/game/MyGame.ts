@@ -2,6 +2,7 @@ import * as basic from "./moves/basic";
 import type { CardID, Settings } from "../types";
 import { getCPUActions } from "./ai/cpu";
 import { Stage } from "boardgame.io/core";
+import { playSe } from "../audio/audioManager";
 
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 type Pos = {
@@ -76,9 +77,11 @@ export function createMyGame(settings: Settings) {
     },
 
     moves: {
-      endTurn: basic.endTurn,
-      useCard: basic.useCard,
-      registerTarget: basic.registerTarget,
+      endTurn: (args: any) => basic.endTurn(args, !settings.ui.seEnabled),
+      useCard: (args: any, cardIndex: number) =>
+        basic.useCard(args, cardIndex, !settings.ui.seEnabled),
+      registerTarget: (args: any, target: any) =>
+        basic.registerTarget(args, target, !settings.ui.seEnabled),
       resetAnimLog: basic.resetAnimLog,
       openPause: basic.openPause,
       closePause: basic.closePause,

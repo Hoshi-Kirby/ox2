@@ -1,8 +1,9 @@
 import type { GameState } from "../MyGame";
 import { canPlace } from "../../data";
 import { updateWinner } from "./check";
+import { playSe } from "../../audio/audioManager";
 
-export function card1(G: GameState, ctx: any) {
+export function card1(G: GameState, ctx: any, isV: boolean) {
   // deleteキー
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -14,6 +15,9 @@ export function card1(G: GameState, ctx: any) {
 
     if (canPlace(G, ctx, col, row, f, "des", 1)) {
       const player = Number(ctx.currentPlayer);
+      if (!isV) {
+        playSe("seTokenRemove");
+      }
       if (G.board[col][row][f] == 3) {
         G.board[col][row][f] = player + 1;
         G.animLog.place[col][row][f] = true;
@@ -29,7 +33,7 @@ export function card1(G: GameState, ctx: any) {
     return;
   }
 }
-export function card2(G: GameState, ctx: any) {
+export function card2(G: GameState, ctx: any, isV: boolean) {
   // 超新星爆発
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -39,6 +43,9 @@ export function card2(G: GameState, ctx: any) {
     if (row === undefined || col === undefined) return;
     const f = G.floor;
     if (canPlace(G, ctx, col, row, f, "des", 2)) {
+      if (!isV) {
+        playSe("seTokenRemove");
+      }
       const dirs = [
         [0, 0],
         [-1, 0],
@@ -63,7 +70,7 @@ export function card2(G: GameState, ctx: any) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any) {
+export function card3(G: GameState, ctx: any, isV: boolean) {
   // 狙撃
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -84,20 +91,26 @@ export function card3(G: GameState, ctx: any) {
     if (index < faceDown.length) {
       faceDown.splice(index, 1);
     }
+    if (!isV) {
+      playSe("seShot");
+    }
     G.phase = "idle";
     G.targets = [];
   }
 }
 
-export function card4(G: GameState, ctx: any) {
+export function card4(G: GameState, ctx: any, isV: boolean) {
   // メテオ
   meteo(G);
   G.removeCount[ctx.currentPlayer]++;
   G.phase = "idle";
   G.targets = [];
+  if (!isV) {
+    playSe("seTokenRemove");
+  }
   updateWinner(G, ctx);
 }
-export function card5(G: GameState, ctx: any) {
+export function card5(G: GameState, ctx: any, isV: boolean) {
   // ダーツ
   const enemy = 1 - Number(ctx.currentPlayer);
   const hand = G.hand[enemy];
@@ -111,10 +124,13 @@ export function card5(G: GameState, ctx: any) {
   if (index < faceDown.length) {
     faceDown.splice(index, 1);
   }
+  if (!isV) {
+    playSe("seShot");
+  }
   G.phase = "idle";
   G.targets = [];
 }
-export function card6(G: GameState, ctx: any) {
+export function card6(G: GameState, ctx: any, isV: boolean) {
   // 流星群
   for (let i = 0; i < 3; i++) {
     meteo(G);
@@ -122,16 +138,19 @@ export function card6(G: GameState, ctx: any) {
   }
   G.phase = "idle";
   G.targets = [];
+  if (!isV) {
+    playSe("seTokenRemove");
+  }
   updateWinner(G, ctx);
 }
-export function card7(G: GameState, ctx: any) {
+export function card7(G: GameState, ctx: any, isV: boolean) {
   // 世界恐慌card4(G, ctx);
   const enemy = 1 - Number(ctx.currentPlayer);
   G.animLog.discardHand[enemy] = [...G.hand[enemy]];
   G.animLog.discardFaceDown[enemy] = [...G.faceDown[enemy]];
-  card4(G, ctx);
+  card4(G, ctx, isV);
   G.removeCount[ctx.currentPlayer]++;
-  card5(G, ctx);
+  card5(G, ctx, isV);
   const hand = G.hand[enemy];
   const faceDown = G.faceDown[enemy];
 

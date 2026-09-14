@@ -76,6 +76,9 @@ export function createClickHandler({
           screen === "menuSetting") &&
         isInsideBackButton(x, y, ratio)
       ) {
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seBack");
+        }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
         settingsRef.current.ui.inputLocked = true;
@@ -117,6 +120,9 @@ export function createClickHandler({
       for (let i = 0; i < 5; i++) {
         if (isInsideMenuButton(i, x, y, ratio)) {
           settingsRef.current.ui.inputLocked = true;
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
 
           switch (i) {
             case 0:
@@ -141,6 +147,9 @@ export function createClickHandler({
       }
 
       if (isInsideBackButton(x, y, ratio)) {
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seBack");
+        }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
 
@@ -173,6 +182,9 @@ export function createClickHandler({
 
         if (inside) {
           effectTimers.menu2Transition = 300;
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
 
           settingsRef.current.ui.inputLocked = true;
           setTimeout(() => {
@@ -200,6 +212,9 @@ export function createClickHandler({
       }
 
       if (isInsideBackButton(x, y, ratio)) {
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seBack");
+        }
         effectTimers.menu2Transition = 300;
         settingsRef.current.ui.inputLockedSub = true;
         setTimeout(() => {
@@ -215,23 +230,41 @@ export function createClickHandler({
     if (screen === "menuSetting") {
       if (isInsideBgmTrue(x, y, ratio)) {
         settingsRef.current.ui.bgmEnabled = true;
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
         setBgmEnabled(true);
       }
       if (isInsideBgmFalse(x, y, ratio)) {
         settingsRef.current.ui.bgmEnabled = false;
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
         setBgmEnabled(false);
       }
       if (isInsideSeTrue(x, y, ratio)) {
         settingsRef.current.ui.seEnabled = true;
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
       }
       if (isInsideSeFalse(x, y, ratio)) {
         settingsRef.current.ui.seEnabled = false;
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
       }
       if (isInsideDeviceMouse(x, y, ratio)) {
         settingsRef.current.ui.deviceMode = "mouse";
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
       }
       if (isInsideDeviceTouch(x, y, ratio)) {
         settingsRef.current.ui.deviceMode = "touch";
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seClick");
+        }
       }
     }
 
@@ -241,13 +274,16 @@ export function createClickHandler({
     if (screen === "menuDeck") {
       for (let i = 0; i < 3; i++) {
         if (isInsideMenu2DeckButton(i, x, y, ratio)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.ui.deckSelected = i;
         }
       }
 
       if (isInsideOrgButton(x, y, ratio)) {
         if (settingsRef.current.ui.seEnabled) {
-          playSe("seClick");
+          playSe("seStart");
         }
         effectTimers.fadeIn = 300;
         effectTimers.fadeOut = 600;
@@ -286,6 +322,9 @@ export function createClickHandler({
     // ------------------------------
     if (screen === "make") {
       if (isInsideBackButton(x, y, ratio)) {
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seBack");
+        }
         if (settingsRef.current.ui.openDeckList && ratio < 1.2) {
           effectTimers.deckListClose = 200;
           setOpenDeckList(false);
@@ -316,6 +355,9 @@ export function createClickHandler({
           for (let i = deck.length - 1; i >= 0; i--) {
             if (isInsideDeckBar(i, x, y, ratio)) {
               deck.splice(i, 1);
+              if (settingsRef.current.ui.seEnabled) {
+                playSe("seCardDraw");
+              }
 
               return;
             }
@@ -365,6 +407,9 @@ export function createClickHandler({
                     attr,
                     index: i + shiftCard,
                   });
+                  if (settingsRef.current.ui.seEnabled) {
+                    playSe("seCardDiscard");
+                  }
 
                   settingsRef.current.game.editDeck.sort(
                     (a: CardID, b: CardID) => {
@@ -387,6 +432,9 @@ export function createClickHandler({
         if (ratio < 1.2) {
           if (isInsideDeckButton(x, y, ratio)) {
             effectTimers.deckListOpen = 100;
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seClick");
+            }
             setOpenDeckList(true);
             settingsRef.current.ui.openDeckList = true;
             settingsRef.current.ui.inputLocked = true;
@@ -403,6 +451,9 @@ export function createClickHandler({
         ratio > 1.2
       ) {
         if (isInsideDeckIconButton(x, y, ratio)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           const colors: DeckColor[] = [
             "red",
             "green",
@@ -424,6 +475,9 @@ export function createClickHandler({
       if (isInsideSaveButton(x, y, ratio)) {
         const deckIndex = settingsRef.current.ui.deckSelected + 1;
         if (deckIndex === 0) return;
+        if (settingsRef.current.ui.seEnabled) {
+          playSe("seStart");
+        }
 
         settingsRef.current.game[`deck${deckIndex}`] = [
           ...settingsRef.current.game.editDeck,
@@ -467,10 +521,16 @@ export function createClickHandler({
       ) {
         // cpu
         if (isInsideCPUTrue(x, y, ratio)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.game.isCPU = !settingsRef.current.game.isCPU;
         }
         // 上２
         if (isInsideArrowButton(x, y, ratio, 0, 0)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.ui.initialHandId += 1;
           if (settingsRef.current.ui.initialHandId > 3)
             settingsRef.current.ui.initialHandId = 3;
@@ -478,6 +538,9 @@ export function createClickHandler({
             indexToInitialHand[settingsRef.current.ui.initialHandId];
         }
         if (isInsideArrowButton(x, y, ratio, 0, 1)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.ui.initialHandId -= 1;
           if (settingsRef.current.ui.initialHandId < 0)
             settingsRef.current.ui.initialHandId = 0;
@@ -485,11 +548,17 @@ export function createClickHandler({
             indexToInitialHand[settingsRef.current.ui.initialHandId];
         }
         if (isInsideArrowButton(x, y, ratio, 1, 0)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.game.firstPlayer += 1;
           if (settingsRef.current.game.firstPlayer > 2)
             settingsRef.current.game.firstPlayer = 2;
         }
         if (isInsideArrowButton(x, y, ratio, 1, 1)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.game.firstPlayer -= 1;
           if (settingsRef.current.game.firstPlayer < 0)
             settingsRef.current.game.firstPlayer = 0;
@@ -497,15 +566,24 @@ export function createClickHandler({
         // デッキ
         for (let i = 0; i < 2; i++) {
           if (isInsideGameSettingDeckButton(i, x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seClick");
+            }
             settingsRef.current.ui.changingDeck[i] = true;
           }
         }
 
         // シフト
         if (isInsideShiftTrue(x, y, ratio)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.game.shiftCardEnabled = true;
         }
         if (isInsideShiftFalse(x, y, ratio)) {
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
           settingsRef.current.game.shiftCardEnabled = false;
         }
 
@@ -546,6 +624,9 @@ export function createClickHandler({
                 isInsideChangingDeckDeck(x, y, ratio, i, j) &&
                 decks[j].length == 20
               ) {
+                if (settingsRef.current.ui.seEnabled) {
+                  playSe("seClick");
+                }
                 settingsRef.current.game.selectedDeckP[i] = j;
                 settingsRef.current.ui.changingDeck[i] = false;
               }
@@ -557,36 +638,62 @@ export function createClickHandler({
     if (screen === "menuHelp") {
       if (!helpRef.current.isOpen) {
         if (isInsideHelpRightButton(x, y, ratio)) {
-          if (settingsRef.current.ui.helpPage < 5)
+          if (settingsRef.current.ui.helpPage < 5) {
             settingsRef.current.ui.helpPage++;
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("sePageFlip");
+            }
+          }
         }
         if (isInsideHelpLeftButton(x, y, ratio)) {
-          if (settingsRef.current.ui.helpPage > 1)
+          if (settingsRef.current.ui.helpPage > 1) {
             settingsRef.current.ui.helpPage--;
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("sePageFlip");
+            }
+          }
         }
         if (isInsideDetailHelpButton(x, y, ratio)) {
           helpRef.current.isOpen = true;
+          if (settingsRef.current.ui.seEnabled) {
+            playSe("seClick");
+          }
         }
       } else {
         if (helpRef.current.index === null) {
           if (isInsideDetailHelpRightButton(x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seClick");
+            }
             if (helpRef.current.page < 4) helpRef.current.page++;
           }
           if (isInsideDetailHelpLeftButton(x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seClick");
+            }
             if (helpRef.current.page > 0) helpRef.current.page--;
           }
 
           const hoverIndex = detectHelpButtonHover(x, y, ratio);
           if (hoverIndex !== null) {
             helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("sePageFlip");
+            }
           }
 
           if (isInsideBackButton(x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seBack");
+            }
             helpRef.current.index = null;
             helpRef.current.isOpen = false;
           }
         } else {
           if (isInsideBackButton(x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seBack");
+            }
             helpRef.current.index = null;
           }
         }
