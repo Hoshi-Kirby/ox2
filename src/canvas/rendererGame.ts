@@ -206,12 +206,13 @@ export function renderGame(
           ),
         ),
       );
-      if (handSize > previousHandSize[i]) {
-        if (settingsRef.ui.seEnabled) {
-          playSe("seCardDraw");
+      if (effectTimers.gameStartCount == 0 || i == 0) {
+        if (handSize > previousHandSize[i]) {
+          if (settingsRef.ui.seEnabled) {
+            playSe("seCardDraw");
+          }
         }
       }
-
       previousHandSize[i] = handSize;
       const animationDuration: number = 100;
       const elapsed: number = 4500 - effectTimers.gameStartCount;

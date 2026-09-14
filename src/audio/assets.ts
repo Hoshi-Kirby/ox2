@@ -38,3 +38,5 @@ export const audioAssets = {
   seKO: loadSe("/assets/se/K.O._ka-n.wav", 0.2),
   seDon: loadSe("/assets/se/disp_don.wav", 0.2),
 };
+
+export const seOverlapList = ["seHover", "seCardDraw", "seCardDiscard"];

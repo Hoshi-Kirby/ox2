@@ -1,3 +1,5 @@
+import { seOverlapList } from "./assets.ts";
+
 let currentBgm: HTMLAudioElement | null = null;
 
 export function playBgm(bgm: HTMLAudioElement) {
@@ -33,6 +35,13 @@ export function playSe(name: keyof typeof audioAssets) {
   const audio = audioAssets[name];
   if (!audio) return;
 
-  audio.currentTime = 0;
-  audio.play();
+  if (seOverlapList.includes(name)) {
+    const clone = audio.cloneNode(true) as HTMLAudioElement;
+    clone.volume = audio.volume;
+    clone.currentTime = 0;
+    clone.play();
+  } else {
+    audio.currentTime = 0;
+    audio.play();
+  }
 }
