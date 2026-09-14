@@ -32,7 +32,7 @@ export const audioAssets = {
   seTokenRemove: loadSe("/assets/se/tokenremove_hyu-w.wav", 0.2),
   seShot: loadSe("/assets/se/shot_dyukushu.wav", 0.2),
   seCostDown: loadSe("/assets/se/costdown_down.wav", 0.4),
-  seCostUp: loadSe("/assets/se/costup_kui-n.wav", 0.2),
+  seCostUp: loadSe("/assets/se/costup_kui-n.wav", 0.15),
   sePageFlip: loadSe("/assets/se/pageflip_pera.wav", 0.5),
   sePause: loadSe("/assets/se/pause_ponnporo.wav", 0.2),
   seKO: loadSe("/assets/se/K.O._ka-n.wav", 0.2),

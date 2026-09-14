@@ -31,10 +31,8 @@ import { audioAssets } from "./assets";
 
 export function playSe(name: keyof typeof audioAssets) {
   const audio = audioAssets[name];
-
   if (!audio) return;
 
-  const clone = audio.cloneNode(true) as HTMLAudioElement;
-  clone.currentTime = 0;
-  clone.play();
+  audio.currentTime = 0;
+  audio.play();
 }
