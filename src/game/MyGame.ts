@@ -2,7 +2,6 @@ import * as basic from "./moves/basic";
 import type { CardID, Settings } from "../types";
 import { getCPUActions } from "./ai/cpu";
 import { Stage } from "boardgame.io/core";
-import { playSe } from "../audio/audioManager";
 
 type DeckKey = "deck0" | "deck1" | "deck2" | "deck3";
 type Pos = {

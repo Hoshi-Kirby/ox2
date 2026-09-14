@@ -112,7 +112,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any, isV: boolean) {
+export function card3(G: GameState, ctx: any, _isV: boolean) {
   // 北抜き
   const player = ctx.currentPlayer;
   drawRandom(G.deck[player], G.hand[player], G.faceDown[player], ctx.random);
