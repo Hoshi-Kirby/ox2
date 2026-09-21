@@ -1,9 +1,9 @@
 import type { GameState } from "../MyGame";
 import { canPlace } from "../../data";
 import { updateWinner } from "./check";
-import { playSe } from "../../audio/audioManager";
+import { playSe } from "./basic";
 
-export function card1(G: GameState, ctx: any, isV: boolean) {
+export function card1(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // シュレ猫
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -15,7 +15,7 @@ export function card1(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "gen", 1)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       if (Number.isInteger(col) && Number.isInteger(row)) {
         G.board[col][row][f] = 3;
@@ -35,7 +35,7 @@ export function card1(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card2(G: GameState, ctx: any, isV: boolean) {
+export function card2(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // 外れ値
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -47,7 +47,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "gen", 2)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       G.board[col][row][f] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
@@ -60,7 +60,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any, isV: boolean) {
+export function card3(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // 囲碁
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -72,7 +72,7 @@ export function card3(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "gen", 3)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       const mx = col - 1.5;
       const my = row - 1.5;
@@ -87,7 +87,7 @@ export function card3(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card4(G: GameState, ctx: any, isV: boolean) {
+export function card4(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // append
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -99,7 +99,7 @@ export function card4(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "gen", 4)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       G.board[col][row][f] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
@@ -113,7 +113,7 @@ export function card4(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card5(G: GameState, ctx: any, isV: boolean) {
+export function card5(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // ジャンプ
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -125,7 +125,7 @@ export function card5(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "gen", 5)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       G.board[col][row][f] = 5 - Number(ctx.currentPlayer);
       G.phase = "idle";
@@ -137,7 +137,7 @@ export function card5(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card6(G: GameState, ctx: any, isV: boolean) {
+export function card6(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // prepend
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -148,7 +148,7 @@ export function card6(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, 0, "gen", 6)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       G.board[col][row][0] = Number(ctx.currentPlayer) + 1;
       G.phase = "idle";
@@ -162,11 +162,11 @@ export function card6(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card7(G: GameState, _ctx: any, isV: boolean) {
+export function card7(G: GameState, _ctx: any, isV: boolean, _random?: any) {
   //  積み将棋
   G.floor++;
   G.phase = "idle";
   if (!isV) {
-    playSe("seTokenPut");
+    playSe(G, "seTokenPut");
   }
 }

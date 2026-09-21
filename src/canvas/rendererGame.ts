@@ -5,17 +5,20 @@ import type { Screen, Settings, HoverUI } from "../types";
 import { playSe } from "../audio/audioManager";
 
 let previousHandSize = [0, 0];
+let backOffset = 0;
+
 export function renderGame(
   ctx: CanvasRenderingContext2D,
   ratio: number,
   screen: Screen,
   effectTimers: Record<string, number>,
-  _dt: number,
-  _hoverStates: HoverUI,
+  dt: number,
+  hoverStates: HoverUI,
   settingsRef: Settings,
   G: GameState,
   bgCtx: any,
   playerID: string,
+  matchID?: string,
 ) {
   ctx.imageSmoothingEnabled = true;
   ctx.clearRect(0, 0, 1280, 720);
@@ -46,589 +49,723 @@ export function renderGame(
   const boardY = dy + H * 0.5 - boardH / 2;
 
   if (screen === "game") {
-    // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
-    // 線
-    for (let i = 0; i < 2; i++) {
-      let img = assets.neonLine;
-      if (G.firewall.horizontal[i]) {
-        ctx.save();
-        ctx.filter = "brightness(0.5)";
+    if (G.gameStarted && effectTimers.fadeInG == 0) {
+      // ctx.drawImage(assets.quickMenu[0], boardX, boardY, boardW, boardH);
+      // 線
+      for (let i = 0; i < 2; i++) {
+        let img = assets.neonLine;
+        if (G.firewall.horizontal[i]) {
+          ctx.save();
+          ctx.filter = "brightness(0.5)";
+        }
+        ctx.drawImage(
+          img,
+          boardX + boardW * 0.02,
+          boardY + boardH * 0.23 + boardH * 0.19 * i,
+          boardW,
+          boardW * (assets.neonLine.height / assets.neonLine.width),
+        );
+        if (G.firewall.horizontal[i]) {
+          ctx.restore();
+        }
       }
-      ctx.drawImage(
-        img,
-        boardX + boardW * 0.02,
-        boardY + boardH * 0.23 + boardH * 0.19 * i,
-        boardW,
-        boardW * (assets.neonLine.height / assets.neonLine.width),
-      );
-      if (G.firewall.horizontal[i]) {
+      for (let i = 0; i < 2; i++) {
+        ctx.save();
+        let img = assets.neonLine;
+        if (G.firewall.vertical[1 - i]) {
+          ctx.filter = "brightness(0.5)";
+        }
+        ctx.translate(boardX + boardW / 2, boardY + boardH / 2);
+        ctx.rotate(Math.PI / 2);
+        const lineY = -boardH / 2 + boardH * 0.23 + boardH * 0.19 * i;
+        const lineX = -boardW / 2 + boardW * 0.02;
+
+        ctx.drawImage(
+          img,
+          lineX,
+          lineY,
+          boardW,
+          boardW * (assets.neonLine.height / assets.neonLine.width),
+        );
         ctx.restore();
       }
-    }
-    for (let i = 0; i < 2; i++) {
-      ctx.save();
-      let img = assets.neonLine;
-      if (G.firewall.vertical[1 - i]) {
-        ctx.filter = "brightness(0.5)";
-      }
-      ctx.translate(boardX + boardW / 2, boardY + boardH / 2);
-      ctx.rotate(Math.PI / 2);
-      const lineY = -boardH / 2 + boardH * 0.23 + boardH * 0.19 * i;
-      const lineX = -boardW / 2 + boardW * 0.02;
 
-      ctx.drawImage(
-        img,
-        lineX,
-        lineY,
-        boardW,
-        boardW * (assets.neonLine.height / assets.neonLine.width),
-      );
-      ctx.restore();
-    }
+      // 駒
+      const floorOffset = -boardH * 0.05;
+      for (let z = 0; z < 3; z++) {
+        if (z > 0 && z <= G.floor) {
+          const baseW = boardW / 5;
+          const baseH = boardH / 5;
+          const posX = boardX + baseW;
+          const posY = boardY + baseH + floorOffset * z;
+          ctx.drawImage(assets.floor, posX, posY, baseW * 3, baseH * 3);
+        }
+        for (let x = 0; x < 5; x++) {
+          for (let y = 0; y < 5; y++) {
+            const token = G.board[x][y][z];
+            if (token >= 1) {
+              const baseW = boardW / 5;
+              const baseH = boardH / 5;
+              const posX = boardX + baseW * x;
+              const posY = boardY + baseH * y + floorOffset * z;
+              if (G.animLog.place[x][y][z]) {
+                const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+                const w = baseW * scale;
+                const h = baseH * scale;
+                const drawX = posX + (baseW - w) / 2;
+                const drawY = posY + (baseH - h) / 2;
 
-    // 駒
-    const floorOffset = -boardH * 0.05;
-    for (let z = 0; z < 3; z++) {
-      if (z > 0 && z <= G.floor) {
-        const baseW = boardW / 5;
-        const baseH = boardH / 5;
-        const posX = boardX + baseW;
-        const posY = boardY + baseH + floorOffset * z;
-        ctx.drawImage(assets.floor, posX, posY, baseW * 3, baseH * 3);
-      }
-      for (let x = 0; x < 5; x++) {
-        for (let y = 0; y < 5; y++) {
-          const token = G.board[x][y][z];
-          if (token >= 1) {
-            const baseW = boardW / 5;
-            const baseH = boardH / 5;
-            const posX = boardX + baseW * x;
-            const posY = boardY + baseH * y + floorOffset * z;
-            if (G.animLog.place[x][y][z]) {
-              const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+                if (z > 0 && (x == 0 || x == 4 || y == 0 || y == 4)) {
+                  ctx.drawImage(assets.floorMini, posX, posY, baseW, baseH);
+                }
+                ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
+              } else {
+                if (z > 0 && (x == 0 || x == 4 || y == 0 || y == 4)) {
+                  ctx.drawImage(assets.floorMini, posX, posY, baseW, baseH);
+                }
+                ctx.drawImage(
+                  assets.token[token - 1],
+                  posX,
+                  posY,
+                  baseW,
+                  baseH,
+                );
+              }
+            } else if (G.animLog.remove[x][y][z] >= 1) {
+              const animToken = G.animLog.remove[x][y][z];
+              const baseW = boardW / 5;
+              const baseH = boardH / 5;
+              const posX = boardX + baseW * x;
+              const posY = boardY + baseH * y + floorOffset * z;
+              const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
               const w = baseW * scale;
               const h = baseH * scale;
               const drawX = posX + (baseW - w) / 2;
               const drawY = posY + (baseH - h) / 2;
-
-              if (z > 0 && (x == 0 || x == 4 || y == 0 || y == 4)) {
-                ctx.drawImage(assets.floorMini, posX, posY, baseW, baseH);
-              }
-              ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
-            } else {
-              if (z > 0 && (x == 0 || x == 4 || y == 0 || y == 4)) {
-                ctx.drawImage(assets.floorMini, posX, posY, baseW, baseH);
-              }
-              ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+              ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
             }
-          } else if (G.animLog.remove[x][y][z] >= 1) {
-            const animToken = G.animLog.remove[x][y][z];
-            const baseW = boardW / 5;
-            const baseH = boardH / 5;
-            const posX = boardX + baseW * x;
-            const posY = boardY + baseH * y + floorOffset * z;
-            const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
-            const w = baseW * scale;
-            const h = baseH * scale;
-            const drawX = posX + (baseW - w) / 2;
-            const drawY = posY + (baseH - h) / 2;
-            ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
           }
         }
-      }
-      for (let x = 0; x < 2; x++) {
-        for (let y = 0; y < 2; y++) {
-          const token = G.midBoard[x][y][z];
-          if (token >= 1) {
-            const baseW = boardW / 5;
-            const baseH = boardH / 5;
-            const posX = boardX + baseW * (x + 1.5);
-            const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
-            if (G.animLog.placeMid[x][y][z]) {
-              const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+        for (let x = 0; x < 2; x++) {
+          for (let y = 0; y < 2; y++) {
+            const token = G.midBoard[x][y][z];
+            if (token >= 1) {
+              const baseW = boardW / 5;
+              const baseH = boardH / 5;
+              const posX = boardX + baseW * (x + 1.5);
+              const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
+              if (G.animLog.placeMid[x][y][z]) {
+                const scale = 1 - Math.max(0, effectTimers.Gchange - 350) / 50;
+                const w = baseW * scale;
+                const h = baseH * scale;
+                const drawX = posX + (baseW - w) / 2;
+                const drawY = posY + (baseH - h) / 2;
+
+                ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
+              } else {
+                ctx.drawImage(
+                  assets.token[token - 1],
+                  posX,
+                  posY,
+                  baseW,
+                  baseH,
+                );
+              }
+            } else if (G.animLog.removeMid[x][y][z] >= 1) {
+              const animToken = G.animLog.removeMid[x][y][z];
+              const baseW = boardW / 5;
+              const baseH = boardH / 5;
+              const posX = boardX + baseW * (x + 1.5);
+              const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
+              const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
               const w = baseW * scale;
               const h = baseH * scale;
               const drawX = posX + (baseW - w) / 2;
               const drawY = posY + (baseH - h) / 2;
-
-              ctx.drawImage(assets.token[token - 1], drawX, drawY, w, h);
-            } else {
-              ctx.drawImage(assets.token[token - 1], posX, posY, baseW, baseH);
+              ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
             }
-          } else if (G.animLog.removeMid[x][y][z] >= 1) {
-            const animToken = G.animLog.removeMid[x][y][z];
-            const baseW = boardW / 5;
-            const baseH = boardH / 5;
-            const posX = boardX + baseW * (x + 1.5);
-            const posY = boardY + baseH * (y + 1.5) + floorOffset * z;
-            const scale = Math.max(0, effectTimers.Gchange - 350) / 50;
-            const w = baseW * scale;
-            const h = baseH * scale;
-            const drawX = posX + (baseW - w) / 2;
-            const drawY = posY + (baseH - h) / 2;
-            ctx.drawImage(assets.token[animToken - 1], drawX, drawY, w, h);
           }
         }
       }
-    }
-    // カード
-    for (let i = 0; i < 2; i++) {
-      const isBottom = i === Number(playerID);
-      let baseX = W * 0.01;
-      let cardPool = W * 0.98;
-      if (layoutIsWide) {
-        baseX = H * 0.42;
-        cardPool = W - H * 0.8;
-      }
-      let cardW = cardPool / 5.1;
-      let cardH =
-        cardW *
-        (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
-      if (cardH > H * 0.2) {
-        cardH = H * 0.2;
-        cardW =
-          cardH /
+      // カード
+      for (let i = 0; i < 2; i++) {
+        const isBottom = i === Number(playerID);
+        let baseX = W * 0.01;
+        let cardPool = W * 0.98;
+        if (layoutIsWide) {
+          baseX = H * 0.42;
+          cardPool = W - H * 0.8;
+        }
+        let cardW = cardPool / 5.1;
+        let cardH =
+          cardW *
           (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
-      }
-      let baseY = isBottom ? H * 0.96 - cardH : H * 0.07;
-      if (layoutIsWide) {
-        baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
-      }
+        if (cardH > H * 0.2) {
+          cardH = H * 0.2;
+          cardW =
+            cardH /
+            (assets.cardAssets.gen[1].height / assets.cardAssets.gen[1].width);
+        }
+        let baseY = isBottom ? H * 0.96 - cardH : H * 0.07;
+        if (layoutIsWide) {
+          baseY = isBottom ? H * 0.96 - cardH : H * 0.04;
+        }
 
-      // //最初の手札アニメーション
-      const handSize = Math.max(
-        0,
-        Math.min(
-          G.hand[i].length,
-          Math.floor(
-            (1 - (effectTimers.gameStartCount - 1000) / 3500) *
-              G.hand[i].length,
+        // //最初の手札アニメーション
+        const handSize = Math.max(
+          0,
+          Math.min(
+            G.hand[i].length,
+            Math.floor(
+              (1 - (effectTimers.gameStartCount - 1000) / 3500) *
+                G.hand[i].length,
+            ),
           ),
-        ),
-      );
-      if (effectTimers.gameStartCount == 0 || i == 0) {
-        if (handSize > previousHandSize[i]) {
-          if (settingsRef.ui.seEnabled) {
-            playSe("seCardDraw");
-          }
-        }
-      }
-      previousHandSize[i] = handSize;
-      const animationDuration: number = 100;
-      const elapsed: number = 4500 - effectTimers.gameStartCount;
-      const animationStartTime: number = (3500 * handSize) / G.hand[i].length;
-      const animationElapsed: number = elapsed - animationStartTime;
-      const progress: number = Math.min(
-        1,
-        animationElapsed / animationDuration,
-      );
-      // 手札を捨てたかどうか
-      const discardFlags = G.animLog.discardFlags[i];
-      const isDiscardAnim = discardFlags.some((flag) => flag);
-
-      // //カードごとのfor
-
-      for (let j = 0; j < handSize; j++) {
-        const card = G.hand[i][j];
-        let img = assets.cardAssets[card.attr][card.index];
-        let x, y;
-
-        type DeckColorKey =
-          | "deckColor0"
-          | "deckColor1"
-          | "deckColor2"
-          | "deckColor3";
-        const backColorMap: Record<string, number> = {
-          red: 0,
-          green: 1,
-          yellow: 2,
-          blue: 3,
-          rainbow: 4,
-        };
-        const deckIndex = settingsRef.game.selectedDeckP[i];
-        const colorKey = `deckColor${deckIndex}` as DeckColorKey;
-        const colorName = settingsRef.game[colorKey];
-        const colorIndex = backColorMap[colorName] ?? 0;
-        if (G.faceDown[i][j]) {
-          img = assets.backCard[colorIndex];
-        }
-
-        const afterX = getHandCardX(handSize, j, baseX, cardPool, cardW);
-        const beforeXadd = getHandCardXad(
-          handSize - G.animLog.drawCount[i],
-          j,
-          baseX,
-          cardPool,
-          cardW,
         );
-        const beforeXremove = getHandCardXre(
-          j,
-          baseX,
-          cardPool,
-          cardW,
-          discardFlags,
-        );
-        // ゲーム開始時のみアニメ
-        let moveX = (beforeXadd - afterX) * (1 - progress);
-        // ドロー時のアニメ
-        if (G.animLog.draw[i]) {
-          moveX =
-            (beforeXadd - afterX) *
-            (Math.max(0, effectTimers.Gchange - 300) / 100);
-        }
-        // トラッシュ時のアニメ
-        let moveY = 0;
-        if (j < handSize - G.animLog.drawCount[i]) {
-          if (isDiscardAnim) {
-            moveX =
-              (beforeXremove - afterX) *
-              (Math.max(0, effectTimers.Gchange - 300) / 100);
-          }
-        }
-        // コスト変動時のアニメ
-        if (G.animLog.costChange[i] !== 0) {
-          if (effectTimers.Gchange > 300) {
-            moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
-          } else if (effectTimers.Gchange > 200) {
-            moveY = (cardH * (effectTimers.Gchange - 200)) / 100;
-          }
-          if (!isBottom) {
-            moveY = -moveY;
-          }
-        }
-
-        let activeY = 0;
-        if (bgCtx.currentPlayer == i) {
-          if (
-            (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
-            G.activeCard == j
-          ) {
-            activeY = -cardH * 0.2;
-          } else if (
-            (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
-            G.costCards.indexOf(j) >= 0
-          ) {
-            if (G.activeCard !== null) {
-              activeY = -cardH * 0.1;
+        if (effectTimers.gameStartCount == 0 || i == 0) {
+          if (handSize > previousHandSize[i]) {
+            if (settingsRef.ui.seEnabled) {
+              playSe("seCardDraw");
             }
           }
         }
-        x = dx + afterX + moveX;
-        y = dy + baseY + moveY + activeY;
+        previousHandSize[i] = handSize;
+        const animationDuration: number = 100;
+        const elapsed: number = 4500 - effectTimers.gameStartCount;
+        const animationStartTime: number = (3500 * handSize) / G.hand[i].length;
+        const animationElapsed: number = elapsed - animationStartTime;
+        const progress: number = Math.min(
+          1,
+          animationElapsed / animationDuration,
+        );
+        // 手札を捨てたかどうか
+        const discardFlags = G.animLog.discardFlags[i];
+        const isDiscardAnim = discardFlags.some((flag) => flag);
 
-        // 裏返すときのアニメ
-        if (
-          (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
-          effectTimers.Gchange > 200
-        ) {
-          const t = effectTimers.Gchange; // 400 → 200
-          let scaleX = Math.min(1, Math.abs(t - 300) / 100);
-          ctx.save();
-          ctx.translate(x + cardW / 2, y);
-          ctx.scale(scaleX, 1);
+        // //カードごとのfor
 
-          if (G.animLog.flipFlags[i][j] && t > 300) {
-            img = assets.cardAssets[card.attr][card.index];
-          } else if (G.animLog.unflipFlags[i][j] && t > 300) {
+        for (let j = 0; j < handSize; j++) {
+          const card = G.hand[i][j];
+          let img = assets.cardAssets[card.attr][card.index];
+          let x, y;
+
+          type DeckColorKey =
+            | "deckColor0"
+            | "deckColor1"
+            | "deckColor2"
+            | "deckColor3";
+          const backColorMap: Record<string, number> = {
+            red: 0,
+            green: 1,
+            yellow: 2,
+            blue: 3,
+            rainbow: 4,
+          };
+          const deckIndex = settingsRef.game.selectedDeckP[i];
+          const colorKey = `deckColor${deckIndex}` as DeckColorKey;
+          const colorName = settingsRef.game[colorKey];
+          const colorIndex = backColorMap[colorName] ?? 0;
+          if (G.faceDown[i][j]) {
             img = assets.backCard[colorIndex];
           }
-          x = -cardW / 2;
-          y = 0;
-        }
-        // カード画像
-        ctx.drawImage(img, x, y, cardW, cardH);
-        const def = cardDefs[card.attr][card.index];
 
-        const flipCost = Math.min(
-          10,
-          Math.max(0, def.costFlip + G.costChange[i]),
-        );
-        const discardCost = Math.min(
-          10,
-          Math.max(
-            def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
-            0,
-          ),
-        );
-        type FolderKey = "w" | "r" | "rw";
-        let folder: FolderKey;
-        if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
-          if (G.phase === "payCostFlip") {
-            folder = "w"; // flip フェーズ → 白
-          } else if (G.phase === "payCostDiscard") {
-            folder = "r"; // discard フェーズ → 赤
+          const afterX = getHandCardX(handSize, j, baseX, cardPool, cardW);
+          const beforeXadd = getHandCardXad(
+            handSize - G.animLog.drawCount[i],
+            j,
+            baseX,
+            cardPool,
+            cardW,
+          );
+          const beforeXremove = getHandCardXre(
+            j,
+            baseX,
+            cardPool,
+            cardW,
+            discardFlags,
+          );
+          // ゲーム開始時のみアニメ
+          let moveX = (beforeXadd - afterX) * (1 - progress);
+          // ドロー時のアニメ
+          if (G.animLog.draw[i]) {
+            moveX =
+              (beforeXadd - afterX) *
+              (Math.max(0, effectTimers.Gchange - 300) / 100);
+          }
+          // トラッシュ時のアニメ
+          let moveY = 0;
+          if (j < handSize - G.animLog.drawCount[i]) {
+            if (isDiscardAnim) {
+              moveX =
+                (beforeXremove - afterX) *
+                (Math.max(0, effectTimers.Gchange - 300) / 100);
+            }
+          }
+          // コスト変動時のアニメ
+          if (G.animLog.costChange[i] !== 0) {
+            if (effectTimers.Gchange > 300) {
+              moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
+            } else if (effectTimers.Gchange > 200) {
+              moveY = (cardH * (effectTimers.Gchange - 200)) / 100;
+            }
+            if (!isBottom) {
+              moveY = -moveY;
+            }
+          }
+
+          let activeY = 0;
+          if (bgCtx.currentPlayer == i) {
+            if (
+              (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
+              G.activeCard == j
+            ) {
+              activeY = -cardH * 0.2;
+            } else if (
+              (G.phase === "payCostFlip" || G.phase === "payCostDiscard") &&
+              G.costCards.indexOf(j) >= 0
+            ) {
+              if (G.activeCard !== null) {
+                activeY = -cardH * 0.1;
+              }
+            }
+          }
+          x = dx + afterX + moveX;
+          y = dy + baseY + moveY + activeY;
+
+          // 裏返すときのアニメ
+          if (
+            (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
+            effectTimers.Gchange > 200
+          ) {
+            const t = effectTimers.Gchange; // 400 → 200
+            let scaleX = Math.min(1, Math.abs(t - 300) / 100);
+            ctx.save();
+            ctx.translate(x + cardW / 2, y);
+            ctx.scale(scaleX, 1);
+
+            if (G.animLog.flipFlags[i][j] && t > 300) {
+              img = assets.cardAssets[card.attr][card.index];
+            } else if (G.animLog.unflipFlags[i][j] && t > 300) {
+              img = assets.backCard[colorIndex];
+            }
+            x = -cardW / 2;
+            y = 0;
+          }
+          // カード画像
+          ctx.drawImage(img, x, y, cardW, cardH);
+          const def = cardDefs[card.attr][card.index];
+
+          const flipCost = Math.min(
+            10,
+            Math.max(0, def.costFlip + G.costChange[i]),
+          );
+          const discardCost = Math.min(
+            10,
+            Math.max(
+              def.costDiscard + Math.min(0, def.costFlip + G.costChange[i]),
+              0,
+            ),
+          );
+          type FolderKey = "w" | "r" | "rw";
+          let folder: FolderKey;
+          if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
+            if (G.phase === "payCostFlip") {
+              folder = "w"; // flip フェーズ → 白
+            } else if (G.phase === "payCostDiscard") {
+              folder = "r"; // discard フェーズ → 赤
+            } else {
+              if (flipCost === 0 && discardCost > 0) folder = "r";
+              else if (flipCost > 0 && discardCost === 0) folder = "w";
+              else folder = "rw";
+            }
           } else {
             if (flipCost === 0 && discardCost > 0) folder = "r";
             else if (flipCost > 0 && discardCost === 0) folder = "w";
             else folder = "rw";
           }
-        } else {
-          if (flipCost === 0 && discardCost > 0) folder = "r";
-          else if (flipCost > 0 && discardCost === 0) folder = "w";
-          else folder = "rw";
-        }
 
-        let costToDisplay;
-        if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
-          if (G.phase === "payCostFlip") {
-            costToDisplay = flipCost;
-          } else if (G.phase === "payCostDiscard") {
-            costToDisplay = discardCost;
+          let costToDisplay;
+          if (j === G.activeCard && i == Number(bgCtx.currentPlayer)) {
+            if (G.phase === "payCostFlip") {
+              costToDisplay = flipCost;
+            } else if (G.phase === "payCostDiscard") {
+              costToDisplay = discardCost;
+            } else {
+              costToDisplay = Math.min(10, flipCost + discardCost); // idle
+            }
           } else {
-            costToDisplay = Math.min(10, flipCost + discardCost); // idle
+            costToDisplay = Math.min(10, flipCost + discardCost); // 常に合計
           }
-        } else {
-          costToDisplay = Math.min(10, flipCost + discardCost); // 常に合計
-        }
 
-        const imgN = assets.costNumber[folder][costToDisplay];
+          const imgN = assets.costNumber[folder][costToDisplay];
 
-        // コスト数字
-        if (!G.faceDown[i][j]) {
-          ctx.drawImage(
-            imgN,
-            x,
-            y,
-            cardW * 0.3,
-            cardW * 0.3 * (imgN.height / imgN.width),
-          );
-        }
-
-        if (
-          (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
-          effectTimers.Gchange > 200
-        ) {
-          ctx.restore();
-        }
-      }
-      // トラッシュ時のアニメ
-
-      if (isDiscardAnim) {
-        for (let j = 0; j < G.animLog.discardHand[i].length; j++) {
-          if (G.animLog.discardFlags[i][j] && effectTimers.Gchange > 300) {
-            const card = G.animLog.discardHand[i][j];
-            let img = assets.cardAssets[card.attr][card.index];
-            let x, y;
-            type DeckColorKey =
-              | "deckColor0"
-              | "deckColor1"
-              | "deckColor2"
-              | "deckColor3";
-            const backColorMap: Record<string, number> = {
-              red: 0,
-              green: 1,
-              yellow: 2,
-              blue: 3,
-              rainbow: 4,
-            };
-            const deckIndex = settingsRef.game.selectedDeckP[i];
-            const colorKey = `deckColor${deckIndex}` as DeckColorKey;
-            const colorName = settingsRef.game[colorKey];
-            const colorIndex = backColorMap[colorName] ?? 0;
-            if (G.animLog.discardFaceDown[i][j]) {
-              img = assets.backCard[colorIndex];
-            }
-            const afterX = getHandCardX(
-              G.animLog.discardHand[i].length,
-              j,
-              baseX,
-              cardPool,
-              cardW,
+          // コスト数字
+          if (!G.faceDown[i][j]) {
+            ctx.drawImage(
+              imgN,
+              x,
+              y,
+              cardW * 0.3,
+              cardW * 0.3 * (imgN.height / imgN.width),
             );
+          }
 
-            let moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
-            if (!isBottom) {
-              moveY = -moveY;
-            }
-            x = dx + afterX;
-            y = dy + baseY + moveY;
-            // カード画像
-            ctx.drawImage(img, x, y, cardW, cardH);
-            const def = cardDefs[card.attr][card.index];
+          if (
+            (G.animLog.flipFlags[i][j] || G.animLog.unflipFlags[i][j]) &&
+            effectTimers.Gchange > 200
+          ) {
+            ctx.restore();
+          }
+        }
+        // トラッシュ時のアニメ
 
-            type FolderKey = "w" | "r" | "rw";
-            const folderMap: Record<string, FolderKey> = {
-              flip: "w",
-              discard: "r",
-              mix: "rw",
-            };
-            const folder = folderMap[def.costType] as FolderKey;
-            const imgN =
-              assets.costNumber[folder][
-                Math.min(
-                  10,
-                  Math.max(0, def.costFlip + def.costDiscard + G.costChange[i]),
-                )
-              ];
-            // コスト数字
-            if (!G.animLog.discardFaceDown[i][j]) {
-              ctx.drawImage(
-                imgN,
-                x,
-                y,
-                cardW * 0.3,
-                cardW * 0.3 * (imgN.height / imgN.width),
+        if (isDiscardAnim) {
+          for (let j = 0; j < G.animLog.discardHand[i].length; j++) {
+            if (G.animLog.discardFlags[i][j] && effectTimers.Gchange > 300) {
+              const card = G.animLog.discardHand[i][j];
+              let img = assets.cardAssets[card.attr][card.index];
+              let x, y;
+              type DeckColorKey =
+                | "deckColor0"
+                | "deckColor1"
+                | "deckColor2"
+                | "deckColor3";
+              const backColorMap: Record<string, number> = {
+                red: 0,
+                green: 1,
+                yellow: 2,
+                blue: 3,
+                rainbow: 4,
+              };
+              const deckIndex = settingsRef.game.selectedDeckP[i];
+              const colorKey = `deckColor${deckIndex}` as DeckColorKey;
+              const colorName = settingsRef.game[colorKey];
+              const colorIndex = backColorMap[colorName] ?? 0;
+              if (G.animLog.discardFaceDown[i][j]) {
+                img = assets.backCard[colorIndex];
+              }
+              const afterX = getHandCardX(
+                G.animLog.discardHand[i].length,
+                j,
+                baseX,
+                cardPool,
+                cardW,
               );
+
+              let moveY = cardH * (1 - (effectTimers.Gchange - 300) / 100);
+              if (!isBottom) {
+                moveY = -moveY;
+              }
+              x = dx + afterX;
+              y = dy + baseY + moveY;
+              // カード画像
+              ctx.drawImage(img, x, y, cardW, cardH);
+              const def = cardDefs[card.attr][card.index];
+
+              type FolderKey = "w" | "r" | "rw";
+              const folderMap: Record<string, FolderKey> = {
+                flip: "w",
+                discard: "r",
+                mix: "rw",
+              };
+              const folder = folderMap[def.costType] as FolderKey;
+              const imgN =
+                assets.costNumber[folder][
+                  Math.min(
+                    10,
+                    Math.max(
+                      0,
+                      def.costFlip + def.costDiscard + G.costChange[i],
+                    ),
+                  )
+                ];
+              // コスト数字
+              if (!G.animLog.discardFaceDown[i][j]) {
+                ctx.drawImage(
+                  imgN,
+                  x,
+                  y,
+                  cardW * 0.3,
+                  cardW * 0.3 * (imgN.height / imgN.width),
+                );
+              }
             }
           }
         }
       }
-    }
 
-    // ウィンドウ
-    // ターン
-    if (layoutIsWide) {
-      ctx.drawImage(
-        assets.token[bgCtx.currentPlayer],
-        dx + H * 0.03,
-        dy + H * 0.175,
-        H * 0.08,
-        H * 0.08,
-      );
-      ctx.drawImage(
-        assets.noTurn,
-        dx + H * 0.1,
-        dy + H * 0.17,
-        H * 0.26,
-        H * 0.26 * (assets.noTurn.height / assets.noTurn.width),
-      );
+      // ウィンドウ
+      // ターン
+      if (layoutIsWide) {
+        ctx.drawImage(
+          assets.token[bgCtx.currentPlayer],
+          dx + H * 0.03,
+          dy + H * 0.175,
+          H * 0.08,
+          H * 0.08,
+        );
+        ctx.drawImage(
+          assets.noTurn,
+          dx + H * 0.1,
+          dy + H * 0.17,
+          H * 0.26,
+          H * 0.26 * (assets.noTurn.height / assets.noTurn.width),
+        );
 
-      ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
-      ctx.fillStyle = "#ffffff";
-      // 左下
-      const nfTurnsSet = new Set<number>();
-      for (let y = 1; y < 4; y++) {
-        for (let x = 1; x < 4; x++) {
-          for (let z = 0; z < 3; z++) {
-            const t = G.notFoundTurns[x][y][z];
-            if (t > 0) nfTurnsSet.add(t);
+        ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
+        ctx.fillStyle = "#ffffff";
+        // 左下
+        const nfTurnsSet = new Set<number>();
+        for (let y = 1; y < 4; y++) {
+          for (let x = 1; x < 4; x++) {
+            for (let z = 0; z < 3; z++) {
+              const t = G.notFoundTurns[x][y][z];
+              if (t > 0) nfTurnsSet.add(t);
+            }
           }
         }
-      }
-      const nfTurns = Array.from(nfTurnsSet).sort((a, b) => a - b);
+        const nfTurns = Array.from(nfTurnsSet).sort((a, b) => a - b);
 
-      const fwTurnsSet = new Set<number>();
-      for (let y = 0; y < 2; y++) {
-        for (let x = 0; x < 2; x++) {
-          const t = G.firewallTurns[x][y];
-          if (t > 0) fwTurnsSet.add(t);
-        }
-      }
-      const fwTurns = Array.from(fwTurnsSet).sort((a, b) => a - b);
-
-      // costChange: [c0, c1]
-      const [c0, c1] = G.costChange;
-      let dsTurns: number[] = [];
-      let hiTurns: number[] = [];
-      if (c0 !== 0 || c1 !== 0) {
-        if (bgCtx.currentPlayer === "0") {
-          if (c0 !== 0) {
-            const turns = 1;
-            if (c0 > 0) hiTurns.push(turns);
-            if (c0 < 0) dsTurns.push(turns);
+        const fwTurnsSet = new Set<number>();
+        for (let y = 0; y < 2; y++) {
+          for (let x = 0; x < 2; x++) {
+            const t = G.firewallTurns[x][y];
+            if (t > 0) fwTurnsSet.add(t);
           }
-          if (c1 !== 0) {
-            const turns = 2;
-            if (c1 > 0) hiTurns.push(turns);
-            if (c1 < 0) dsTurns.push(turns);
+        }
+        const fwTurns = Array.from(fwTurnsSet).sort((a, b) => a - b);
+
+        // costChange: [c0, c1]
+        const [c0, c1] = G.costChange;
+        let dsTurns: number[] = [];
+        let hiTurns: number[] = [];
+        if (c0 !== 0 || c1 !== 0) {
+          if (bgCtx.currentPlayer === "0") {
+            if (c0 !== 0) {
+              const turns = 1;
+              if (c0 > 0) hiTurns.push(turns);
+              if (c0 < 0) dsTurns.push(turns);
+            }
+            if (c1 !== 0) {
+              const turns = 2;
+              if (c1 > 0) hiTurns.push(turns);
+              if (c1 < 0) dsTurns.push(turns);
+            }
+          } else {
+            if (c1 !== 0) {
+              const turns = 1;
+              if (c1 > 0) hiTurns.push(turns);
+              if (c1 < 0) dsTurns.push(turns);
+            }
+            if (c0 !== 0) {
+              const turns = 2;
+              if (c0 > 0) hiTurns.push(turns);
+              if (c0 < 0) dsTurns.push(turns);
+            }
+          }
+        }
+
+        type EffectEntry = { turns: number; label: string };
+
+        const effects: EffectEntry[] = [];
+
+        nfTurns.forEach((t) =>
+          effects.push({ turns: t, label: `NF ${t}turn` }),
+        );
+        fwTurns.forEach((t) =>
+          effects.push({ turns: t, label: `FW ${t}turn` }),
+        );
+        dsTurns.forEach((t) =>
+          effects.push({ turns: t, label: `DS ${t}turn` }),
+        );
+        hiTurns.forEach((t) =>
+          effects.push({ turns: t, label: `HI ${t}turn` }),
+        );
+
+        effects.sort((a, b) => a.turns - b.turns);
+        const effectsToShow = effects.slice(0, 3);
+        const baseX = dx + H * 0.19;
+        let baseY = dy + H * 0.84;
+        const stepY = H * 0.06;
+
+        if (effectsToShow.length > 0) {
+          for (let i = 0; i < effectsToShow.length; i++) {
+            ctx.fillText(effectsToShow[i].label, baseX, baseY + stepY * i);
           }
         } else {
-          if (c1 !== 0) {
-            const turns = 1;
-            if (c1 > 0) hiTurns.push(turns);
-            if (c1 < 0) dsTurns.push(turns);
-          }
-          if (c0 !== 0) {
-            const turns = 2;
-            if (c0 > 0) hiTurns.push(turns);
-            if (c0 < 0) dsTurns.push(turns);
-          }
-        }
-      }
-
-      type EffectEntry = { turns: number; label: string };
-
-      const effects: EffectEntry[] = [];
-
-      nfTurns.forEach((t) => effects.push({ turns: t, label: `NF ${t}turn` }));
-      fwTurns.forEach((t) => effects.push({ turns: t, label: `FW ${t}turn` }));
-      dsTurns.forEach((t) => effects.push({ turns: t, label: `DS ${t}turn` }));
-      hiTurns.forEach((t) => effects.push({ turns: t, label: `HI ${t}turn` }));
-
-      effects.sort((a, b) => a.turns - b.turns);
-      const effectsToShow = effects.slice(0, 3);
-      const baseX = dx + H * 0.19;
-      let baseY = dy + H * 0.84;
-      const stepY = H * 0.06;
-
-      if (effectsToShow.length > 0) {
-        for (let i = 0; i < effectsToShow.length; i++) {
-          ctx.fillText(effectsToShow[i].label, baseX, baseY + stepY * i);
+          ctx.fillText(`ターン ${bgCtx.turn}`, baseX, baseY);
         }
       } else {
-        ctx.fillText(`ターン ${bgCtx.turn}`, baseX, baseY);
+        let tuenX = H * 0.06;
+        ctx.drawImage(
+          assets.token[bgCtx.currentPlayer],
+          dx + H * 0.08,
+          dy + H * 0,
+          tuenX,
+          tuenX,
+        );
+        ctx.drawImage(
+          assets.noTurn,
+          dx + H * 0.13,
+          dy - H * 0.005,
+          (tuenX * 26) / 8,
+          ((tuenX * 26) / 8) * (assets.noTurn.height / assets.noTurn.width),
+        );
+      }
+      // 山札
+      if (layoutIsWide) {
+        const rWipeX = dx + W - H * 0.39;
+
+        ctx.drawImage(
+          assets.token[1 - Number(playerID)],
+          rWipeX,
+          dy,
+          H * 0.15 * (assets.token[1].width / assets.token[1].height),
+          H * 0.15,
+        );
+        ctx.drawImage(
+          assets.token[Number(playerID)],
+          rWipeX,
+          dy + H * 0.85,
+          H * 0.15 * (assets.token[1].width / assets.token[1].height),
+          H * 0.15,
+        );
+
+        ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
+        ctx.fillStyle = "#ffffff";
+        const myDeckNumber = `山札 ${G.deck[Number(playerID)].length}枚`;
+        const enemyDeckNumber = `山札 ${G.deck[1 - Number(playerID)].length}枚`;
+        ctx.fillText(myDeckNumber, rWipeX + H * 0.25, dy + H * 0.94);
+        ctx.fillText(enemyDeckNumber, rWipeX + H * 0.25, dy + H * 0.09);
+      }
+      // -ポーズ-
+
+      if (layoutIsWide) {
+        ctx.drawImage(
+          assets.pauseBtn,
+          dx + H * 0.01,
+          dy + H * 0.01,
+          H * 0.1,
+          H * 0.1,
+        );
+      } else {
+        ctx.drawImage(
+          assets.pauseBtn,
+          dx + H * 0.01,
+          dy + H * 0.01,
+          H * 0.05,
+          H * 0.05,
+        );
       }
     } else {
-      let tuenX = H * 0.06;
-      ctx.drawImage(
-        assets.token[bgCtx.currentPlayer],
-        dx + H * 0.08,
-        dy + H * 0,
-        tuenX,
-        tuenX,
-      );
-      ctx.drawImage(
-        assets.noTurn,
-        dx + H * 0.13,
-        dy - H * 0.005,
-        (tuenX * 26) / 8,
-        ((tuenX * 26) / 8) * (assets.noTurn.height / assets.noTurn.width),
-      );
-    }
-    // 山札
-    if (layoutIsWide) {
-      const rWipeX = dx + W - H * 0.39;
+      ctx.drawImage(assets.menuBg, 0, 0, 1280, 720);
 
-      ctx.drawImage(
-        assets.token[1 - Number(playerID)],
-        rWipeX,
-        dy,
-        H * 0.15 * (assets.token[1].width / assets.token[1].height),
-        H * 0.15,
-      );
-      ctx.drawImage(
-        assets.token[Number(playerID)],
-        rWipeX,
-        dy + H * 0.85,
-        H * 0.15 * (assets.token[1].width / assets.token[1].height),
-        H * 0.15,
-      );
+      ctx.fillStyle = `rgba(0, 0, 0, 0.6)`;
+      ctx.fillRect(0, 0, 1280, 720);
+      ctx.fillStyle = `rgb(255, 255, 255)`;
+      let S = W;
+      if (layoutIsWide) {
+        S = H;
+      }
+      if (Number(playerID) == 0) {
+        // 招待URL
+        if (matchID) {
+          const inviteUrl = `${window.location.origin}/${matchID}`;
+          ctx.save();
+          ctx.font = `${S * 0.04}px KiwiMaru-Medium`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(inviteUrl, dx + W * 0.5, dy + H * 0.45);
+          let textX = dx + W * 0.3;
+          if (layoutIsWide) {
+            textX = dx + W / 2 - H * 0.4;
+          }
+          ctx.fillText("招待リンク", textX, dy + H * 0.4);
+          ctx.restore();
 
-      ctx.font = `${H * 0.06}px KiwiMaru-Medium`;
-      ctx.fillStyle = "#ffffff";
-      const myDeckNumber = `山札 ${G.deck[Number(playerID)].length}枚`;
-      const enemyDeckNumber = `山札 ${G.deck[1 - Number(playerID)].length}枚`;
-      ctx.fillText(myDeckNumber, rWipeX + H * 0.25, dy + H * 0.94);
-      ctx.fillText(enemyDeckNumber, rWipeX + H * 0.25, dy + H * 0.09);
-    }
-    // -ポーズ-
+          let linkX = dx + W * 0.9;
+          if (layoutIsWide) {
+            linkX = dx + W / 2 + H * 0.4;
+          }
+          ctx.drawImage(assets.link, linkX, dy + H * 0.45, S * 0.05, S * 0.05);
+        }
 
-    if (layoutIsWide) {
-      ctx.drawImage(
-        assets.pauseBtn,
-        dx + H * 0.01,
-        dy + H * 0.01,
-        H * 0.1,
-        H * 0.1,
-      );
-    } else {
-      ctx.drawImage(
-        assets.pauseBtn,
-        dx + H * 0.01,
-        dy + H * 0.01,
-        H * 0.05,
-        H * 0.05,
-      );
+        // 戻る
+        let baseX = dx + W * 0.01;
+        let baseY = dy + H * 0.1;
+        let btnW = H * 0.45;
+        const btnH =
+          btnW * (assets.buttonFrame1.height / assets.buttonFrame1.width);
+
+        if (!layoutIsWide) {
+          btnW = H * 0.4;
+          baseX = dx + W * 0.5 - btnW / 2;
+          baseY = dy + H * 0.2;
+        }
+        if (hoverStates.back) {
+          backOffset = Math.min(btnW * 0.1, backOffset + dt * 0.4);
+        } else {
+          backOffset = Math.max(0, backOffset - dt * 0.6);
+        }
+        let backX = baseX - H * 0.2;
+        let backY = baseY + H * 0.72;
+        if (!layoutIsWide) {
+          backX = dx - btnW * 0.55;
+          backY = baseY = dy + H * 0.05;
+        }
+        ctx.drawImage(
+          assets.buttonFrame1,
+          backX + backOffset,
+          backY,
+          btnW,
+          btnH,
+        );
+        const backImg = assets.backText;
+        if (backImg) {
+          const textH = btnH * 0.8;
+          const textW = textH / (backImg.height / backImg.width);
+          let textX = backX + btnW * 0.5;
+          const textY = backY + btnH * 0.1;
+          if (!layoutIsWide) {
+            textX = backX + btnW * 0.55;
+          }
+
+          ctx.drawImage(backImg, textX, textY, textW, textH);
+        }
+      } else {
+        // 招待された
+        ctx.font = `${S * 0.04}px KiwiMaru-Medium`;
+        ctx.fillText("対戦に招待されました", dx + W / 2, dy + H * 0.2);
+        ctx.fillText(
+          "使用するデッキを選択してください",
+          dx + W / 2,
+          dy + H * 0.3,
+        );
+        let menu2X = dx;
+        let menu2Y = dy + H / 2 - W / 2;
+        let menu2W = W;
+        let menu2H = W;
+        if (layoutIsWide) {
+          menu2X = dx + W / 2 - H / 2;
+          menu2Y = dy;
+          menu2W = H;
+          menu2H = H;
+        }
+        let gameStartW = menu2W * 0.5;
+        let Img = assets.gameStart;
+        if (hoverStates.gameStart) {
+          gameStartW = menu2W * 0.52;
+          Img = assets.gameStartHover;
+        }
+        const gameStartH = gameStartW * (Img.height / Img.width);
+        ctx.drawImage(
+          Img,
+          menu2X + menu2W * 0.5 - gameStartW / 2,
+          menu2Y + menu2H * 0.8 - gameStartH / 2,
+          gameStartW,
+          gameStartH,
+        );
+      }
     }
   }
 }

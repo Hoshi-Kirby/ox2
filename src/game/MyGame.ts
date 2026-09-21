@@ -1,5 +1,5 @@
 import * as basic from "./moves/basic";
-import type { CardID, Settings } from "../types";
+import type { CardID, Settings, SeName } from "../types";
 import { getCPUActions } from "./ai/cpu";
 import { Stage } from "boardgame.io/core";
 
@@ -17,6 +17,7 @@ export interface GameState {
     | "selectTarget"
     | "selectTarget2";
   isPaused: boolean;
+  pausedPlayer: number;
   firstPlayer: number;
   board: number[][][];
   midBoard: number[][][];
@@ -26,6 +27,7 @@ export interface GameState {
   };
 
   floor: number;
+  onlineDeckP1: CardID[] | null;
   deck: [CardID[], CardID[]];
   hand: [CardID[], CardID[]];
   faceDown: [boolean[], boolean[]];
@@ -67,10 +69,15 @@ export interface GameState {
 
   cpuMove: boolean;
   cpuGameStart: boolean;
+  seEvents: SeName[];
+  gameStarted: boolean;
+  roomEnded: boolean;
+  gameRestart: boolean;
 }
 
 export function createMyGame(settings: Settings) {
   return {
+    name: "ox2",
     setup: ({ random }: { random: any }): GameState => {
       return createInitialState(settings, random);
     },
@@ -84,13 +91,46 @@ export function createMyGame(settings: Settings) {
       resetAnimLog: basic.resetAnimLog,
       openPause: basic.openPause,
       closePause: basic.closePause,
+      endOnlineGame: basic.endOnlineGame,
+      restartOnlineGame: basic.restartOnlineGame,
       openresult: basic.openresult,
       cpuCanMove: basic.cpuCanMove,
       reset: ({ G, ctx, random }: { G: GameState; ctx: any; random: any }) => {
-        const initialState = createInitialState(settings, random);
+        const onlineDeckP1 = G.onlineDeckP1;
+
+        const initialState = createInitialState(settings, random, onlineDeckP1);
 
         Object.assign(G, initialState);
+        G.onlineDeckP1 = onlineDeckP1;
         ctx.turn = 1;
+        ctx.currentPlayer = initialState.firstPlayer;
+        G.gameStarted = true;
+      },
+      startOnlineGame: (
+        {
+          G,
+          ctx,
+          random,
+        }: {
+          G: GameState;
+          ctx: any;
+          random: any;
+        },
+        deck1: CardID[],
+      ) => {
+        G.onlineDeckP1 = deck1;
+
+        const initialState = createInitialState(
+          settings,
+          random,
+          G.onlineDeckP1,
+        );
+
+        Object.assign(G, initialState);
+        G.onlineDeckP1 = deck1;
+        ctx.turn = 1;
+        ctx.currentPlayer = initialState.firstPlayer;
+        G.gameStarted = true;
       },
     },
     ai: {
@@ -147,7 +187,11 @@ export function createMyGame(settings: Settings) {
   };
 }
 
-function createInitialState(settings: Settings, random: any): GameState {
+function createInitialState(
+  settings: Settings,
+  random: any,
+  onlineDeckP1: CardID[] | null = null,
+): GameState {
   let firstPlayer = settings.game.firstPlayer;
 
   if (firstPlayer === 2) {
@@ -158,8 +202,10 @@ function createInitialState(settings: Settings, random: any): GameState {
   const deckP1 = settings.game.selectedDeckP[1];
 
   let deck0 = [...settings.game[`deck${deckP0}` as DeckKey]];
-
-  let deck1 = [...settings.game[`deck${deckP1}` as DeckKey]];
+  let deck1 =
+    onlineDeckP1 !== null
+      ? [...onlineDeckP1]
+      : [...settings.game[`deck${deckP1}` as DeckKey]];
 
   if (!settings.game.shiftCardEnabled) {
     deck0 = deck0.map((card) => {
@@ -201,6 +247,7 @@ function createInitialState(settings: Settings, random: any): GameState {
   return {
     phase: "idle",
     isPaused: false,
+    pausedPlayer: 0,
     firstPlayer,
 
     board: Array.from({ length: 5 }, () =>
@@ -215,7 +262,7 @@ function createInitialState(settings: Settings, random: any): GameState {
     },
 
     floor: 0,
-
+    onlineDeckP1: null,
     deck: [deck0, deck1],
     hand: [hand0, hand1],
 
@@ -268,6 +315,10 @@ function createInitialState(settings: Settings, random: any): GameState {
 
     cpuMove: true,
     cpuGameStart: true,
+    seEvents: [],
+    gameStarted: !settings.game.isOnline,
+    roomEnded: false,
+    gameRestart: false,
   };
 }
 

@@ -16,6 +16,9 @@ import {
   isInsideDetailHelpButton,
   isInsideBackButton,
   detectHelpButtonHover,
+  isInsideCopyButton,
+  isInsideGameDeckButton,
+  isInsideGameSTartButton,
 } from "./gameHitTest";
 import type { Screen } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -34,6 +37,8 @@ type ClickHandlerParams = {
   ctx: any;
   moves: Moves;
   playerID: string;
+  matchID?: string;
+  selectedOnlineDeckRef: any;
 };
 
 export function createGameClickHandler({
@@ -47,6 +52,8 @@ export function createGameClickHandler({
   ctx,
   moves,
   playerID,
+  matchID,
+  selectedOnlineDeckRef,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
     if (screen === "game") {
@@ -59,62 +66,40 @@ export function createGameClickHandler({
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
       const isMyTurn = Number(playerID) === Number(ctx.currentPlayer);
-      // ポーズの影響を受ける------------------------------------------
-      if (!G.isPaused) {
-        if (G.winner === null) {
-          if (isMyTurn || !settings.game.isCPU) {
-            if (effectTimers.Gchange <= 200 && effectTimers.turnStart == 0) {
-              if (effectTimers.gameStartCount == 0) {
-                if (effectTimers.Gchange == 0) {
-                  // ターンエンド
-                  if (G.phase === "idle") {
-                    if (isInsideTurnEndButton(x, y, ratio)) {
-                      moves.endTurn(ctx);
-                      effectTimers.turnStart = 400;
-                      effectTimers.Gchange = 400;
-                      setTimeout(() => {
-                        moves.resetAnimLog();
-                      }, 300);
-                      return;
-                    }
-                  }
-                  // 駒
-                  let target: {
-                    row: number | null;
-                    col: number | null;
-                    indexH: number | null;
-                    indexV: number | null;
-                  } = { row: null, col: null, indexH: null, indexV: null };
-                  for (let i = 0; i < 2; i++) {
-                    for (let j = 0; j < 2; j++) {
-                      if (isInsideMidBoardCell(x, y, ratio, i, j, G.floor)) {
-                        target = {
-                          row: j + 1.5,
-                          col: i + 1.5,
-                          indexH: null,
-                          indexV: null,
-                        };
-                        break;
+
+      if (G.gameStarted) {
+        // ポーズの影響を受ける------------------------------------------
+        if (!G.isPaused && !helpRef.current.isOpen) {
+          if (G.winner === null) {
+            if (isMyTurn || (!settings.game.isCPU && !settings.game.isOnline)) {
+              if (effectTimers.Gchange <= 200 && effectTimers.turnStart == 0) {
+                if (effectTimers.gameStartCount == 0) {
+                  if (effectTimers.Gchange == 0) {
+                    // ターンエンド
+                    if (G.phase === "idle") {
+                      if (isInsideTurnEndButton(x, y, ratio)) {
+                        moves.endTurn(ctx);
+                        effectTimers.turnStart = 400;
+                        effectTimers.Gchange = 400;
+                        setTimeout(() => {
+                          moves.resetAnimLog();
+                        }, 300);
+                        return;
                       }
                     }
-                    if (target.row !== null || target.col !== null) break;
-                  }
-                  if (target.row === null || target.col === null) {
-                    for (let i = 0; i < 5; i++) {
-                      for (let j = 0; j < 5; j++) {
-                        let f = G.floor;
-                        const activeCardID = G.activeCardID;
-                        if (
-                          activeCardID &&
-                          activeCardID.attr === "gen" &&
-                          activeCardID.index === 6
-                        ) {
-                          f = 0;
-                        }
-                        if (isInsideBoardCell(x, y, ratio, i, j, f)) {
+                    // 駒
+                    let target: {
+                      row: number | null;
+                      col: number | null;
+                      indexH: number | null;
+                      indexV: number | null;
+                    } = { row: null, col: null, indexH: null, indexV: null };
+                    for (let i = 0; i < 2; i++) {
+                      for (let j = 0; j < 2; j++) {
+                        if (isInsideMidBoardCell(x, y, ratio, i, j, G.floor)) {
                           target = {
-                            row: j,
-                            col: i,
+                            row: j + 1.5,
+                            col: i + 1.5,
                             indexH: null,
                             indexV: null,
                           };
@@ -123,27 +108,96 @@ export function createGameClickHandler({
                       }
                       if (target.row !== null || target.col !== null) break;
                     }
-                  }
-                  // 罫線
-                  for (let j = 0; j < 2; j++) {
-                    if (isInsideFireWall(x, y, ratio, 0, j)) {
-                      target.indexH = j;
-                      break;
+                    if (target.row === null || target.col === null) {
+                      for (let i = 0; i < 5; i++) {
+                        for (let j = 0; j < 5; j++) {
+                          let f = G.floor;
+                          const activeCardID = G.activeCardID;
+                          if (
+                            activeCardID &&
+                            activeCardID.attr === "gen" &&
+                            activeCardID.index === 6
+                          ) {
+                            f = 0;
+                          }
+                          if (isInsideBoardCell(x, y, ratio, i, j, f)) {
+                            target = {
+                              row: j,
+                              col: i,
+                              indexH: null,
+                              indexV: null,
+                            };
+                            break;
+                          }
+                        }
+                        if (target.row !== null || target.col !== null) break;
+                      }
+                    }
+                    // 罫線
+                    for (let j = 0; j < 2; j++) {
+                      if (isInsideFireWall(x, y, ratio, 0, j)) {
+                        target.indexH = j;
+                        break;
+                      }
+                    }
+                    for (let j = 0; j < 2; j++) {
+                      if (isInsideFireWall(x, y, ratio, 1, j)) {
+                        target.indexV = j;
+                        break;
+                      }
+                    }
+                    if (target) {
+                      moves.registerTarget({
+                        row: target.row,
+                        col: target.col,
+                        index: null,
+                        indexH: target.indexH,
+                        indexV: target.indexV,
+                      });
+                      effectTimers.Gchange = 400;
+                      setTimeout(() => {
+                        moves.resetAnimLog();
+                      }, 300);
                     }
                   }
-                  for (let j = 0; j < 2; j++) {
-                    if (isInsideFireWall(x, y, ratio, 1, j)) {
-                      target.indexV = j;
-                      break;
+                  // カード
+                  const result: [number, number] = [-1, -1];
+
+                  for (let i = 0; i < 2; i++) {
+                    const handLength = G.hand[i].length;
+
+                    for (let j = handLength - 1; j >= 0; j--) {
+                      const inside = isInsideHandCard(
+                        x,
+                        y,
+                        ratio,
+                        i,
+                        j,
+                        handLength,
+                        playerID,
+                      );
+
+                      if (inside) {
+                        result[i] = j;
+                        break;
+                      }
                     }
                   }
-                  if (target) {
+
+                  if (result[ctx.currentPlayer] >= 0) {
+                    moves.useCard(result[ctx.currentPlayer]);
+                    effectTimers.Gchange = 400;
+                    setTimeout(() => {
+                      moves.resetAnimLog();
+                    }, 300);
+                  }
+                  if (result[1 - ctx.currentPlayer] >= 0) {
                     moves.registerTarget({
-                      row: target.row,
-                      col: target.col,
-                      index: null,
-                      indexH: target.indexH,
-                      indexV: target.indexV,
+                      row: null,
+                      col: null,
+                      index: result[1 - ctx.currentPlayer],
+                      indexH: null,
+                      indexV: null,
                     });
                     effectTimers.Gchange = 400;
                     setTimeout(() => {
@@ -151,208 +205,205 @@ export function createGameClickHandler({
                     }, 300);
                   }
                 }
-                // カード
-                const result: [number, number] = [-1, -1];
-
-                for (let i = 0; i < 2; i++) {
-                  const handLength = G.hand[i].length;
-
-                  for (let j = handLength - 1; j >= 0; j--) {
-                    const inside = isInsideHandCard(
-                      x,
-                      y,
-                      ratio,
-                      i,
-                      j,
-                      handLength,
-                      playerID,
-                    );
-
-                    if (inside) {
-                      result[i] = j;
-                      break;
-                    }
-                  }
-                }
-
-                if (result[ctx.currentPlayer] >= 0) {
-                  moves.useCard(result[ctx.currentPlayer]);
-                  effectTimers.Gchange = 400;
-                  setTimeout(() => {
-                    moves.resetAnimLog();
-                  }, 300);
-                }
-                if (result[1 - ctx.currentPlayer] >= 0) {
-                  moves.registerTarget({
-                    row: null,
-                    col: null,
-                    index: result[1 - ctx.currentPlayer],
-                    indexH: null,
-                    indexV: null,
-                  });
-                  effectTimers.Gchange = 400;
-                  setTimeout(() => {
-                    moves.resetAnimLog();
-                  }, 300);
+              }
+            } else {
+              if (
+                effectTimers.cpuG == 0 &&
+                effectTimers.Gchange == 0 &&
+                effectTimers.gameStartCount == 0
+              ) {
+                if (isInsideTurnEndButton(x, y, ratio)) {
+                  moves.cpuCanMove();
                 }
               }
             }
           } else {
-            if (
-              effectTimers.cpuG == 0 &&
-              effectTimers.Gchange == 0 &&
-              effectTimers.gameStartCount == 0
-            ) {
-              if (isInsideTurnEndButton(x, y, ratio)) {
-                moves.cpuCanMove();
+            // リザルトタグ
+            if (isInsideHideButton(x, y, ratio)) {
+              if (settings.ui.seEnabled) {
+                playSe("seClick");
               }
+              moves.openresult();
+              effectTimers.hideResult = 200;
+            }
+            // リザルトのボタン
+            if (G.isResult) {
+              if (isInsideOneMoreButton(x, y, ratio)) {
+                moves.restartOnlineGame();
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
+                if (settings.ui.seEnabled) {
+                  playSe("seStart");
+                }
+
+                setTimeout(() => {
+                  moves.reset();
+                  effectTimers.fadeOut = 300;
+                  effectTimers.gameStartAnim = 300;
+                  effectTimers.gameStartCount = 4500;
+                }, 300);
+              }
+              if (isInsideEndButton(x, y, ratio)) {
+                moves.endOnlineGame();
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
+                if (settings.ui.seEnabled) {
+                  playSe("seBack");
+                }
+
+                setTimeout(() => {
+                  setScreen("menuOffline");
+                  effectTimers.fadeOut = 300;
+                  effectTimers.gameStartAnim = 300;
+                  effectTimers.gameStartCount = 4500;
+                }, 300);
+              }
+            }
+          }
+          // ポーズ
+          if (isInsidePauseButton(x, y, ratio)) {
+            moves.openPause();
+            if (settings.ui.seEnabled) {
+              playSe("sePause");
             }
           }
         } else {
-          // リザルトタグ
-          if (isInsideHideButton(x, y, ratio)) {
-            if (settings.ui.seEnabled) {
-              playSe("seClick");
-            }
-            moves.openresult();
-            effectTimers.hideResult = 200;
-          }
-          // リザルトのボタン
-          if (G.isResult) {
-            if (isInsideOneMoreButton(x, y, ratio)) {
-              effectTimers.fadeIn = 300;
-              effectTimers.fadeOut = 600;
-              settings.ui.inputLocked = true;
-              if (settings.ui.seEnabled) {
-                playSe("seStart");
-              }
+          // ポーズ中
 
-              setTimeout(() => {
-                moves.reset();
-                effectTimers.fadeOut = 300;
-                effectTimers.gameStartAnim = 300;
-                effectTimers.gameStartCount = 4500;
-                settings.ui.inputLocked = false;
-              }, 300);
-            }
-            if (isInsideEndButton(x, y, ratio)) {
-              effectTimers.fadeIn = 300;
-              effectTimers.fadeOut = 600;
-              settings.ui.inputLocked = true;
-              if (settings.ui.seEnabled) {
-                playSe("seBack");
+          if (!helpRef.current.isOpen) {
+            if (G.pausedPlayer == Number(playerID)) {
+              if (isInsidePauseContinueButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seClick");
+                }
+                moves.closePause();
               }
+              if (isInsidePauseRestartButton(x, y, ratio)) {
+                moves.restartOnlineGame();
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
+                if (settings.ui.seEnabled) {
+                  playSe("seStart");
+                }
 
-              setTimeout(() => {
-                setScreen("menuOffline");
-                effectTimers.fadeOut = 300;
-                effectTimers.gameStartAnim = 300;
-                effectTimers.gameStartCount = 4500;
                 setTimeout(() => {
-                  settings.ui.inputLocked = false;
+                  moves.reset();
+                  effectTimers.fadeOut = 300;
+                  effectTimers.gameStartAnim = 300;
+                  effectTimers.gameStartCount = 4500;
+                  effectTimers.Gchange = 0;
                 }, 300);
-              }, 300);
+              }
+              if (isInsidePauseEndButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seBack");
+                }
+                moves.endOnlineGame();
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
+
+                setTimeout(() => {
+                  if (settings.game.isOnline) {
+                    setScreen("menuOnline");
+                  } else {
+                    setScreen("menuOffline");
+                  }
+                  effectTimers.fadeOut = 300;
+                  effectTimers.gameStartAnim = 300;
+                  effectTimers.gameStartCount = 4500;
+                  setTimeout(() => {}, 300);
+                }, 300);
+              }
+            }
+            if (isInsideDetailHelpButton(x, y, ratio)) {
+              helpRef.current.isOpen = true;
+              if (settings.ui.seEnabled) {
+                playSe("seClick");
+              }
+            }
+          } else {
+            if (helpRef.current.index === null) {
+              if (isInsideDetailHelpRightButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seClick");
+                }
+                if (helpRef.current.page < 4) helpRef.current.page++;
+              }
+              if (isInsideDetailHelpLeftButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seClick");
+                }
+                if (helpRef.current.page > 0) helpRef.current.page--;
+              }
+
+              const hoverIndex = detectHelpButtonHover(x, y, ratio);
+              if (hoverIndex !== null) {
+                helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
+                if (settings.ui.seEnabled) {
+                  playSe("sePageFlip");
+                }
+              }
+
+              if (isInsideBackButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seBack");
+                }
+                helpRef.current.index = null;
+                helpRef.current.isOpen = false;
+              }
+            } else {
+              if (isInsideBackButton(x, y, ratio)) {
+                if (settings.ui.seEnabled) {
+                  playSe("seBack");
+                }
+                helpRef.current.index = null;
+              }
             }
           }
         }
-        // ポーズ
-        if (isInsidePauseButton(x, y, ratio)) {
-          moves.openPause();
-          if (settings.ui.seEnabled) {
-            playSe("sePause");
-          }
-        }
+        // ポーズの影響を受けない------------------------------------------
       } else {
-        // ポーズ中
-
-        if (!helpRef.current.isOpen) {
-          if (isInsidePauseContinueButton(x, y, ratio)) {
-            if (settings.ui.seEnabled) {
-              playSe("seClick");
-            }
-            moves.closePause();
+        // 待機
+        if (Number(playerID) == 0) {
+          if (isInsideCopyButton(x, y, ratio)) {
+            const inviteUrl = `${window.location.origin}/${matchID}`;
+            navigator.clipboard.writeText(inviteUrl);
+            effectTimers.copyDone = 2000;
           }
-          if (isInsidePauseRestartButton(x, y, ratio)) {
-            effectTimers.fadeIn = 300;
-            effectTimers.fadeOut = 600;
-            settings.ui.inputLocked = true;
-            if (settings.ui.seEnabled) {
-              playSe("seStart");
-            }
 
-            setTimeout(() => {
-              moves.reset();
-              effectTimers.fadeOut = 300;
-              effectTimers.gameStartAnim = 300;
-              effectTimers.gameStartCount = 4500;
-              settings.ui.inputLocked = false;
-            }, 300);
-          }
-          if (isInsidePauseEndButton(x, y, ratio)) {
+          if (isInsideBackButton(x, y, ratio)) {
             if (settings.ui.seEnabled) {
               playSe("seBack");
-            }
-            effectTimers.fadeIn = 300;
-            effectTimers.fadeOut = 600;
-            settings.ui.inputLocked = true;
-
-            setTimeout(() => {
-              setScreen("menuOffline");
+              setScreen("menuOnline");
               effectTimers.fadeOut = 300;
               effectTimers.gameStartAnim = 300;
               effectTimers.gameStartCount = 4500;
-              setTimeout(() => {
-                settings.ui.inputLocked = false;
-              }, 300);
-            }, 300);
-          }
-          if (isInsideDetailHelpButton(x, y, ratio)) {
-            helpRef.current.isOpen = true;
-            if (settings.ui.seEnabled) {
-              playSe("seClick");
             }
           }
         } else {
-          if (helpRef.current.index === null) {
-            if (isInsideDetailHelpRightButton(x, y, ratio)) {
+          // 招待された
+          const decks = [
+            settings.game.deck0,
+            settings.game.deck1,
+            settings.game.deck2,
+            settings.game.deck3,
+          ];
+          for (let i = 0; i < 4; i++) {
+            if (
+              isInsideGameDeckButton(i, x, y, ratio) &&
+              decks[i].length == 20
+            ) {
+              selectedOnlineDeckRef.current = i;
               if (settings.ui.seEnabled) {
                 playSe("seClick");
               }
-              if (helpRef.current.page < 4) helpRef.current.page++;
             }
-            if (isInsideDetailHelpLeftButton(x, y, ratio)) {
-              if (settings.ui.seEnabled) {
-                playSe("seClick");
-              }
-              if (helpRef.current.page > 0) helpRef.current.page--;
-            }
-
-            const hoverIndex = detectHelpButtonHover(x, y, ratio);
-            if (hoverIndex !== null) {
-              helpRef.current.index = helpRef.current.page * 8 + hoverIndex;
-              if (settings.ui.seEnabled) {
-                playSe("sePageFlip");
-              }
-            }
-
-            if (isInsideBackButton(x, y, ratio)) {
-              if (settings.ui.seEnabled) {
-                playSe("seBack");
-              }
-              helpRef.current.index = null;
-              helpRef.current.isOpen = false;
-            }
-          } else {
-            if (isInsideBackButton(x, y, ratio)) {
-              if (settings.ui.seEnabled) {
-                playSe("seBack");
-              }
-              helpRef.current.index = null;
-            }
+          }
+          if (isInsideGameSTartButton(x, y, ratio)) {
+            moves.startOnlineGame(decks[selectedOnlineDeckRef.current]);
           }
         }
       }
-      // ポーズの影響を受けない------------------------------------------
     }
   };
 }

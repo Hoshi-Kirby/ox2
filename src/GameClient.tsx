@@ -4,7 +4,7 @@ import type { Settings, Help, Screen, HoverUI, PressTimers } from "./types";
 import GameCanvas from "./GameCanvas";
 import { createMyGame } from "./game/MyGame";
 import { MyBot } from "./game/ai/bot";
-import { Local } from "boardgame.io/multiplayer";
+import { Local, SocketIO } from "boardgame.io/multiplayer";
 
 type GameClientProps = {
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
@@ -28,6 +28,12 @@ type GameClientProps = {
     frame: number;
     maxFrames: number;
   }>;
+  onlineMatch: {
+    matchID: string;
+    playerID: string;
+    playerCredentials: string;
+  } | null;
+  selectedOnlineDeckRef: React.MutableRefObject<number>;
 };
 
 export default function GameClient({
@@ -48,6 +54,8 @@ export default function GameClient({
   mouseRef,
   effectTimers,
   animStateRef,
+  onlineMatch,
+  selectedOnlineDeckRef,
 }: GameClientProps) {
   const hoverStatesRef = useRef(hoverStates);
   const ratioRef = useRef(ratio);
@@ -75,6 +83,8 @@ export default function GameClient({
         mouseRef={mouseRef}
         effectTimers={effectTimers}
         animStateRef={animStateRef}
+        onlineMatch={onlineMatch}
+        selectedOnlineDeckRef={selectedOnlineDeckRef}
       />
     );
 
@@ -82,16 +92,28 @@ export default function GameClient({
       game: createMyGame(settings),
       board: Board,
       numPlayers: 2,
-      debug: false,
-      multiplayer: settings.game.isCPU
-        ? Local({
-            bots: {
-              1: MyBot,
-            },
+      debug: true,
+      multiplayer: settings.game.isOnline
+        ? SocketIO({
+            server: "http://localhost:8000",
           })
-        : Local(),
+        : settings.game.isCPU
+          ? Local({
+              bots: {
+                1: MyBot,
+              },
+            })
+          : Local(),
     });
   }, [settings]);
 
-  return <ClientComponent playerID="0" />;
+  return (
+    <ClientComponent
+      playerID={settings.game.isOnline ? onlineMatch?.playerID : "0"}
+      matchID={settings.game.isOnline ? onlineMatch?.matchID : undefined}
+      credentials={
+        settings.game.isOnline ? onlineMatch?.playerCredentials : undefined
+      }
+    />
+  );
 }

@@ -106,6 +106,7 @@ export const assets = {
   btnSave: loadImage("/assets/button/save.png"),
   vsCPU: loadImage("/assets/button/vsCPU.png"),
   vs2P: loadImage("/assets/button/vs2P.png"),
+  search: loadImage("/assets/button/search.png"),
   arrow: loadImages(
     "/assets/button/right_arrow.png",
     "/assets/button/right_arrow_hover.png",
@@ -126,6 +127,8 @@ export const assets = {
   uiframe1: loadImage("/assets/ui/cyber_frame1.png"),
   gameStart: loadImage("/assets/button/gamestart.png"),
   gameStartHover: loadImage("/assets/button/gamestart_hover.png"),
+  makeRoom: loadImage("/assets/button/makeroom.png"),
+  makeRoomHover: loadImage("/assets/button/makeroom_hover.png"),
   gameBg: loadImage("/assets/backgrounds/neon_city.png"),
   ready: loadImage("/assets/ui/ready.png"),
   start: loadImage("/assets/ui/start!.png"),
@@ -196,6 +199,7 @@ export const assets = {
     ],
     "d",
   ),
+  link: loadImage("/assets/button/link.png"),
 
   cardAssets: {
     des: loadNumberedImages("/assets/cards_token/des", 8, "", true),

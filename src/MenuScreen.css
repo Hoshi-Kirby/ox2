@@ -7,6 +7,7 @@ body {
   height: 100%;
   overflow: hidden;
   touch-action: manipulation;
+  background-color: black;
 }
 .canvas-container {
   width: 100vw;
@@ -17,6 +18,7 @@ body {
   user-select: none; /* テキスト選択無効（全般） */
   -webkit-user-drag: none; /* 画像のドラッグ無効 */
   touch-action: none;
+  background-color: black;
 }
 
 .layer {
@@ -28,18 +30,18 @@ body {
 .game-text-input {
   position: absolute;
   box-sizing: border-box;
-  color: rgba(255, 255, 255, 0);
+  font-family: "Komorebi", sans-serif;
+  color: rgba(255, 255, 255, 0.874);
   border: 3px solid rgba(229, 16, 16, 0);
   background: rgba(255, 255, 255, 0);
   z-index: 100;
-  font-size: 16px; /* Safari対策 */
-  transform-origin: left top; /* 座標補正の基準点 */
+  font-size: 16px;
+  transform-origin: left top;
 }
 .game-text-input:focus {
   outline: none;
 }
 .game-text-input::selection {
-  color: transparent;
   background: rgba(255, 255, 255, 0.3);
 }
 @media (min-aspect-ratio: 1007/1552) {

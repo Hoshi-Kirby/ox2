@@ -15,6 +15,7 @@ export function renderFrame(ctx: CanvasRenderingContext2D, screen: Screen) {
   } else if (
     screen === "menu" ||
     screen === "menuOffline" ||
+    screen === "menuOnline" ||
     screen === "menuHelp" ||
     screen === "menuDeck" ||
     screen === "menuSetting"

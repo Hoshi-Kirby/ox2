@@ -2,6 +2,7 @@ export type Screen =
   | "title"
   | "menu"
   | "menuOffline"
+  | "menuOnline"
   | "menuHelp"
   | "menuDeck"
   | "menuSetting"
@@ -51,12 +52,12 @@ export type Settings = {
   };
 
   game: {
-    gameMode: "pvc" | "pvp" | "online";
     initialHand: number;
     firstPlayer: number;
     eventEnabled: boolean;
     shiftCardEnabled: boolean;
     isCPU: boolean;
+    isOnline: boolean;
 
     deck0: CardID[];
     deck1: CardID[];
@@ -117,3 +118,24 @@ export type PressTimers = {
   deckBar: number;
   hands: number[];
 };
+
+export type SeName =
+  | "seStart"
+  | "seHover"
+  | "seClick"
+  | "seBack"
+  | "seCardDraw"
+  | "seCardFlip"
+  | "seCardDiscard"
+  | "seCardRefresh"
+  | "seCardSelect"
+  | "seCardCansel"
+  | "seTokenPut"
+  | "seTokenRemove"
+  | "seShot"
+  | "seCostDown"
+  | "seCostUp"
+  | "sePageFlip"
+  | "sePause"
+  | "seKO"
+  | "seDon";

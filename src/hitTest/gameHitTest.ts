@@ -519,3 +519,107 @@ export function isInsideBackButton(x: number, y: number, ratio: number) {
 
   return x >= backX && x <= backX + btnW && y >= backY && y <= backY + btnH;
 }
+
+// コピー
+export function isInsideCopyButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+
+  let S = W;
+  if (layoutIsWide) {
+    S = H;
+  }
+  let btnX = dx + W * 0.9;
+  if (layoutIsWide) {
+    btnX = dx + W / 2 + H * 0.4;
+  }
+  let btnY = dy + H * 0.45;
+  let btnW = S * 0.05;
+  let btnH = S * 0.05;
+
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+
+// オンライン対戦　デッキ
+// let menu2X = dx;
+//         let menu2Y = dy + H / 2 - W / 2;
+//         let menu2W = W;
+//         let menu2H = W;
+//         if (layoutIsWide) {
+//           menu2X = dx + W / 2 - H / 2;
+//           menu2Y = dy;
+//           menu2W = H;
+//           menu2H = H;
+//         }
+//         for (let i = 0; i < 4; i++) {
+//           const color = colors[i];
+//           const img = deckImageMap[color][0];
+//           if (hoverStates.menuDeck[i]) {
+//             deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
+//           } else {
+//             deckOffset[i] = 0;
+//           }
+//           const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
+//           const lift = settingsRef.ui.deckSelected === i ? -menu2H * 0.02 : 0;
+//           ctx.drawImage(
+//             img,
+//             menu2X + menu2W * (0.13 + i * 0.2) + shake,
+//             menu2Y + menu2H * 0.4 + lift,
+//             (menu2H * 0.1) / (assets.deckw[0].height / assets.deckw[0].width),
+//             menu2H * 0.1,
+//           );
+//           ctx.font = `${menu2H * 0.03}px Komorebi`;
+//           ctx.fillText(
+//             names[i],
+//             menu2X + menu2W * (0.13 + 0.06 + i * 0.2),
+//             menu2Y + menu2H * 0.55,
+//           );
+//         }
+export function isInsideGameDeckButton(
+  index: number,
+  x: number,
+  y: number,
+  ratio: number,
+) {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+
+  let menu2X = dx;
+  let menu2Y = dy + H / 2 - W / 2;
+  let menu2W = W;
+  let menu2H = W;
+  if (layoutIsWide) {
+    menu2X = dx + W / 2 - H / 2;
+    menu2Y = dy;
+    menu2W = H;
+    menu2H = H;
+  }
+
+  const deckImg = assets.deckw[0];
+
+  const btnX = menu2X + menu2W * (0.13 + index * 0.2);
+  const btnY = menu2Y + menu2H * 0.4;
+
+  const btnW = (menu2H * 0.1) / (deckImg.height / deckImg.width);
+  const btnH = menu2H * 0.1;
+
+  return x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH;
+}
+//ゲームスタート
+export function isInsideGameSTartButton(x: number, y: number, ratio: number) {
+  const { W, H, dx, dy, layoutIsWide } = computeLayout(ratio);
+
+  let menu2X = dx;
+  let menu2Y = dy + H / 2 - W / 2;
+  let menu2W = W;
+  let menu2H = W;
+  if (layoutIsWide) {
+    menu2X = dx + W / 2 - H / 2;
+    menu2Y = dy;
+    menu2W = H;
+    menu2H = H;
+  }
+  const bw = menu2W * 0.5;
+  const bh = bw * (assets.gameStart.height / assets.gameStart.width);
+  const bx = menu2X + menu2W * 0.5 - bw / 2;
+  const by = menu2Y + menu2H * 0.75;
+  return x >= bx && x <= bx + bw && y >= by && y <= by + bh;
+}

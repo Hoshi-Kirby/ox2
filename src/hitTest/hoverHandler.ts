@@ -112,6 +112,7 @@ export function createHoverHandler({
     if (
       ratio > 1.2 &&
       (screen === "menuOffline" ||
+        screen === "menuOnline" ||
         screen === "menuHelp" ||
         screen === "menuDeck" ||
         screen === "menuSetting")
@@ -144,6 +145,7 @@ export function createHoverHandler({
     if (
       screen === "menu" ||
       screen === "menuOffline" ||
+      screen === "menuOnline" ||
       screen === "menuHelp" ||
       screen === "menuDeck" ||
       screen === "menuSetting" ||
@@ -386,7 +388,7 @@ export function createHoverHandler({
 
     // オフラインメニュー前設定
     if (
-      screen === "menuOffline" &&
+      (screen === "menuOffline" || screen === "menuOnline") &&
       settingsRef.current.ui.changingDeck[0] == false &&
       settingsRef.current.ui.changingDeck[1] == false
     ) {
@@ -435,6 +437,9 @@ export function createHoverHandler({
 
       // デッキ
       for (let i = 0; i < 2; i++) {
+        if (screen === "menuOnline" && i == 1) {
+          break;
+        }
         const insideDeck = isInsideGameSettingDeckButton(i, x, y, ratio);
 
         if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {

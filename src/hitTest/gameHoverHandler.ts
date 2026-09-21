@@ -11,6 +11,8 @@ import {
   isInsideDetailHelpButton,
   detectHelpButtonHover,
   isInsideBackButton,
+  isInsideGameDeckButton,
+  isInsideGameSTartButton,
 } from "./gameHitTest";
 import type { Screen, HoverUI, PressTimers, Help } from "../types";
 import { playSe } from "../audio/audioManager";
@@ -56,217 +58,276 @@ export function createGameHoverHandler({
 
       const { x, y } = mouseRef.current;
 
-      if (!G.isPaused) {
-        if (!(effectTimers.finish == 0 && G.winner !== null && G.isResult)) {
-          // ポーズの影響を受ける------------------------------------------
-          // ターンエンド
-          const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
+      if (G.gameStarted) {
+        if (!G.isPaused && !helpRef.isOpen) {
+          if (!(effectTimers.finish == 0 && G.winner !== null && G.isResult)) {
+            // ポーズの影響を受ける------------------------------------------
+            // ターンエンド
+            const insideTurnEnd = isInsideTurnEndButton(x, y, ratio);
 
-          if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
-            if (insideTurnEnd) {
-              if (settings.ui.seEnabled) {
-                playSe("seHover");
+            if (hoverStatesRef.current.turnEnd !== insideTurnEnd) {
+              if (insideTurnEnd) {
+                if (settings.ui.seEnabled) {
+                  playSe("seHover");
+                }
               }
+              setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
             }
-            setHoverStates((prev) => ({ ...prev, turnEnd: insideTurnEnd }));
-          }
 
-          // 手札ホバー
-          const [h0, h1] = getHoverHandIndex(
-            x,
-            y,
-            ratio,
-            G,
-            playerID,
-            effectTimers,
-          );
+            // 手札ホバー
+            const [h0, h1] = getHoverHandIndex(
+              x,
+              y,
+              ratio,
+              G,
+              playerID,
+              effectTimers,
+            );
 
-          const targets: [number, number] = [h0, h1];
-          if (settings.ui.deviceMode === "mouse") {
-            // マウス → 即時 hover
+            const targets: [number, number] = [h0, h1];
+            if (settings.ui.deviceMode === "mouse") {
+              // マウス → 即時 hover
 
-            if (
-              hoverStatesRef.current.hoverHands[0] !== h0 ||
-              hoverStatesRef.current.hoverHands[1] !== h1
-            ) {
-              hoverStatesRef.current.hoverHands = [h0, h1];
+              if (
+                hoverStatesRef.current.hoverHands[0] !== h0 ||
+                hoverStatesRef.current.hoverHands[1] !== h1
+              ) {
+                hoverStatesRef.current.hoverHands = [h0, h1];
 
-              setHoverStates((prev) => ({
-                ...prev,
-                hoverHands: [h0, h1],
-              }));
-            }
-          } else {
-            // タッチ → 長押し
+                setHoverStates((prev) => ({
+                  ...prev,
+                  hoverHands: [h0, h1],
+                }));
+              }
+            } else {
+              // タッチ → 長押し
 
-            const nextHover: [number, number] = [
-              hoverStatesRef.current.hoverHands[0],
-              hoverStatesRef.current.hoverHands[1],
-            ];
-            if (!isTouching.current) {
-              pressTimers.hands[0] = 0;
-              pressTimers.hands[1] = 0;
-              pressHandTarget = [-1, -1];
+              const nextHover: [number, number] = [
+                hoverStatesRef.current.hoverHands[0],
+                hoverStatesRef.current.hoverHands[1],
+              ];
+              if (!isTouching.current) {
+                pressTimers.hands[0] = 0;
+                pressTimers.hands[1] = 0;
+                pressHandTarget = [-1, -1];
 
-              nextHover[0] = -1;
-              nextHover[1] = -1;
+                nextHover[0] = -1;
+                nextHover[1] = -1;
+
+                if (
+                  nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
+                  nextHover[1] !== hoverStatesRef.current.hoverHands[1]
+                ) {
+                  hoverStatesRef.current.hoverHands = nextHover;
+                  setHoverStates((prev) => ({
+                    ...prev,
+                    hoverHands: nextHover,
+                  }));
+                }
+                return requestAnimationFrame(loop);
+              }
+
+              for (let i = 0; i < 2; i++) {
+                const target = targets[i];
+
+                if (pressHandTarget[i] !== target) {
+                  pressHandTarget[i] = target;
+
+                  pressTimers.hands[i] = 0;
+
+                  if (target === -1) {
+                    nextHover[i] = -1;
+                  }
+                }
+
+                if (target !== -1) {
+                  pressTimers.hands[i] += dt;
+
+                  if (pressTimers.hands[i] > 300 && nextHover[i] !== target) {
+                    nextHover[i] = target;
+                  }
+                }
+              }
 
               if (
                 nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
                 nextHover[1] !== hoverStatesRef.current.hoverHands[1]
               ) {
                 hoverStatesRef.current.hoverHands = nextHover;
-                setHoverStates((prev) => ({ ...prev, hoverHands: nextHover }));
-              }
-              return requestAnimationFrame(loop);
-            }
-
-            for (let i = 0; i < 2; i++) {
-              const target = targets[i];
-
-              if (pressHandTarget[i] !== target) {
-                pressHandTarget[i] = target;
-
-                pressTimers.hands[i] = 0;
-
-                if (target === -1) {
-                  nextHover[i] = -1;
+                if (nextHover[0] >= 0 || nextHover[1] >= 0) {
+                  if (settings.ui.seEnabled) {
+                    playSe("seHover");
+                  }
                 }
-              }
 
-              if (target !== -1) {
-                pressTimers.hands[i] += dt;
-
-                if (pressTimers.hands[i] > 300 && nextHover[i] !== target) {
-                  nextHover[i] = target;
-                }
+                setHoverStates((prev) => ({
+                  ...prev,
+                  hoverHands: nextHover,
+                }));
               }
             }
+          } else {
+            // リザルトのボタン
+            const insideOne = isInsideOneMoreButton(x, y, ratio);
 
-            if (
-              nextHover[0] !== hoverStatesRef.current.hoverHands[0] ||
-              nextHover[1] !== hoverStatesRef.current.hoverHands[1]
-            ) {
-              hoverStatesRef.current.hoverHands = nextHover;
-              if (nextHover[0] >= 0 || nextHover[1] >= 0) {
+            if (hoverStatesRef.current.resultOneMore !== insideOne) {
+              setHoverStates((prev) => ({ ...prev, resultOneMore: insideOne }));
+            }
+            const insideEnd = isInsideEndButton(x, y, ratio);
+
+            if (hoverStatesRef.current.resultEnd !== insideEnd) {
+              setHoverStates((prev) => ({ ...prev, resultEnd: insideEnd }));
+            }
+          }
+        } else {
+          // ポーズ中----------------------------------------------------
+          if (!helpRef.isOpen) {
+            const insideContinue = isInsidePauseContinueButton(x, y, ratio);
+            if (hoverStatesRef.current.pauseContinue !== insideContinue) {
+              if (insideContinue) {
                 if (settings.ui.seEnabled) {
                   playSe("seHover");
                 }
               }
-
               setHoverStates((prev) => ({
                 ...prev,
-                hoverHands: nextHover,
+                pauseContinue: insideContinue,
+              }));
+            }
+            const insideRestart = isInsidePauseRestartButton(x, y, ratio);
+            if (hoverStatesRef.current.pauseRestart !== insideRestart) {
+              if (insideRestart) {
+                if (settings.ui.seEnabled) {
+                  playSe("seHover");
+                }
+              }
+              setHoverStates((prev) => ({
+                ...prev,
+                pauseRestart: insideRestart,
+              }));
+            }
+            const insideEnd = isInsidePauseEndButton(x, y, ratio);
+            if (hoverStatesRef.current.pauseEnd !== insideEnd) {
+              if (insideEnd) {
+                if (settings.ui.seEnabled) {
+                  playSe("seHover");
+                }
+              }
+              setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
+            }
+          }
+
+          const insideDetailHelpRight = isInsideDetailHelpRightButton(
+            x,
+            y,
+            ratio,
+          );
+          const insideDetailHelpLeft = isInsideDetailHelpLeftButton(
+            x,
+            y,
+            ratio,
+          );
+          if (
+            hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight
+          ) {
+            if (insideDetailHelpRight) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({
+              ...prev,
+              detailHelpRight: insideDetailHelpRight,
+            }));
+          }
+          if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
+            if (insideDetailHelpLeft) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({
+              ...prev,
+              detailHelpLeft: insideDetailHelpLeft,
+            }));
+          }
+
+          const insideDetailHelp = isInsideDetailHelpButton(x, y, ratio);
+          if (hoverStatesRef.current.detailHelp !== insideDetailHelp) {
+            setHoverStates((prev) => ({
+              ...prev,
+              detailHelp: insideDetailHelp,
+            }));
+          }
+
+          const hoverIndex = detectHelpButtonHover(x, y, ratio);
+          if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
+            if (hoverIndex) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({
+              ...prev,
+              detailHelpButton: hoverIndex,
+            }));
+          }
+          // 戻る
+          const insideBack = isInsideBackButton(x, y, ratio);
+
+          if (hoverStatesRef.current.back !== insideBack) {
+            if (insideBack) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({ ...prev, back: insideBack }));
+          }
+        }
+        // ポーズの影響を受けない------------------------------------------
+      } else {
+        // 待機
+        if (Number(playerID) == 0) {
+          // 戻る
+          const insideBack = isInsideBackButton(x, y, ratio);
+          if (hoverStatesRef.current.back !== insideBack) {
+            if (insideBack) {
+              if (settings.ui.seEnabled) {
+                playSe("seHover");
+              }
+            }
+            setHoverStates((prev) => ({ ...prev, back: insideBack }));
+          }
+        } else {
+          // 招待された
+          for (let i = 0; i < 4; i++) {
+            const insideDeck = isInsideGameDeckButton(i, x, y, ratio);
+            if (hoverStatesRef.current.menuDeck[i] !== insideDeck) {
+              if (insideDeck) {
+                if (settings.ui.seEnabled) {
+                  playSe("seHover");
+                }
+              }
+              setHoverStates((prev) => ({
+                ...prev,
+                menuDeck: prev.menuDeck.map((v, idx) =>
+                  idx === i ? insideDeck : v,
+                ),
               }));
             }
           }
-        } else {
-          // リザルトのボタン
-          const insideOne = isInsideOneMoreButton(x, y, ratio);
-
-          if (hoverStatesRef.current.resultOneMore !== insideOne) {
-            setHoverStates((prev) => ({ ...prev, resultOneMore: insideOne }));
-          }
-          const insideEnd = isInsideEndButton(x, y, ratio);
-
-          if (hoverStatesRef.current.resultEnd !== insideEnd) {
-            setHoverStates((prev) => ({ ...prev, resultEnd: insideEnd }));
-          }
-        }
-      } else {
-        // ポーズ中----------------------------------------------------
-        if (!helpRef.isOpen) {
-          const insideContinue = isInsidePauseContinueButton(x, y, ratio);
-          if (hoverStatesRef.current.pauseContinue !== insideContinue) {
-            if (insideContinue) {
+          // げーむすたーと
+          const insideStart = isInsideGameSTartButton(x, y, ratio);
+          if (hoverStatesRef.current.gameStart !== insideStart) {
+            if (insideStart) {
               if (settings.ui.seEnabled) {
                 playSe("seHover");
               }
             }
-            setHoverStates((prev) => ({
-              ...prev,
-              pauseContinue: insideContinue,
-            }));
+            setHoverStates((prev) => ({ ...prev, gameStart: insideStart }));
           }
-          const insideRestart = isInsidePauseRestartButton(x, y, ratio);
-          if (hoverStatesRef.current.pauseRestart !== insideRestart) {
-            if (insideRestart) {
-              if (settings.ui.seEnabled) {
-                playSe("seHover");
-              }
-            }
-            setHoverStates((prev) => ({
-              ...prev,
-              pauseRestart: insideRestart,
-            }));
-          }
-          const insideEnd = isInsidePauseEndButton(x, y, ratio);
-          if (hoverStatesRef.current.pauseEnd !== insideEnd) {
-            if (insideEnd) {
-              if (settings.ui.seEnabled) {
-                playSe("seHover");
-              }
-            }
-            setHoverStates((prev) => ({ ...prev, pauseEnd: insideEnd }));
-          }
-        }
-
-        const insideDetailHelpRight = isInsideDetailHelpRightButton(
-          x,
-          y,
-          ratio,
-        );
-        const insideDetailHelpLeft = isInsideDetailHelpLeftButton(x, y, ratio);
-        if (hoverStatesRef.current.detailHelpRight !== insideDetailHelpRight) {
-          if (insideDetailHelpRight) {
-            if (settings.ui.seEnabled) {
-              playSe("seHover");
-            }
-          }
-          setHoverStates((prev) => ({
-            ...prev,
-            detailHelpRight: insideDetailHelpRight,
-          }));
-        }
-        if (hoverStatesRef.current.detailHelpLeft !== insideDetailHelpLeft) {
-          if (insideDetailHelpLeft) {
-            if (settings.ui.seEnabled) {
-              playSe("seHover");
-            }
-          }
-          setHoverStates((prev) => ({
-            ...prev,
-            detailHelpLeft: insideDetailHelpLeft,
-          }));
-        }
-
-        const insideDetailHelp = isInsideDetailHelpButton(x, y, ratio);
-        if (hoverStatesRef.current.detailHelp !== insideDetailHelp) {
-          setHoverStates((prev) => ({ ...prev, detailHelp: insideDetailHelp }));
-        }
-
-        const hoverIndex = detectHelpButtonHover(x, y, ratio);
-        if (hoverStatesRef.current.detailHelpButton !== hoverIndex) {
-          if (hoverIndex) {
-            if (settings.ui.seEnabled) {
-              playSe("seHover");
-            }
-          }
-          setHoverStates((prev) => ({ ...prev, detailHelpButton: hoverIndex }));
-        }
-        // 戻る
-        const insideBack = isInsideBackButton(x, y, ratio);
-
-        if (hoverStatesRef.current.back !== insideBack) {
-          if (insideBack) {
-            if (settings.ui.seEnabled) {
-              playSe("seHover");
-            }
-          }
-          setHoverStates((prev) => ({ ...prev, back: insideBack }));
         }
       }
-      // ポーズの影響を受けない------------------------------------------
 
       requestAnimationFrame(loop);
     }

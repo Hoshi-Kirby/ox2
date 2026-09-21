@@ -7,6 +7,7 @@ import type {
   HoverUI,
   PressTimers,
 } from "./types";
+import { joinOnlineRoom } from "./game/online/lobby";
 import MenuScreen from "./MenuScreen";
 import GameClient from "./GameClient";
 
@@ -39,12 +40,12 @@ export default function App() {
       helpPage: 1,
     },
     game: {
-      gameMode: "pvc",
       initialHand: 6,
       firstPlayer: 2,
       eventEnabled: true,
       shiftCardEnabled: false,
       isCPU: true,
+      isOnline: false,
 
       deck0: [
         { attr: "des", index: 1 },
@@ -96,6 +97,7 @@ export default function App() {
   const effectTimers = useRef<Record<string, number>>({
     fadeOut: 0,
     fadeIn: 0,
+    fadeInG: 0,
     leftWhiteSlide: 0,
     screenTransition: 0,
     menu2Transition: 0,
@@ -109,6 +111,7 @@ export default function App() {
     result: 0,
     hideResult: 0,
     cpuG: 0,
+    copyDone: 0,
   });
 
   const [hoverStates, setHoverStates] = useState<HoverUI>({
@@ -118,7 +121,7 @@ export default function App() {
     gameSettingArrow: Array.from({ length: 2 }, () => Array(2).fill(false)),
     gameDeck: Array(2).fill(false),
     selectDeck: Array(4).fill(false),
-    menuDeck: Array(3).fill(false),
+    menuDeck: Array(4).fill(false),
     org: false,
     hoverCards: {
       des: Array(5).fill(false),
@@ -168,6 +171,15 @@ export default function App() {
   const [bgmEnabled, setBgmEnabled] = useState(
     settingsRef.current.ui.bgmEnabled,
   );
+  const [onlineMatch, setOnlineMatch] = useState<{
+    matchID: string;
+    playerID: string;
+    playerCredentials: string;
+  } | null>(null);
+
+  const selectedOnlineDeckRef = useRef(0);
+  const joinedMatchRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (window.innerWidth >= 900) {
       settingsRef.current.ui.deviceMode = "mouse";
@@ -175,19 +187,45 @@ export default function App() {
       settingsRef.current.ui.deviceMode = "touch";
     }
     loadDecks(settingsRef);
+
+    const matchID = window.location.pathname.slice(1);
+
+    if (matchID && joinedMatchRef.current !== matchID) {
+      joinedMatchRef.current = matchID;
+
+      joinOnlineRoom(matchID)
+        .then((room) => {
+          settingsRef.current.game.isOnline = true;
+          settingsRef.current.game.isCPU = false;
+
+          setOnlineMatch(room);
+          setScreen("game");
+        })
+        .catch((error) => {
+          console.error("ルームへの参加に失敗:", error);
+
+          joinedMatchRef.current = null;
+        });
+    }
+
     const onResize = () => {
       setRatio(window.innerWidth / window.innerHeight);
     };
+
     window.addEventListener("resize", onResize);
 
     let lastTime = performance.now();
     let animationFrameId: number;
+
     function loop(now: number) {
       const dt = now - lastTime;
       lastTime = now;
+
       updateEffectsTimer(dt, effectTimers.current);
+
       animationFrameId = requestAnimationFrame(loop);
     }
+
     animationFrameId = requestAnimationFrame(loop);
 
     return () => {
@@ -238,6 +276,7 @@ export default function App() {
         effectTimers={effectTimers}
         bgmEnabled={bgmEnabled}
         setBgmEnabled={setBgmEnabled}
+        setOnlineMatch={setOnlineMatch}
       />
     );
   }
@@ -261,6 +300,8 @@ export default function App() {
       mouseRef={mouseRef}
       effectTimers={effectTimers}
       animStateRef={animStateRef}
+      onlineMatch={onlineMatch}
+      selectedOnlineDeckRef={selectedOnlineDeckRef}
     />
   );
 }

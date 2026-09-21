@@ -4,7 +4,7 @@ import { cardDefs } from "../data";
 import type { Screen, Settings, Help, HoverUI, CardID } from "../types";
 
 let t = 0;
-let cursorBlinkTimer = 0;
+// let cursorBlinkTimer = 0;
 let menuOffsets = [0, 0, 0, 0, 0];
 let backOffset = 0;
 let deckOffset = [0, 0, 0];
@@ -66,6 +66,7 @@ export function renderEffect(
   } else if (
     screen === "menu" ||
     screen === "menuOffline" ||
+    screen === "menuOnline" ||
     screen === "menuHelp" ||
     screen === "menuDeck" ||
     screen === "menuSetting"
@@ -174,12 +175,16 @@ export function renderEffect(
           (1 - menu2animdx / menu2animdxMax) * H;
       }
       // menu2表示
-      if (screen === "menuOffline") {
+      if (screen === "menuOffline" || screen === "menuOnline") {
         ctx.drawImage(assets.gameSettingUI, menu2X, menu2Y, menu2W, menu2H);
-        if (settingsRef.game.isCPU) {
-          ctx.drawImage(assets.vsCPU, menu2X, menu2Y, menu2W, menu2H);
+        if (screen === "menuOffline") {
+          if (settingsRef.game.isCPU) {
+            ctx.drawImage(assets.vsCPU, menu2X, menu2Y, menu2W, menu2H);
+          } else {
+            ctx.drawImage(assets.vs2P, menu2X, menu2Y, menu2W, menu2H);
+          }
         } else {
-          ctx.drawImage(assets.vs2P, menu2X, menu2Y, menu2W, menu2H);
+          ctx.drawImage(assets.search, menu2X, menu2Y, menu2W, menu2H);
         }
         let arrow = assets.arrow[0];
         const arrowW = menu2W * 0.05;
@@ -251,14 +256,19 @@ export function renderEffect(
           settingsRef.game.deckName3,
         ];
         for (let i = 0; i < 2; i++) {
-          if (hoverStates.menuDeck[i]) {
-            deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
+          let deckImg;
+          if (screen === "menuOnline" && i == 1) {
+            deckImg = deckImageMap["white"][0];
           } else {
-            deckOffset[i] = 0;
+            if (hoverStates.menuDeck[i]) {
+              deckOffset[i] = Math.min(Math.PI * 4, deckOffset[i] + dt * 0.05);
+            } else {
+              deckOffset[i] = 0;
+            }
+            deckImg =
+              deckImageMap[colors[settingsRef.game.selectedDeckP[i]]][0];
           }
           const shake = Math.sin(deckOffset[i]) * (menu2W * 0.005);
-          const deckImg =
-            deckImageMap[colors[settingsRef.game.selectedDeckP[i]]][0];
           ctx.drawImage(
             deckImg,
             menu2X + menu2W * 0.55 + i * menu2W * 0.22 + shake,
@@ -309,6 +319,14 @@ export function renderEffect(
         if (hoverStates.gameStart) {
           gameStartW = menu2W * 0.52;
           Img = assets.gameStartHover;
+        }
+        // オンラインだけ文字変える
+        if (screen === "menuOnline") {
+          Img = assets.makeRoom;
+          if (hoverStates.gameStart) {
+            gameStartW = menu2W * 0.52;
+            Img = assets.makeRoomHover;
+          }
         }
         const gameStartH = gameStartW * (Img.height / Img.width);
         ctx.drawImage(
@@ -613,6 +631,7 @@ export function renderEffect(
     const offsetY = H * 0.15; // 縦の間隔
     const menu2IndexMap: Record<string, number> = {
       menuOffline: 0,
+      menuOnline: 1,
       menuHelp: 2,
       menuDeck: 3,
       menuSetting: 4,
@@ -1296,36 +1315,36 @@ export function renderEffect(
         );
       }
       // デッキ名変更
-      cursorBlinkTimer += dt;
-      if (cursorBlinkTimer >= 1000) {
-        cursorBlinkTimer -= 1000;
-      }
+      // cursorBlinkTimer += dt;
+      // if (cursorBlinkTimer >= 1000) {
+      //   cursorBlinkTimer -= 1000;
+      // }
 
-      ctx.font = `${H * 0.031}px Komorebi`;
-      ctx.textAlign = "left";
-      const text = settingsRef.game.editDeckName;
-      let textX = dx + W - H * 0.195;
-      let textY = dy + H * 0.195;
-      if (ratio <= 1007 / 1552) {
-        ctx.font = `${H * 0.022}px Komorebi`;
-        textX = dx + W * 0.7;
-        textY = dy + H * 0.14;
-      }
-      ctx.fillText(text, textX, textY);
-      const cursorPosition = settingsRef.ui.inputCursorPosition;
-      const textBeforeCursor = text.slice(0, cursorPosition);
-      const cursorOffset = ctx.measureText(textBeforeCursor).width;
-      const cursorX = textX + cursorOffset;
-      if (settingsRef.ui.isInputActive && cursorBlinkTimer < 500) {
-        ctx.fillStyle = "#ffffff";
-        if (ratio > 1007 / 1552) {
-          ctx.fillRect(cursorX, textY - H * 0.02, H * 0.003, H * 0.04);
-        } else {
-          ctx.fillRect(cursorX, textY - W * 0.04, W * 0.004, W * 0.06);
-        }
-      }
+      // ctx.font = `${H * 0.031}px Komorebi`;
+      // ctx.textAlign = "left";
+      // const text = settingsRef.game.editDeckName;
+      // let textX = dx + W - H * 0.195;
+      // let textY = dy + H * 0.195;
+      // if (ratio <= 1007 / 1552) {
+      //   ctx.font = `${H * 0.022}px Komorebi`;
+      //   textX = dx + W * 0.7;
+      //   textY = dy + H * 0.14;
+      // }
+      // ctx.fillText(text, textX, textY);
+      // const cursorPosition = settingsRef.ui.inputCursorPosition;
+      // const textBeforeCursor = text.slice(0, cursorPosition);
+      // const cursorOffset = ctx.measureText(textBeforeCursor).width;
+      // const cursorX = textX + cursorOffset;
+      // if (settingsRef.ui.isInputActive && cursorBlinkTimer < 500) {
+      //   ctx.fillStyle = "#ffffff";
+      //   if (ratio > 1007 / 1552) {
+      //     ctx.fillRect(cursorX, textY - H * 0.02, H * 0.003, H * 0.04);
+      //   } else {
+      //     ctx.fillRect(cursorX, textY - W * 0.04, W * 0.004, W * 0.06);
+      //   }
+      // }
 
-      ctx.textAlign = "center";
+      // ctx.textAlign = "center";
 
       // カード説明wideのカード
       if (layoutIsWide) {
@@ -1473,24 +1492,6 @@ export function renderEffect(
       ctx.drawImage(btnSaveImg, textX, textY, textW, textH);
     }
   } else if (screen === "game") {
-    if (effectTimers.turnStart > 0) {
-      let alpha = 1;
-      if (effectTimers.turnStart < 100) {
-        alpha = effectTimers.turnStart / 100;
-      }
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      const teW = W * 0.6;
-      const teH = teW * (assets.turnEndUI.height / assets.turnEndUI.width);
-      ctx.drawImage(
-        assets.turnEndUI,
-        dx + W / 2 - teW / 2,
-        dy + H / 2 - teH / 2,
-        teW,
-        teH,
-      );
-      ctx.restore();
-    }
   }
   if (screen === "menuHelp" || screen === "game") {
     if (helpRef.isOpen) {
@@ -1686,7 +1687,11 @@ export function renderEffect(
     ctx.fillStyle = `rgba(0,0,0,${(300 - effectTimers.fadeIn) / 300})`;
     ctx.fillRect(0, 0, 1280, 720);
   } else if (effectTimers.fadeOut > 0) {
-    ctx.fillStyle = `rgba(0,0,0,${effectTimers.fadeOut / 300})`;
+    let f = effectTimers.fadeOut;
+    if (effectTimers.fadeOut > 300) {
+      f = 300;
+    }
+    ctx.fillStyle = `rgba(0,0,0,${f / 300})`;
     ctx.fillRect(0, 0, 1280, 720);
   }
 }

@@ -90,17 +90,25 @@ export function evaluateCard(
     } else if (card.index === 3) {
       value = 3 - G.hand[opponent].length / 5;
     } else if (card.index === 4) {
-      value =
-        (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 2 + 1;
+      if (data.opponentPieces + data.myPieces) {
+        value =
+          (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 2;
+      }
+      value += 1;
     } else if (card.index === 5) {
       value = 3 - G.hand[opponent].length / 5;
     } else if (card.index === 6) {
-      value =
-        (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 2 + 1;
+      if (data.opponentPieces + data.myPieces) {
+        value =
+          (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 2;
+      }
+      value += 1;
     } else if (card.index === 7) {
       value = 3 - G.hand[opponent].length / 5;
-      value +=
-        (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 1.5 + 1;
+      if (data.opponentPieces + data.myPieces) {
+        value +=
+          (data.opponentPieces / (data.opponentPieces + data.myPieces)) * 2;
+      }
     }
   } else if (card.attr === "gen") {
     if (card.index === 1) {
@@ -245,9 +253,11 @@ export function evaluateCard(
       }
       value += 1;
     } else if (card.index === 6) {
-      value =
-        (opponentReach.length / (opponentReach.length + myReach.length)) * 10 +
-        1;
+      value = 1;
+      if (opponentReach.length + myReach.length > 0) {
+        value +=
+          (opponentReach.length / (opponentReach.length + myReach.length)) * 10;
+      }
     } else if (card.index === 7) {
       value = 2;
     }
@@ -277,12 +287,14 @@ export function evaluateHand(
     value += evaluateCard(G, card, player, data, playerID);
   }
 
-  if (G.hand[player].length < 5) {
-    value *= 0.1;
-  } else if (G.hand[player].length >= 10) {
-    value *= 0.5;
-  } else if (G.hand[player].length === 9) {
-    value *= 0.75;
+  if (player == playerID) {
+    if (G.hand[player].length < 5) {
+      value *= 0.1;
+    } else if (G.hand[player].length >= 10) {
+      value *= 0.1;
+    } else if (G.hand[player].length === 9) {
+      value *= 0.75;
+    }
   }
 
   return value;
@@ -301,6 +313,7 @@ export function evaluateState(
   const myHandValue = evaluateHand(G, me, data, Number(playerID)) * 0.5;
   const opponentHandValue = evaluateHand(G, opponent, data, Number(playerID));
 
+  console.log(data.myReach.length);
   const boardValue =
     data.myPieces * 3 -
     data.opponentPieces * 2 +

@@ -12,7 +12,7 @@ import { createGameClickHandler } from "./hitTest/gameClickHandler";
 import { createGameHoverHandler } from "./hitTest/gameHoverHandler";
 import type { Help, Settings, HoverUI, PressTimers, Screen } from "./types";
 import type { GameState } from "./game/MyGame";
-import { playSe } from "./audio/audioManager";
+import { playSe as playAudioSe } from "./audio/audioManager";
 
 import "./MenuScreen.css";
 
@@ -21,6 +21,7 @@ export default function GameCanvas({
   ctx,
   moves,
   playerID,
+  matchData,
   helpRef,
   settings,
   hoverStates,
@@ -38,11 +39,18 @@ export default function GameCanvas({
   mouseRef,
   effectTimers,
   animStateRef,
+  onlineMatch,
+  selectedOnlineDeckRef,
 }: {
   G: GameState;
   ctx: any;
   moves: any;
   playerID: string;
+  matchData: {
+    id: number;
+    name?: string;
+    isConnected?: boolean;
+  }[];
   helpRef: React.MutableRefObject<Help>;
   settings: Settings;
   hoverStates: HoverUI;
@@ -64,10 +72,14 @@ export default function GameCanvas({
     frame: number;
     maxFrames: number;
   }>;
+  onlineMatch: any;
+  selectedOnlineDeckRef: React.MutableRefObject<number>;
 }) {
   const [ready, setReady] = useState(false);
   const screen: Screen = "game";
   const hoverStatesRef = useRef(hoverStates);
+  const lastSeCountRef = useRef(0);
+  const opponentConnectedRef = useRef<boolean | undefined>(undefined);
 
   useEffect(() => {
     hoverStatesRef.current = hoverStates;
@@ -87,20 +99,108 @@ export default function GameCanvas({
       clearTimeout(timer);
     };
   }, [G.cpuMove]);
+  // オンラインアニメ
+  useEffect(() => {
+    if (settings.game.isOnline && ctx.currentPlayer != Number(playerID)) {
+      effectTimers.current.Gchange = 400;
+    }
+  }, [G, ctx.currentPlayer]);
+  useEffect(() => {
+    if (settings.game.isOnline) {
+      effectTimers.current.turnStart = 400;
+    }
+  }, [ctx.currentPlayer]);
+  useEffect(() => {
+    if (settings.game.isOnline && G.gameStarted) {
+      if (settings.ui.seEnabled) {
+        playAudioSe("seStart"); //se
+      }
+      effectTimers.current.fadeIn = 300;
+      effectTimers.current.fadeInG = 300;
+      effectTimers.current.fadeOut = 600;
+      setTimeout(() => {
+        effectTimers.current.fadeOut = 400;
+        effectTimers.current.gameStartAnim = 300;
+        effectTimers.current.gameStartCount = 4800;
+      }, 300);
+    }
+  }, [G.gameStarted]);
 
+  // リスタート
+  useEffect(() => {
+    if (G.pausedPlayer != Number(playerID)) {
+      if (G.gameRestart) {
+        effectTimers.current.fadeIn = 300;
+        effectTimers.current.fadeOut = 600;
+        if (settings.ui.seEnabled) {
+          playAudioSe("seStart");
+        }
+
+        setTimeout(() => {
+          effectTimers.current.fadeOut = 300;
+          effectTimers.current.gameStartAnim = 300;
+          effectTimers.current.gameStartCount = 4500;
+          effectTimers.current.Gchange = 0;
+        }, 300);
+      }
+    }
+  }, [G.gameRestart]);
+  // おわる
+  useEffect(() => {
+    if (G.pausedPlayer != Number(playerID)) {
+      if (G.roomEnded) {
+        effectTimers.current.fadeIn = 300;
+        effectTimers.current.fadeOut = 600;
+        if (settings.ui.seEnabled) {
+          playAudioSe("seBack");
+        }
+
+        setTimeout(() => {
+          if (settings.game.isOnline) {
+            setScreen("menuOnline");
+          } else {
+            setScreen("menuOffline");
+          }
+          effectTimers.current.fadeOut = 300;
+          effectTimers.current.gameStartAnim = 300;
+          effectTimers.current.gameStartCount = 4500;
+        }, 300);
+      }
+    }
+  }, [G.roomEnded]);
+  // アラート
+  useEffect(() => {
+    const opponent = matchData.find((player) => String(player.id) !== playerID);
+
+    if (!opponent?.name) return;
+
+    const connected = opponent.isConnected;
+
+    if (opponentConnectedRef.current !== undefined) {
+      if (opponentConnectedRef.current === true && connected === false) {
+        alert("相手が離席しました。");
+      }
+
+      if (opponentConnectedRef.current === false && connected === true) {
+        alert("相手が再接続しました。");
+      }
+    }
+
+    opponentConnectedRef.current = connected;
+  }, [matchData, playerID]);
   // 勝利
   useEffect(() => {
     if (G.winner !== null) {
       effectTimers.current.finish = 1000;
       effectTimers.current.result = 2000;
       if (settings.ui.seEnabled) {
-        playSe("seKO");
+        playAudioSe("seKO");
         const timer1 = setTimeout(() => {
-          playSe("seDon");
+          playAudioSe("seDon");
         }, 1400);
 
         const timer2 = setTimeout(() => {
-          playSe("seDon");
+          playAudioSe("seDon");
         }, 1900);
 
         return () => {
@@ -168,6 +268,7 @@ export default function GameCanvas({
           G,
           ctx,
           playerID,
+          onlineMatch?.matchID,
         );
 
         gameAnim.frame++;
@@ -222,6 +323,7 @@ export default function GameCanvas({
         ctx,
         playerID,
         helpRef.current,
+        selectedOnlineDeckRef.current,
       );
       if (!ready) {
         const canvas = frameRef.current;
@@ -266,6 +368,8 @@ export default function GameCanvas({
       ctx,
       moves,
       playerID,
+      matchID: onlineMatch?.matchID,
+      selectedOnlineDeckRef,
     });
 
     const onPointerDown = () => {
@@ -350,7 +454,9 @@ export default function GameCanvas({
     let bgm = audioAssets.bgmMenu;
     switch (screen) {
       case "game":
-        bgm = audioAssets.bgmGame;
+        if (G.gameStarted) {
+          bgm = audioAssets.bgmGame;
+        }
         break;
     }
 
@@ -361,7 +467,16 @@ export default function GameCanvas({
     } else {
       stopBgm();
     }
-  }, [screen]);
+  }, [screen, G.gameStarted]);
+
+  // se
+  useEffect(() => {
+    const events = G.seEvents;
+    for (let i = lastSeCountRef.current; i < events.length; i++) {
+      playAudioSe(events[i]);
+    }
+    lastSeCountRef.current = events.length;
+  }, [G.seEvents]);
 
   return (
     <div className="canvas-container">

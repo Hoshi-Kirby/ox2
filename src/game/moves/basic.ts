@@ -4,10 +4,12 @@ import * as gen from "./gen";
 import * as dis from "./dis";
 import * as sup from "./sup";
 import * as des from "./des";
-import type { CardAttr, CardKey } from "../../types";
-import { playSe } from "../../audio/audioManager";
+import type { CardAttr, CardKey, SeName } from "../../types";
+export function playSe(G: GameState, name: SeName) {
+  G.seEvents.push(name);
+}
 
-type CardFunction = (G: GameState, ctx: any, isV: boolean) => void;
+type CardFunction = (G: GameState, ctx: any, isV: boolean, random: any) => void;
 type CardModule = Record<CardKey, CardFunction>;
 // ターンエンド
 export function endTurn(
@@ -32,7 +34,7 @@ export function endTurn(
     }
   }
   if (shouldPlayFlipSe && !isV) {
-    playSe("seCardFlip");
+    playSe(G, "seCardFlip");
   }
   G.faceDown[player].fill(false);
   G.animLog.costChange[player] = -G.costChange[player];
@@ -44,7 +46,7 @@ export function endTurn(
 }
 // カードを使うときの共通 move
 export function useCard(
-  { G, ctx }: { G: GameState; ctx: any },
+  { G, ctx, random }: { G: GameState; ctx: any; random: any },
   cardIndex: number,
   isV: boolean = false,
 ) {
@@ -71,7 +73,7 @@ export function useCard(
           faceDown: [...G.faceDown[player]],
         });
         if (!isV) {
-          playSe("seClick");
+          playSe(G, "seClick");
         }
         G.activeCard = cardIndex; // 今使うカードをセット
         G.cpuMove = true;
@@ -103,7 +105,7 @@ export function useCard(
             return;
           }
           if (def.auto) {
-            callCardFunction({ G, ctx }, isV);
+            callCardFunction({ G, ctx, random }, isV);
             G.phase = "idle";
             G.targets = [];
             return;
@@ -126,12 +128,12 @@ export function useCard(
       if (idx >= 0) {
         G.costCards.splice(idx, 1);
         if (!isV) {
-          playSe("seCardCansel");
+          playSe(G, "seCardCansel");
         }
       } else {
         G.costCards.push(cardIndex);
         if (!isV) {
-          playSe("seCardSelect");
+          playSe(G, "seCardSelect");
         }
       }
       const player = ctx.currentPlayer;
@@ -142,7 +144,7 @@ export function useCard(
       ) {
         // アクティブカード、アニメログ
         if (!isV) {
-          playSe("seCardFlip");
+          playSe(G, "seCardFlip");
         }
         G.activeCardID = { ...G.hand[player][G.activeCard!] };
         G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
@@ -167,7 +169,7 @@ export function useCard(
           G.phase = "payCostDiscard";
         } else {
           if (!isV) {
-            playSe("seCardDiscard");
+            playSe(G, "seCardDiscard");
           }
           G.phase = "selectTarget";
           G.animLog.discardFlags[player][G.activeCard!] = true;
@@ -184,7 +186,7 @@ export function useCard(
             return;
           }
           if (def.auto) {
-            callCardFunction({ G, ctx }, isV);
+            callCardFunction({ G, ctx, random }, isV);
             G.phase = "idle";
             G.targets = [];
             return;
@@ -205,12 +207,12 @@ export function useCard(
       if (idx >= 0) {
         G.costCards.splice(idx, 1);
         if (!isV) {
-          playSe("seCardCansel");
+          playSe(G, "seCardCansel");
         }
       } else {
         G.costCards.push(cardIndex);
         if (!isV) {
-          playSe("seCardSelect");
+          playSe(G, "seCardSelect");
         }
       }
       const player = ctx.currentPlayer;
@@ -225,7 +227,7 @@ export function useCard(
       ) {
         // アクティブカード、アニメログ
         if (!isV) {
-          playSe("seCardDiscard");
+          playSe(G, "seCardDiscard");
         }
         G.activeCardID = { ...G.hand[player][G.activeCard!] };
         G.animLog.discardFlags[player] = Array(G.hand[player].length).fill(
@@ -270,7 +272,7 @@ export function useCard(
           return;
         }
         if (def.auto) {
-          callCardFunction({ G, ctx }, isV);
+          callCardFunction({ G, ctx, random }, isV);
           G.phase = "idle";
           G.targets = [];
           return;
@@ -309,7 +311,7 @@ export function registerTarget(
 }
 // それぞれの関数呼び出し
 export function callCardFunction(
-  { G, ctx }: { G: GameState; ctx: any },
+  { G, ctx, random }: { G: GameState; ctx: any; random?: any },
   isV: boolean = false,
 ) {
   const card = G.activeCardID;
@@ -326,7 +328,7 @@ export function callCardFunction(
 
   const fn = table[attr][`card${index}`];
 
-  if (fn) fn(G, ctx, isV);
+  if (fn) fn(G, ctx, isV, random);
   G.cpuMove = true;
 }
 export function canPlaceAnywhere(
@@ -357,14 +359,35 @@ export function canPlaceAnywhere(
   return false;
 }
 
-export function openPause({ G }: { G: GameState }) {
+export function openPause({ G, playerID }: { G: GameState; playerID: string }) {
   G.isPaused = true;
+  G.pausedPlayer = Number(playerID);
 }
 export function closePause({ G }: { G: GameState }) {
   G.isPaused = false;
 }
 export function openresult({ G }: { G: GameState }) {
   G.isResult = !G.isResult;
+}
+export function endOnlineGame({
+  G,
+  playerID,
+}: {
+  G: GameState;
+  playerID: string;
+}) {
+  G.roomEnded = true;
+  G.pausedPlayer = Number(playerID);
+}
+export function restartOnlineGame({
+  G,
+  playerID,
+}: {
+  G: GameState;
+  playerID: string;
+}) {
+  G.gameRestart = true;
+  G.pausedPlayer = Number(playerID);
 }
 // cpu動けるよ
 export function cpuCanMove({ G }: { G: GameState }) {
@@ -394,8 +417,9 @@ export function cpuCanMove({ G }: { G: GameState }) {
     }
   }
 }
-// アニメログの初期化
+// アニメログの初期化 seの初期化
 export function resetAnimLog({ G }: { G: GameState }) {
+  G.seEvents = [];
   G.animLog.draw = [false, false];
   G.animLog.drawCount = [1, 1];
   G.animLog.discardFlags = [[], []];

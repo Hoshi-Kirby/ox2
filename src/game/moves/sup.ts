@@ -2,17 +2,17 @@ import type { GameState } from "../MyGame";
 import { drawRandom } from "../MyGame";
 import { canPlace } from "../../data";
 import { updateWinner } from "./check";
-import { playSe } from "../../audio/audioManager";
+import { playSe } from "./basic";
 
-export function card1(G: GameState, ctx: any, isV: boolean) {
+export function card1(G: GameState, ctx: any, isV: boolean, _random?: any) {
   //デフレスパイラル
   G.costChange[ctx.currentPlayer]--;
   G.animLog.costChange[ctx.currentPlayer] = -1;
   if (!isV) {
-    playSe("seCostUp");
+    playSe(G, "seCostUp");
   }
 }
-export function card2(G: GameState, ctx: any, isV: boolean) {
+export function card2(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // 倒置法
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -48,7 +48,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
       if (G.board[col][row][f] == 3) {
         if (canPlace(G, ctx, col2, row2, f, "sup", 22)) {
           if (!isV) {
-            playSe("seTokenPut");
+            playSe(G, "seTokenPut");
           }
           if (G.board[col2][row2][f] == 0) {
             G.board[col][row][f] = 2 - player;
@@ -63,7 +63,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
         }
       } else if (canPlace(G, ctx, col2, row2, f, "sup", 12)) {
         if (!isV) {
-          playSe("seTokenPut");
+          playSe(G, "seTokenPut");
         }
         const temp = G.board[col][row][f];
         G.board[col][row][f] = G.board[col2][row2][f];
@@ -81,7 +81,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
       if (G.midBoard[mx][my][f] == 3) {
         if (canPlace(G, ctx, col2, row2, f, "sup", 22)) {
           if (!isV) {
-            playSe("seTokenPut");
+            playSe(G, "seTokenPut");
           }
           if (G.board[col2][row2][f] == 0) {
             G.midBoard[mx][my][f] = 2 - player;
@@ -96,7 +96,7 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
         }
       } else if (canPlace(G, ctx, col2, row2, f, "sup", 32)) {
         if (!isV) {
-          playSe("seTokenPut");
+          playSe(G, "seTokenPut");
         }
         const temp = G.midBoard[mx][my][f];
         G.midBoard[mx][my][f] = G.board[col2][row2][f];
@@ -112,13 +112,13 @@ export function card2(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card3(G: GameState, ctx: any, _isV: boolean) {
+export function card3(G: GameState, ctx: any, _isV: boolean, random?: any) {
   // 北抜き
   const player = ctx.currentPlayer;
-  drawRandom(G.deck[player], G.hand[player], G.faceDown[player], ctx.random);
+  drawRandom(G.deck[player], G.hand[player], G.faceDown[player], random);
   G.animLog.draw[player] = true;
 }
-export function card4(G: GameState, ctx: any, isV: boolean) {
+export function card4(G: GameState, ctx: any, isV: boolean, _random?: any) {
   // 一石返し
   if (G.phase === "selectTarget") {
     const t = G.targets[0];
@@ -130,7 +130,7 @@ export function card4(G: GameState, ctx: any, isV: boolean) {
 
     if (canPlace(G, ctx, col, row, f, "sup", 4)) {
       if (!isV) {
-        playSe("seTokenPut");
+        playSe(G, "seTokenPut");
       }
       const player = Number(ctx.currentPlayer);
       G.board[col][row][f] = player + 1;
@@ -143,7 +143,7 @@ export function card4(G: GameState, ctx: any, isV: boolean) {
     return;
   }
 }
-export function card5(G: GameState, ctx: any, isV: boolean) {
+export function card5(G: GameState, ctx: any, isV: boolean, random?: any) {
   // 酸化還元
   const circles = [];
   const crosses = [];
@@ -167,8 +167,8 @@ export function card5(G: GameState, ctx: any, isV: boolean) {
   }
 
   if (circles.length === 0 || crosses.length === 0) return;
-  const c0 = circles[Math.floor(Math.random() * circles.length)];
-  const c1 = crosses[Math.floor(Math.random() * crosses.length)];
+  const c0 = circles[random.Die(circles.length) - 1];
+  const c1 = crosses[random.Die(crosses.length) - 1];
 
   const get = (obj: any) =>
     obj.isMid ? G.midBoard[obj.x][obj.y][obj.z] : G.board[obj.x][obj.y][obj.z];
@@ -194,14 +194,14 @@ export function card5(G: GameState, ctx: any, isV: boolean) {
   }
   G.moveCount[ctx.currentPlayer]++;
   if (!isV) {
-    playSe("seTokenPut");
+    playSe(G, "seTokenPut");
   }
   G.phase = "idle";
   G.targets = [];
   updateWinner(G, ctx);
 }
 
-export function card6(G: GameState, _ctx: any, isV: boolean) {
+export function card6(G: GameState, _ctx: any, isV: boolean, _random?: any) {
   // 革命
   for (let x = 0; x < 5; x++) {
     for (let y = 0; y < 5; y++) {
@@ -234,13 +234,13 @@ export function card6(G: GameState, _ctx: any, isV: boolean) {
     }
   }
   if (!isV) {
-    playSe("seTokenPut");
+    playSe(G, "seTokenPut");
   }
 }
-export function card7(G: GameState, ctx: any, isV: boolean) {
+export function card7(G: GameState, ctx: any, isV: boolean, random?: any) {
   // スライド
   const dirs = ["right", "left", "down", "up"];
-  const dir = dirs[Math.floor(Math.random() * 4)];
+  const dir = dirs[random.Die(4) - 1];
 
   if (dir === "right") {
     for (let x = 4; x >= 0; x--) {
@@ -311,7 +311,7 @@ export function card7(G: GameState, ctx: any, isV: boolean) {
   }
   G.moveCount[ctx.currentPlayer]++;
   if (!isV) {
-    playSe("seTokenPut");
+    playSe(G, "seTokenPut");
   }
   updateWinner(G, ctx);
 }

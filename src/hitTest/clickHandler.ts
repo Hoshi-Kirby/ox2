@@ -32,6 +32,7 @@ import {
   isInsideDetailHelpButton,
   detectHelpButtonHover,
 } from "./hitTest";
+import { createOnlineRoom, joinOnlineRoom } from "../game/online/lobby";
 import type { Screen, CardID, DeckColor } from "../types";
 import { playSe } from "../audio/audioManager";
 import { assets } from "../canvas/assets";
@@ -46,6 +47,13 @@ type ClickHandlerParams = {
   setBgmEnabled: (v: boolean) => void;
   setDeckName: (v: string) => void;
   setOpenDeckList: (v: boolean) => void;
+  setOnlineMatch: React.Dispatch<
+    React.SetStateAction<{
+      matchID: string;
+      playerID: string;
+      playerCredentials: string;
+    } | null>
+  >;
 };
 
 export function createClickHandler({
@@ -58,6 +66,7 @@ export function createClickHandler({
   setBgmEnabled,
   setDeckName,
   setOpenDeckList,
+  setOnlineMatch,
 }: ClickHandlerParams) {
   return function onClick(e: MouseEvent, canvas: HTMLCanvasElement) {
     if (settingsRef.current.ui.inputLocked) {
@@ -71,6 +80,7 @@ export function createClickHandler({
     if (settingsRef.current.ui.inputLockedSub) {
       if (
         (screen === "menuOffline" ||
+          screen === "menuOnline" ||
           screen === "menuHelp" ||
           screen === "menuDeck" ||
           screen === "menuSetting") &&
@@ -127,6 +137,11 @@ export function createClickHandler({
           switch (i) {
             case 0:
               setScreen("menuOffline");
+              settingsRef.current.game.isOnline = false;
+              break;
+            case 1:
+              setScreen("menuOnline");
+              settingsRef.current.game.isOnline = true;
               break;
             case 2:
               setScreen("menuHelp");
@@ -170,6 +185,7 @@ export function createClickHandler({
     // ------------------------------
     if (
       (screen === "menuOffline" ||
+        screen === "menuOnline" ||
         screen === "menuHelp" ||
         screen === "menuDeck" ||
         screen === "menuSetting") &&
@@ -191,6 +207,11 @@ export function createClickHandler({
             switch (i) {
               case 0:
                 setScreen("menuOffline");
+                settingsRef.current.game.isOnline = false;
+                break;
+              case 1:
+                setScreen("menuOnline");
+                settingsRef.current.game.isOnline = true;
                 break;
               case 2:
                 setScreen("menuHelp");
@@ -514,17 +535,25 @@ export function createClickHandler({
       }
     }
     const indexToInitialHand = [0, 3, 6, 10];
-    if (screen === "menuOffline") {
+    if (screen === "menuOffline" || screen === "menuOnline") {
       if (
         !settingsRef.current.ui.changingDeck[0] &&
         !settingsRef.current.ui.changingDeck[1]
       ) {
-        // cpu
-        if (isInsideCPUTrue(x, y, ratio)) {
-          if (settingsRef.current.ui.seEnabled) {
-            playSe("seClick");
+        if (screen === "menuOffline") {
+          // cpu
+          if (isInsideCPUTrue(x, y, ratio)) {
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seClick");
+            }
+            settingsRef.current.game.isCPU = !settingsRef.current.game.isCPU;
           }
-          settingsRef.current.game.isCPU = !settingsRef.current.game.isCPU;
+        } else {
+          // 部屋に入る
+          if (isInsideCPUTrue(x, y, ratio)) {
+            playSe("seError");
+            alert("サーバーが見つかりません");
+          }
         }
         // 上２
         if (isInsideArrowButton(x, y, ratio, 0, 0)) {
@@ -565,6 +594,9 @@ export function createClickHandler({
         }
         // デッキ
         for (let i = 0; i < 2; i++) {
+          if (screen === "menuOnline" && i == 1) {
+            break;
+          }
           if (isInsideGameSettingDeckButton(i, x, y, ratio)) {
             if (settingsRef.current.ui.seEnabled) {
               playSe("seClick");
@@ -587,22 +619,62 @@ export function createClickHandler({
           settingsRef.current.game.shiftCardEnabled = false;
         }
 
-        // ゲームスタート
-        if (isInsideGameSTartButton(x, y, ratio)) {
-          settingsRef.current.ui.inputLocked = true;
-          if (settingsRef.current.ui.seEnabled) {
-            playSe("seStart"); //se
-          }
-          effectTimers.fadeIn = 300;
-          effectTimers.fadeOut = 600;
+        if (screen === "menuOffline") {
+          // ゲームスタート
+          if (isInsideGameSTartButton(x, y, ratio)) {
+            settingsRef.current.ui.inputLocked = true;
+            if (settingsRef.current.ui.seEnabled) {
+              playSe("seStart"); //se
+            }
+            effectTimers.fadeIn = 300;
+            effectTimers.fadeOut = 600;
 
-          setTimeout(() => {
-            setScreen("game");
-            settingsRef.current.ui.inputLocked = false;
-            effectTimers.fadeOut = 300;
-            effectTimers.gameStartAnim = 300;
-            effectTimers.gameStartCount = 4800;
-          }, 300);
+            setTimeout(() => {
+              setScreen("game");
+              settingsRef.current.ui.inputLocked = false;
+              effectTimers.fadeOut = 400;
+              effectTimers.gameStartAnim = 300;
+              effectTimers.gameStartCount = 4800;
+            }, 300);
+          }
+        } else {
+          // 部屋を作る
+          if (isInsideGameSTartButton(x, y, ratio)) {
+            createOnlineRoom()
+              .then((matchID) => {
+                console.log("作成した部屋:", matchID);
+
+                return joinOnlineRoom(matchID);
+              })
+              .then((room) => {
+                console.log("参加した部屋:", room);
+                setOnlineMatch(room);
+
+                settingsRef.current.ui.inputLocked = true;
+
+                if (settingsRef.current.ui.seEnabled) {
+                  playSe("seStart");
+                }
+
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
+
+                setTimeout(() => {
+                  setScreen("game");
+                  settingsRef.current.ui.inputLocked = false;
+                  effectTimers.fadeOut = 400;
+                }, 300);
+              })
+              .catch((error) => {
+                console.error("部屋の作成に失敗しました:", error);
+
+                if (settingsRef.current.ui.seEnabled) {
+                  playSe("seError");
+                }
+
+                alert("部屋の作成に失敗しました。\nもう一度お試しください。");
+              });
+          }
         }
       } else {
         const decks = [

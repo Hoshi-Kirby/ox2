@@ -37,6 +37,7 @@ export const audioAssets = {
   sePause: loadSe("/assets/se/pause_ponnporo.wav", 0.2),
   seKO: loadSe("/assets/se/K.O._ka-n.wav", 0.2),
   seDon: loadSe("/assets/se/disp_don.wav", 0.2),
+  seError: loadSe("/assets/se/cannot_bi-n.wav", 0.3),
 };
 
 export const seOverlapList = ["seHover", "seCardDraw", "seCardDiscard"];

@@ -23,6 +23,7 @@ export function virtualUseCard(state: VirtualState, cardIndex: number): void {
     {
       G: state.G,
       ctx: state.ctx,
+      random: state.ctx.random,
     },
     cardIndex,
     true,

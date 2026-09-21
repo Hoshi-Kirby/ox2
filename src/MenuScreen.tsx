@@ -31,6 +31,7 @@ export default function MenuScreen({
   effectTimers,
   bgmEnabled,
   setBgmEnabled,
+  setOnlineMatch,
 }: {
   screen: Screen;
   setScreen: React.Dispatch<React.SetStateAction<Screen>>;
@@ -49,6 +50,13 @@ export default function MenuScreen({
   effectTimers: React.MutableRefObject<Record<string, number>>;
   bgmEnabled: boolean;
   setBgmEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  setOnlineMatch: React.Dispatch<
+    React.SetStateAction<{
+      matchID: string;
+      playerID: string;
+      playerCredentials: string;
+    } | null>
+  >;
 }) {
   const [ready, setReady] = useState(false);
   const [deckName, setDeckName] = useState(
@@ -163,6 +171,7 @@ export default function MenuScreen({
       setBgmEnabled,
       setDeckName,
       setOpenDeckList,
+      setOnlineMatch,
     });
 
     const listener = (e: MouseEvent) => {
