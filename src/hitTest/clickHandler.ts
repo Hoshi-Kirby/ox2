@@ -641,41 +641,42 @@ export function createClickHandler({
           // 部屋を作る
           if (isInsideGameSTartButton(x, y, ratio)) {
             alert("実装中です");
+            return;
 
-            // createOnlineRoom()
-            //   .then((matchID) => {
-            //     console.log("作成した部屋:", matchID);
+            createOnlineRoom()
+              .then((matchID) => {
+                console.log("作成した部屋:", matchID);
 
-            //     return joinOnlineRoom(matchID);
-            //   })
-            //   .then((room) => {
-            //     console.log("参加した部屋:", room);
-            //     setOnlineMatch(room);
+                return joinOnlineRoom(matchID);
+              })
+              .then((room) => {
+                console.log("参加した部屋:", room);
+                setOnlineMatch(room);
 
-            //     settingsRef.current.ui.inputLocked = true;
+                settingsRef.current.ui.inputLocked = true;
 
-            //     if (settingsRef.current.ui.seEnabled) {
-            //       playSe("seStart");
-            //     }
+                if (settingsRef.current.ui.seEnabled) {
+                  playSe("seStart");
+                }
 
-            //     effectTimers.fadeIn = 300;
-            //     effectTimers.fadeOut = 600;
+                effectTimers.fadeIn = 300;
+                effectTimers.fadeOut = 600;
 
-            //     setTimeout(() => {
-            //       setScreen("game");
-            //       settingsRef.current.ui.inputLocked = false;
-            //       effectTimers.fadeOut = 400;
-            //     }, 300);
-            //   })
-            //   .catch((error) => {
-            //     console.error("部屋の作成に失敗しました:", error);
+                setTimeout(() => {
+                  setScreen("game");
+                  settingsRef.current.ui.inputLocked = false;
+                  effectTimers.fadeOut = 400;
+                }, 300);
+              })
+              .catch((error) => {
+                console.error("部屋の作成に失敗しました:", error);
 
-            //     if (settingsRef.current.ui.seEnabled) {
-            //       playSe("seError");
-            //     }
+                if (settingsRef.current.ui.seEnabled) {
+                  playSe("seError");
+                }
 
-            //     alert("部屋の作成に失敗しました。\nもう一度お試しください。");
-            //   });
+                alert("部屋の作成に失敗しました。\nもう一度お試しください。");
+              });
           }
         }
       } else {
