@@ -95,7 +95,7 @@ export default function GameClient({
       debug: true,
       multiplayer: settings.game.isOnline
         ? SocketIO({
-            server: "http://localhost:8000",
+            server: "https://ox2.pinopinopino.com/",
           })
         : settings.game.isCPU
           ? Local({
