@@ -76,7 +76,10 @@ const game = createMyGame(settings);
 
 const server = Server({
   games: [game],
-  origins: ["http://localhost:5173"],
+  origins: (process.env.ALLOWED_ORIGINS ?? "http://localhost:5173")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean),
 });
 
-server.run(8000);
+server.run(Number(process.env.PORT ?? 8000));

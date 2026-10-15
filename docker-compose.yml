@@ -1,0 +1,22 @@
+services:
+  server:
+    build: .
+    env_file: .env
+    environment:
+      PORT: 8000
+    volumes:
+      - ./server:/app/server
+      - ./src:/app/src
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    restart: unless-stopped
+
+  # Cloudflare Tunnel でサーバーを公開
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - server
+    restart: unless-stopped

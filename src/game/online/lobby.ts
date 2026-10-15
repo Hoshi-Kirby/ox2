@@ -1,7 +1,7 @@
 import { LobbyClient } from "boardgame.io/client";
 
 const lobbyClient = new LobbyClient({
-  server: "http://localhost:8000",
+  server: "https://ox2.pinopinopino.com",
 });
 
 export async function createOnlineRoom() {
