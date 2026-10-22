@@ -640,9 +640,6 @@ export function createClickHandler({
         } else {
           // 部屋を作る
           if (isInsideGameSTartButton(x, y, ratio)) {
-            alert("実装中です");
-            return;
-
             createOnlineRoom()
               .then((matchID) => {
                 console.log("作成した部屋:", matchID);
