@@ -83,3 +83,50 @@ const server = Server({
 });
 
 server.run(Number(process.env.PORT ?? 8000));
+
+// 誰も接続していない部屋を定期的に削除する
+const ROOM_IDLE_MS = Number(process.env.ROOM_IDLE_MINUTES ?? 30) * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+
+// 部屋が無人になった時刻（サーバー側で観測した時刻）
+const emptySince = new Map<string, number>();
+
+async function cleanupIdleRooms() {
+  const now = Date.now();
+  const matchIDs = await server.db.listMatches({ gameName: game.name });
+
+  for (const matchID of matchIDs) {
+    const { metadata } = await server.db.fetch(matchID, { metadata: true });
+    if (!metadata) continue;
+
+    const someoneConnected = Object.values(metadata.players).some(
+      (player) => player.isConnected,
+    );
+    if (someoneConnected) {
+      emptySince.delete(matchID);
+      continue;
+    }
+
+    // 初めて無人を確認した時点から計測する（一時的な切断で消さないため）
+    const since = emptySince.get(matchID) ?? now;
+    emptySince.set(matchID, since);
+
+    const lastActive = Math.max(since, metadata.updatedAt);
+    if (now - lastActive >= ROOM_IDLE_MS) {
+      await server.db.wipe(matchID);
+      emptySince.delete(matchID);
+      console.log("無人の部屋を削除:", matchID);
+    }
+  }
+
+  // 既に存在しない部屋の記録を掃除
+  for (const matchID of emptySince.keys()) {
+    if (!matchIDs.includes(matchID)) emptySince.delete(matchID);
+  }
+}
+
+setInterval(() => {
+  cleanupIdleRooms().catch((error) => {
+    console.error("部屋の削除処理に失敗:", error);
+  });
+}, CLEANUP_INTERVAL_MS);
