@@ -78,10 +78,13 @@ export interface GameState {
 export function createMyGame(settings: Settings) {
   return {
     name: "ox2",
-    setup: ({ random }: { random: any }): GameState => {
-      return createInitialState(settings, random);
+    setup: (
+      { random }: { random: any },
+      setupData?: Settings,
+    ): GameState => {
+      const gameSettings = setupData ?? settings;
+      return createInitialState(gameSettings, random);
     },
-
     moves: {
       endTurn: (args: any) => basic.endTurn(args, !settings.ui.seEnabled),
       useCard: (args: any, cardIndex: number) =>
