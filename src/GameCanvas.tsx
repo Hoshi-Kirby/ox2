@@ -452,12 +452,8 @@ export default function GameCanvas({
   // BGM
   useEffect(() => {
     let bgm = audioAssets.bgmMenu;
-    switch (screen) {
-      case "game":
-        if (G.gameStarted) {
-          bgm = audioAssets.bgmGame;
-        }
-        break;
+    if (G.gameStarted) {
+      bgm = audioAssets.bgmGame;
     }
 
     playBgm(bgm);

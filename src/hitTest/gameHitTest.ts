@@ -532,7 +532,7 @@ export function isInsideCopyButton(x: number, y: number, ratio: number) {
   if (layoutIsWide) {
     btnX = dx + W / 2 + H * 0.4;
   }
-  let btnY = dy + H * 0.45;
+  let btnY = dy + H * 0.5;
   let btnW = S * 0.05;
   let btnH = S * 0.05;
 

@@ -886,7 +886,7 @@ export function renderGameEffect(
           if (layoutIsWide) {
             linkX = dx + W / 2 + H * 0.4;
           }
-          ctx.fillText("コピーしました", linkX, dy + H * 0.53);
+          ctx.fillText("コピーしました", linkX, dy + H * 0.58);
         }
         ctx.restore();
       } else {

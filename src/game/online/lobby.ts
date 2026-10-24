@@ -1,13 +1,15 @@
 import { LobbyClient } from "boardgame.io/client";
+import type { Settings } from "../../types.ts";
 
 const lobbyClient = new LobbyClient({
   server: "https://ox2.pinopinopino.com/",
 });
 
-export async function createOnlineRoom() {
+export async function createOnlineRoom(settings: Settings) {
   const { matchID } = await lobbyClient.createMatch("ox2", {
     numPlayers: 2,
     unlisted: true,
+    setupData: settings,
   });
 
   return matchID;

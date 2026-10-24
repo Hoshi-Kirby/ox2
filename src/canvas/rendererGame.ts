@@ -687,7 +687,7 @@ export function renderGame(
           if (layoutIsWide) {
             linkX = dx + W / 2 + H * 0.4;
           }
-          ctx.drawImage(assets.link, linkX, dy + H * 0.45, S * 0.05, S * 0.05);
+          ctx.drawImage(assets.link, linkX, dy + H * 0.5, S * 0.05, S * 0.05);
         }
 
         // 戻る
